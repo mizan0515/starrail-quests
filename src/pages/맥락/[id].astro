@@ -14,16 +14,16 @@ const headings=[{depth:2,slug:reading.topology?.id||'structure',text:reading.top
 const essay=topics.find(t=>t.id===node.topic)!;
 const sources=[...(node.topology?.edges.flatMap(e=>e.evidence)||[]),...node.evidence,...node.links.map(l=>l.evidence),...node.timeline.map(m=>m.evidence),...(node.comparison||atlas.comparisons[node.topic]).panels.map(p=>p.evidence)];
 ---
-<StarlightPage headings={headings} frontmatter={{title:node.name,description:node.question,editUrl:false}}>
+<StarlightPage headings={headings.filter(h=>(h.slug!=='perspectives'||(node.comparison||atlas.comparisons[node.topic]).panels.length>0)&&(h.slug!=='reading'||!node.focusedSources))} frontmatter={{title:node.name,description:node.question,editUrl:false}}>
  <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('설정집.html#atlas')}>설정집</a><span>/</span><a href={href(`설정집.html?axis=${node.axis}#atlas`)}>{axisName(node.axis)}</a><span>/</span><span>{node.name}</span></nav>
  <div class="dossier-lead"><p class="dossier-question">{node.question}</p><p class="dossier-intro">{node.intro}</p><span class="kind-badge">원문과 연결해 읽기</span></div>
- <nav class="dossier-jumps" aria-label="이 자료에서 읽기"><a href={'#'+(reading.topology?.id||'structure')}>핵심 구조</a><a href="#connections">관계</a>{node.timeline.length>0&&<a href="#moments">{node.axis==='person'?'행적':'사건'}</a>}<a href="#perspectives">관점 비교</a><a href="#reading">원문·해설</a></nav>
+ <nav class="dossier-jumps" aria-label="이 자료에서 읽기"><a href={'#'+(reading.topology?.id||'structure')}>핵심 구조</a><a href="#connections">관계</a>{node.timeline.length>0&&<a href="#moments">{node.axis==='person'?'행적':'사건'}</a>}{(node.comparison||atlas.comparisons[node.topic]).panels.length>0&&<a href="#perspectives">관점 비교</a>}<a href={node.focusedSources?'#verified-sources':'#reading'}>{node.focusedSources?'원문':'원문·해설'}</a></nav>
  <span id="connections"></span><Fragment set:html={reading.topology?readingKit.topology(reading.topology):readingKit.network(reading.relations,{id:'structure',title:'관계 한눈에',focusId:reading.entityId})} />
  {node.relationshipTitle&&<Fragment set:html={readingKit.network(reading.relations,{id:'affiliations',title:node.relationshipTitle,focusId:reading.entityId})} />}
  <Fragment set:html={reading.sections.map(readingKit.section).join('')} />
 
  {node.timeline.length>0&&<section id="moments"><h2>{node.axis==='person'?'삶의 전환점':'기록 속 사건 흐름'}</h2><Fragment set:html={readingKit.timeline(reading.events,{ordered:reading.timeOrdered,note:reading.timeNote})}/></section>}
  <Perspectives topic={node.topic} nodeId={node.id}/>
- <section id="reading"><h2>더 깊이 읽기</h2><a class="dossier-essay-link" href={topicUrl(node.topic)} data-reading-link><span class="eyebrow">함께 읽을 이유를 풀어 쓴 해설</span><strong>{essay.title}</strong><span>{essay.deck}</span><span aria-hidden="true">→</span></a><p class="atlas-curation-note">정체·역사·인물 행적의 스포일러가 포함됩니다. 원문 서술, 기록자의 견해, 편집자의 연결은 각 근거에 표시했습니다.</p></section>
+ {!node.focusedSources&&<section id="reading"><h2>더 깊이 읽기</h2>{!node.focusedSources&&<a class="dossier-essay-link" href={topicUrl(node.topic)} data-reading-link><span class="eyebrow">함께 읽을 이유를 풀어 쓴 해설</span><strong>{essay.title}</strong><span>{essay.deck}</span><span aria-hidden="true">→</span></a>}<p class="atlas-curation-note">정체·역사·인물 행적의 스포일러가 포함됩니다. 원문 서술, 기록자의 견해, 편집자의 연결은 각 근거에 표시했습니다.</p></section>}
  <SourceRegister entries={sources}/>
 </StarlightPage>
