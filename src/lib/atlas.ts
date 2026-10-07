@@ -5,7 +5,7 @@ export {atlas};
 export const atlasUrl=(id:string)=>{const e=explorer.entries.find(e=>e.id===id);return e?e.axis==='concept'?docUrl(e.id):href(`대상/${e.id}.html`):href(`맥락/${id}.html`);};
 export const evidenceUrl=(e:any)=>`${docUrl(e.id)}#${e.anchor}`;
 export const axisName=(axis:string)=>atlas.axes.find(x=>x.id===axis)?.name||'세력·종족';
-export const atlasNode=(id:string)=>atlas.nodes.find(x=>x.id===id)!;
+export const atlasNode=(id:string)=>atlas.nodes.find(x=>x.id===id)||explorer.entries.find(x=>x.id===id)!;
 // Longer names win. Only the first occurrence of each term and up to three terms
 // per paragraph are annotated; the original text remains in the DOM unchanged.
 const curatedTerms=atlas.nodes.flatMap(n=>n.terms.filter(t=>t.length>1&&!['생명','감정','선주','나부','파벌','헤르타','우주정거장','사냥단','티탄'].includes(t)).map(term=>({term,id:n.id})));

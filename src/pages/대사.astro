@@ -1,0 +1,10 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import DialogueBrowse from '../components/DialogueBrowse.astro';
+import {href} from '../lib/data';
+---
+<StarlightPage frontmatter={{title:'대사 원문 자료실',editUrl:false,tableOfContents:false}}>
+ <p class="page-deck">게임 한국어 대사 표에 수록된 화자의 발언과 선택지를 읽습니다.</p>
+ <nav class="shelf-nav" aria-label="대사 읽기"><a href={href('versions/index.html')}>임무에서 읽기</a><a href={href('우주.html')}>우주 콘텐츠에서 읽기</a></nav>
+ <DialogueBrowse/>
+</StarlightPage>

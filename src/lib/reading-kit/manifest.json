@@ -1,12 +1,12 @@
 {
-  "version": "1.2.0",
+  "version": "1.3.0",
   "files": {
     "graph.mjs": "dc0c9eaeea0f431d1f0d4f959044407496ec57c2c25af96617f4ee8e42631c09",
     "graph.test.mjs": "1334a91d1da97ac8501acf4708e412de2ca489ef43e1725a6b4f65c9219bbe3a",
     "integrity.mjs": "4866844ee37c39b2ed35c642a89dc50ff7bbee60baa254f16a2b69126e9d773f",
     "qa.mjs": "9316945172f6fe586be2b9ffbd64f725cd59ab8482604c6fd64340265ae0c168",
     "qa.test.mjs": "69065045ad6f5f8df4c1f1898b0540a20d665c721f6e5ff8ba45452d206e43f4",
-    "reading.css": "60729ceff79a4a3620a71897b57d5a85bf9f77d84cfa877ae410b3bd55411f18",
+    "reading.css": "cbb314e4da87884e7235fce956df45a5d9d6107aca49f9f0424bd7876fa723a4",
     "render.mjs": "317f2215bbee4ac853c2e9dba20a822e5f26a1282040e787741af7c217b543b0",
     "render.test.mjs": "9245fa08320ab6895f1d4e8a3d532fef53317b8c4a08872ebaaddb7c3702d9fe",
     "state.mjs": "4452dd30d6c59616d79dcaf134cc96e7cb9843c5def2f327febb9c0f5510fe78",

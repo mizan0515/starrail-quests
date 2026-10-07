@@ -1,0 +1,15 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import universe from '../../data/universe-catalog.json';
+import {href} from '../lib/data';
+import ItemLibrary from '../components/ItemLibrary.astro';
+---
+<StarlightPage frontmatter={{title:'우주 콘텐츠와 아이템 이야기',editUrl:false,tableOfContents:false}}>
+ <p class="page-deck">시뮬레이션 속 역사와 연구자의 대화, 사물에 남은 인물과 문명의 기록을 읽습니다.</p>
+ <nav class="shelf-nav" aria-label="이 자료실에서 읽기"><a href="#universe-modes">콘텐츠별 원문</a><a href="#item-library">아이템·기물</a><a href={href('대사.html')}>전체 대사 원문</a></nav>
+ <section id="universe-modes" class="rw-index">
+  <header class="rw-index-heading"><h2>콘텐츠별 원문과 대사</h2><p>연구의 설명에서 사건·인물·기물의 기록으로 이어집니다.</p></header>
+  <div class="rw-index-links">{universe.modes.map(m=><a class="rw-index-entry" href={href('우주/'+m.id+'.html')}><strong>{m.name}</strong><span>{m.intro}</span><small>{m.documents.length}개 핵심 원문{m.dialogueGroups.length>0?` · 별도 대사 ${m.dialogueGroups.reduce((n,g)=>n+g.rows.length,0)}개`:''}</small><span class="rw-index-arrow" aria-hidden="true">↗</span></a>)}</div>
+ </section>
+ <ItemLibrary/>
+</StarlightPage>

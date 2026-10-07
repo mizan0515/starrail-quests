@@ -1,0 +1,19 @@
+---
+import universe from '../../data/universe-catalog.json';
+import {href} from '../lib/data';
+---
+<section class="item-library" id="item-library" data-item-library>
+ <header><p class="eyebrow">사물에 남은 기록</p><h2>아이템·기물 이야기</h2><p class="muted">이름이나 배경에 담긴 구절로 찾아 개별 원문을 읽습니다.</p></header>
+ <div class="atlas-controls" data-pagefind-ignore><label class="atlas-search"><span>이름·배경 이야기</span><input type="search" data-item-query placeholder="예: 루버트, 그라모스, 기억"/></label><label class="item-category"><span>자료 종류</span><select data-item-category><option value="">모든 자료</option>{universe.itemCollections.map(c=><option value={c.id}>{c.name} · {c.count}</option>)}</select></label><button type="button" data-item-reset>초기화</button></div>
+ <p class="explorer-count" role="status" aria-live="polite" data-item-count>{universe.counts.itemRecords.toLocaleString()}개 원문</p>
+ <div class="item-results" data-pagefind-ignore>{universe.itemCollections.flatMap(c=>c.documents.map((d,i)=><a class="item-record" data-item-record data-category={c.id} data-search={[d.title,'searchText' in d?d.searchText:d.excerpt].join(' ')} href={href(d.url)} hidden={i>=24||c.id!==universe.itemCollections[0].id}><span class="item-record-kind">{c.name}</span><strong>{d.title}</strong><p>{d.excerpt}</p><span class="item-record-action">원문 읽기 <span aria-hidden="true">→</span></span></a>))}</div>
+ <p class="item-empty" data-item-empty hidden>이 구절이 포함된 원문이 없습니다. 검색어를 줄이거나 자료 종류를 바꿔 볼 수 있습니다.</p><button type="button" data-item-more>더 보기</button>
+</section>
+<script>
+for(const root of document.querySelectorAll<HTMLElement>('[data-item-library]')){
+ const input=root.querySelector<HTMLInputElement>('[data-item-query]')!,category=root.querySelector<HTMLSelectElement>('[data-item-category]')!,more=root.querySelector<HTMLButtonElement>('[data-item-more]')!,records=[...root.querySelectorAll<HTMLElement>('[data-item-record]')];
+ const params=new URLSearchParams(location.search);input.value=params.get('item')||'';category.value=params.get('collection')||'';let limit=24;
+ const update=(save=true)=>{const q=input.value.trim().toLocaleLowerCase('ko'),matches=records.filter(r=>(!category.value||r.dataset.category===category.value)&&(r.dataset.search||'').toLocaleLowerCase('ko').includes(q));records.forEach(r=>r.hidden=true);matches.slice(0,limit).forEach(r=>r.hidden=false);root.querySelector('[data-item-count]')!.textContent=`${matches.length.toLocaleString()}개 원문 · ${Math.min(limit,matches.length)}개 표시`;(root.querySelector('[data-item-empty]') as HTMLElement).hidden=!!matches.length;more.hidden=matches.length<=limit;more.textContent=`더 보기 · ${Math.min(24,matches.length-limit)}개`;if(save){const u=new URL(location.href);q?u.searchParams.set('item',input.value):u.searchParams.delete('item');category.value?u.searchParams.set('collection',category.value):u.searchParams.delete('collection');history.replaceState(null,'',u);}};
+ input.addEventListener('input',()=>{limit=24;update();});category.addEventListener('change',()=>{limit=24;update();});more.addEventListener('click',()=>{limit+=24;update();});root.querySelector('[data-item-reset]')!.addEventListener('click',()=>{input.value='';category.value='';limit=24;update();input.focus();});update(false);
+}
+</script>

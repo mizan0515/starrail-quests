@@ -6,6 +6,8 @@ import aliases from '../../data/aliases.json';
 import resolvedTopics from '../../data/topics.json';
 import editedTopics from '../../editorial/topics.json';
 import stats from '../../data/stats.json';
+import dialogueSupplements from '../../data/mission-dialogue-supplements.json';
+export const missionDialogue=dialogueSupplements.missions as Record<string,any[]>;
 const versionMap=versionEvidence.missions as Record<string,string>;
 // Keep the original resolved citations while consuming the editorial text directly.
 const topics=resolvedTopics.map(topic=>{
@@ -15,7 +17,7 @@ const topics=resolvedTopics.map(topic=>{
 });
 const partVersions=new Map<string,Set<string>>();
 for(const [id,parent] of Object.entries(aliases)){if(versionMap[id]){if(!partVersions.has(parent))partVersions.set(parent,new Set());partVersions.get(parent)!.add(versionMap[id]);}}
-export const catalog=originalCatalog.map(d=>{const observed=d.category==='퀘스트'?[...new Set([versionMap[d.id]||'unknown',...(partVersions.get(d.id)||[])])]:[];return {...d,versions:[...observed,...(observed.some(v=>/^\d+\.\d+$/.test(v)&&Number(v)<=2.6)?['early']:[])]};});
+export const catalog=originalCatalog.map(d=>{const observed=d.category==='퀘스트'?[...new Set([versionMap[d.id]||'unknown',...(partVersions.get(d.id)||[])])]:[];const addedDialogue=(missionDialogue[d.id]||[]).reduce((count,s)=>count+s.rows.length,0);return {...d,count:d.count+addedDialogue,addedDialogue,versions:[...observed,...(observed.some(v=>/^\d+\.\d+$/.test(v)&&Number(v)<=2.6)?['early']:[])]};});
 export {topics,stats,versionEvidence};
 export const versionLabel=(v:string)=>v==='early'?'1.0~2.6':v==='unknown'?'버전 미확인':v;
 export const versions=[...new Set(catalog.flatMap(d=>d.versions))].sort((a,b)=>a==='early'?1:b==='early'?-1:a==='unknown'?1:b==='unknown'?-1:b.localeCompare(a,undefined,{numeric:true}));

@@ -13,5 +13,11 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Source and link QA failed'}
   & python tools/verify_mission_versions.py
   if($LASTEXITCODE -ne 0){throw 'Mission version boundary QA failed'}
+  & python tools/verify_universe_catalog.py
+  if($LASTEXITCODE -ne 0){throw 'Universe source catalogue QA failed'}
+  & python tools/verify_universe_site.py
+  if($LASTEXITCODE -ne 0){throw 'Universe source rendering QA failed'}
+  & python tools/verify_mission_dialogue_supplements.py
+  if($LASTEXITCODE -ne 0){throw 'Mission dialogue source QA failed'}
   Write-Output 'RESULT: PASS'
 } finally {Pop-Location}
