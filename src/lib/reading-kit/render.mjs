@@ -1,3 +1,4 @@
+import {renderTopology,topologyFromRelations} from './topology.mjs';
 export const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function safeHref(value){const s=String(value);if(!/^(?:https?:\/\/|\/|#)/.test(s)||s.startsWith('//'))throw Error('Unsupported reading URL');return escapeHtml(s);}
 export function paragraphRuns(value){return String(value).split(/(\n\s*\n)/).reduce((out,text,i)=>{if(i%2)out[out.length-1].separator=text;else out.push({text,separator:''});return out;},[]);}
@@ -11,5 +12,7 @@ export function createReadingKit({inline=escapeHtml,evidence=()=>''}={}){
  const containment=c=>`<div class="rw-containment"><strong>${E(c.parent)}</strong><ul>${c.children.map(n=>`<li>${typeof n==='string'?E(n):link(n)}</li>`).join('')}</ul>${proof(c.evidence)}</div>`;
  const process=(items,{kind='steps',label='',returnLabel=''}={})=>{if(kind==='cycle'&&!returnLabel)throw Error('Cycle needs an evidenced return label');return `<section class="rw-process" data-kind="${E(kind)}">${label?`<h2>${E(label)}</h2>`:''}<ol>${items.map(item=>`<li><h3>${E(item.title)}</h3><p>${inline(item.text)}</p>${proof(item.evidence)}</li>`).join('')}</ol>${kind==='cycle'?`<p class="rw-return">↺ ${E(returnLabel)}</p>`:''}</section>`;};
  const source=blocks=>`<div class="rw-original">${blocks.map(block=>`<section id="${E(block.id)}">${block.title?`<h2>${E(block.title)}</h2>`:''}${paragraphRuns(block.text).map(p=>`<p>${E(p.text)}</p>`).join('')}</section>`).join('')}</div>`;
- return {section,relations,timeline,comparison,containment,process,source};
+ const topology=t=>renderTopology(t,{escape:E,href:safeHref,inline,evidence});
+ const network=(items,options)=>{const t=topologyFromRelations(items,options);return t?topology(t):'';};
+ return {section,relations,timeline,comparison,containment,process,source,topology,network};
 }

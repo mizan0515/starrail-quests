@@ -1,15 +1,17 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "files": {
-    "graph.mjs": "f3506a58911e8f00e878e700f3f26c1f705c4364ec326775ef75060fc4fc7174",
-    "graph.test.mjs": "1ebd9dbd013e5fe9b9eefd62d36f5b34a7a695e24e8e8e241421c226f5f5f668",
+    "graph.mjs": "65fe495f2d260fed91fa4610fe47dec6c127819f1268d09a803f81f2e695da14",
+    "graph.test.mjs": "1334a91d1da97ac8501acf4708e412de2ca489ef43e1725a6b4f65c9219bbe3a",
     "integrity.mjs": "4866844ee37c39b2ed35c642a89dc50ff7bbee60baa254f16a2b69126e9d773f",
-    "qa.mjs": "a50cf95581761bf405c81da1fc843d71c134b64aa3fda79d776a9a359b95c4c0",
+    "qa.mjs": "9316945172f6fe586be2b9ffbd64f725cd59ab8482604c6fd64340265ae0c168",
     "qa.test.mjs": "69065045ad6f5f8df4c1f1898b0540a20d665c721f6e5ff8ba45452d206e43f4",
-    "reading.css": "31ae70ef694208a0f1fed221bf9470d55a1a465cbefdd4e9dfe5783f3d416878",
-    "render.mjs": "5d1af1f95036a60a2275886ae88c1b7746988619c477dacd79a9b7a09ac29da9",
+    "reading.css": "9790fc29b904306b4b404dcfc0f9a18e51b88b4f941b0eb909e30e2bb641b4d9",
+    "render.mjs": "06cc13ad8dd1384fffce8f1da79238d1b252be7767e43dcb31fa2f297c693675",
     "render.test.mjs": "fb46a6bf9903d3d7becfc3cf66dd515786cbcfdb77f2e31e648f8911b1f970cd",
-    "state.mjs": "a5761a3e2ffb458197d0b159005888ed07847d88f0ade34de70a55ee01abeb67",
+    "state.mjs": "4452dd30d6c59616d79dcaf134cc96e7cb9843c5def2f327febb9c0f5510fe78",
+    "topology.mjs": "61d6fdc77609ecc4be4898f37f701819e55fa6906f9883d34e67586852d45ab6",
+    "topology.test.mjs": "3418c1fe9bc60381e2e8592ecf3ed0a1a5cc51e83672fb272c539ebb8677b96f",
     "write.mjs": "b243bac141f82faa81a86c27246c3d258b7409d5851bb68bf07fc7054e6be979"
   }
 }
