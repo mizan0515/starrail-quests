@@ -1,6 +1,23 @@
 ---
-import {href} from '../lib/data';
 import ContextPanel from './ContextPanel.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
-<footer class="library-footer" data-pagefind-ignore><span>비공식 한국어 자료집 · 게임 콘텐츠의 권리는 해당 권리자에게 있습니다.</span><a href={href('자료안내.html')}>수록 범위와 출처</a><span>Starlight로 제작</span></footer>
-<ContextPanel/>
+<footer class="quest-footer" data-pagefind-ignore="all">
+  <div class="quest-footer-brand">
+    <a class="quest-brand-home" href="https://ttaem.com/" aria-label="TTaem CVA 홈">
+      <img src={`${base}/brand/ttaem-cva-master.svg`} width="1621" height="793" alt="TTaem CVA" loading="lazy" decoding="async" data-pagefind-ignore="all" />
+    </a>
+    <div class="quest-brand-copy">
+      <p class="quest-brand-tagline">스타레일의 이야기 속, 당신이 찾는 한마디까지.</p>
+      <div class="quest-brand-links">
+        <a href="https://ttaem.com/">ttaem.com</a>
+        <a href="mailto:ttaem00@naver.com">Contact: ttaem00@naver.com</a>
+      </div>
+    </div>
+  </div>
+  <div class="quest-footer-notice">
+    <p>비공식 자료집 · 대사와 게임 콘텐츠의 권리는 HoYoverse 등 해당 권리자에게 있습니다.</p>
+    <a href={`${base}/자료안내.html`}>수록 범위와 자료 안내</a>
+  </div>
+</footer>
+<ContextPanel />
