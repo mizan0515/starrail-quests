@@ -272,3 +272,4 @@ body,h1,h2,h3,input,select,button,.lore-heading h1,.lore-statement,.lore-card h3
 .browse .catalog-results { display: block; }
 .version-grid a[aria-current="page"] { color: var(--ink); background: var(--selected); }
 .early-records-entry{display:flex;flex-direction:column;gap:.35rem;padding:1rem 0;border-bottom:1px solid var(--archive-border);font-family:var(--sl-font)}.early-records-entry span{font-size:.85rem;color:var(--sl-color-gray-2)}
+.archive-sidebar a.archive-nav-link[aria-current="page"]{color:var(--ink)!important;background:var(--selected)}
