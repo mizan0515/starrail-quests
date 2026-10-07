@@ -85,7 +85,36 @@ def main():
         document=json.loads((data/'documents'/(item['id']+'.json')).read_text('utf8'))
         if not any(s['anchor']==item['anchor'] and any(r['hash']==item['hash'] and item['quote'] in r['text'] for r in s['rows']) for s in document['sections']):errors.append((item['id'],item['quote'],'atlas source quote/hash mismatch'))
     if not (root/'atlas-data.json').exists():errors.append(('atlas','missing context endpoint'))
-    report={'status':'PASS' if not errors else 'FAIL','htmlPages':len(pages),'linksChecked':links,'documents':len(catalog),'verifiedEvidenceLinks':evidence,'verifiedAtlasQuotes':len(atlas_evidence),'originalParagraphsPreserved':original_rows,'errors':errors}
+    dialogue_rows=0;character_rows=0
+    extra=data/'dialogue-index.json'
+    if extra.exists():
+        idx=json.loads(extra.read_text('utf8'));seen=set()
+        for item in idx['pages']:
+            file=(root/'대사'/(item['id']+'.html')).resolve()
+            if file not in pages:errors.append((item['id'],'missing dialogue page'));continue
+            d=json.loads((data/'dialogues'/(item['id']+'.json')).read_text('utf8'))
+            if 'verified-sources' not in pages[file].ids:errors.append((item['id'],'missing dialogue bottom evidence'))
+            for i,row in enumerate(d['section']['rows'],1):
+                if row['talk_id'] in seen:errors.append((row['talk_id'],'duplicate complete dialogue'))
+                seen.add(row['talk_id']);anchor='dialogue-row-'+str(i)
+                if pages[file].original.get(anchor)!=row['text']:errors.append((item['id'],anchor,'dialogue rendered text differs'))
+                if 'talk-'+str(row['talk_id']) not in pages[file].ids:errors.append((item['id'],row['talk_id'],'missing talk anchor'))
+                dialogue_rows+=1
+        if dialogue_rows!=idx['evidence']['displayed']:errors.append(('complete dialogue coverage mismatch',dialogue_rows))
+        ex=json.loads((data/'explorer.json').read_text('utf8'))
+        for e in ex['entries']:
+            if e['axis']=='concept':continue
+            file=(root/'대상'/(e['id']+'.html')).resolve()
+            if file not in pages or 'local-source' not in pages[file].ids:errors.append((e['id'],'missing entity or local bottom evidence'));continue
+            if e.get('sourceRow') and str(e['sourceRow']['WorldName']['Hash']) not in file.read_text('utf8'):errors.append((e['id'],'world name hash lost integer precision'))
+            for story in e['stories']:
+                if pages[file].original.get('story-text-'+str(story['story_id'])+'-row-1')!=story['text']:errors.append((e['id'],story['story_id'],'character story differs'))
+                character_rows+=1
+            for ev in e['evidence']+e.get('mentions',[])[:24]:
+                d=json.loads((data/'documents'/(ev['id']+'.json')).read_text('utf8'))
+                if not any(s['anchor']==ev['anchor'] and any(r['hash']==ev['hash'] and ev['quote'] in r['text'] for r in s['rows']) for s in d['sections']):errors.append((e['id'],ev['id'],'entity evidence mismatch'))
+        if not (root/'관점/aeon.html').exists():errors.append(('missing separate Aeon tab'))
+    report={'status':'PASS' if not errors else 'FAIL','htmlPages':len(pages),'linksChecked':links,'documents':len(catalog),'verifiedEvidenceLinks':evidence,'verifiedAtlasQuotes':len(atlas_evidence),'originalParagraphsPreserved':original_rows,'completeDialogueRowsPreserved':dialogue_rows,'completeCharacterStoriesPreserved':character_rows,'errors':errors}
     if a.report:a.report.parent.mkdir(parents=True,exist_ok=True);a.report.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf8')
     print(json.dumps({**report,'errors':errors[:20],'errorCount':len(errors)},ensure_ascii=False));raise SystemExit(bool(errors))
 if __name__=='__main__':main()

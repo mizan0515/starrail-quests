@@ -1,0 +1,29 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import Scene from '../../components/Scene.astro';
+import SourceRegister from '../../components/SourceRegister.astro';
+import {dataset,entityUrl,axes} from '../../lib/explorer';
+import {catalog,doc,docUrl,href} from '../../lib/data';
+import {atlas,atlasUrl} from '../../lib/atlas';
+export function getStaticPaths(){return dataset.entries.filter(e=>e.axis!=='concept').map(e=>({params:{id:e.id},props:{e}}));}
+const {e}=Astro.props;const label=axes.find(a=>a.id===e.axis)!.name;
+const regionDocs=e.axis==='region'?catalog.filter(d=>e.documents.includes(d.id)):[];
+const regionConcepts=e.axis==='region'?dataset.entries.filter(x=>e.concepts.includes(x.id)):[];
+const categories=[...new Set(regionDocs.map(d=>d.kind||d.category))];
+const normalize=(x:string)=>x.replace(/[·•\s「」]/g,'');
+const curated=atlas.nodes.filter(n=>normalize(n.name)===normalize(e.name)||e.axis==='region'&&({'region-201':'belobog','region-301':'xianzhou','region-401':'penacony','region-501':'amphoreus','region-101':'herta'}[e.id]===n.id));
+const mentions=(e.mentions||[]).slice(0,24);
+const sourceDocs=e.axis==='aeon'?e.documents.map(id=>doc(id)):[];
+---
+<StarlightPage frontmatter={{title:e.name,editUrl:false,tableOfContents:false}}>
+ <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('설정집.html')}>설정집</a><span>/</span><a href={href('관점/'+e.axis+'.html')}>{label}</a><span>/</span><span>{e.name}</span></nav>
+ <p class="page-deck">{e.axis==='region'?'이곳의 임무·서적·설정을 함께 읽습니다.':e.axis==='person'?'인물의 과거와 행적을 원문 이야기와 발언에서 읽습니다.':'운명의 길과 에이언즈를 설명하는 기록을 대조합니다.'}</p>
+ {e.description&&<blockquote class="entity-definition">{e.description}</blockquote>}
+ {curated.length>0&&<section class="related-panel"><h2>맥락을 연결한 해설</h2>{curated.map(n=><a href={atlasUrl(n.id)} data-reading-link><strong>{n.question}</strong><span>{n.intro}</span><span>관계·사건·관점 비교 →</span></a>)}</section>}
+ {e.axis==='region'&&<><nav class="shelf-nav" aria-label="지역 자료 종류">{categories.map((cat,i)=><a href={'#region-kind-'+i}>{cat} · {regionDocs.filter(d=>(d.kind||d.category)===cat).length}</a>)}<a href="#regional-concepts">지역 설정 · {regionConcepts.length}</a></nav>{categories.map((cat,i)=><section id={'region-kind-'+i}><h2>{cat}</h2><ul class="entity-document-list">{regionDocs.filter(d=>(d.kind||d.category)===cat).map(d=><li><a href={docUrl(d.id)} data-reading-link><strong>{d.title}</strong><span>{d.chapter||d.category} · {d.count}개 원문 항목</span></a></li>)}</ul></section>)}<section id="regional-concepts"><h2>이 지역을 설명하는 개념</h2><div class="entity-grid">{regionConcepts.map(x=><a class="entity-card" href={entityUrl(x)} data-reading-link><h3>{x.name}</h3><p>{x.excerpt}</p><span>지역별 LoadingDesc 원문 ↗</span></a>)}</div></section></>}
+ {e.axis==='person'&&<section><h2>인물 이야기 전체</h2><p class="muted">StoryAtlas의 이야기 번호 순서입니다. 실제 사건 연대를 뜻하지 않습니다.</p>{e.stories.map((story,i)=><section id={'story-'+story.story_id}><Scene section={{anchor:'story-text-'+story.story_id,title:story.label,source:'StoryAtlas',mapping:'LOCAL_TABLE',rows:[{...story,label:'본문'}]}}/>{e.sourceDocument&&<a href={docUrl(e.sourceDocument)+'#section-'+(i+1)} data-reading-link>이 이야기의 원문 출처 ↗</a>}</section>)}</section>}
+ {e.axis==='aeon'&&sourceDocs.map(d=><section><h2>{d.category} · {d.title}</h2>{d.sections.map(s=><Scene section={{...s,anchor:d.id+'-'+s.anchor}}/>)}<a href={docUrl(d.id)} data-reading-link>기록 전체와 원문 출처 ↗</a></section>)}
+ {mentions.length>0&&<section><h2>다른 기록 속 이름과 발언</h2><p class="muted">실제 원문에서 이름이 등장하는 위치입니다. 같은 이름의 등장을 인과·소속·친밀 관계로 단정하지 않습니다. 전체 본문 검색으로 더 찾을 수 있습니다.</p><div class="mention-grid">{mentions.map(m=><a href={docUrl(m.id)+'#'+m.anchor} data-reading-link><span class="eyebrow">{m.category}</span><h3>{m.title}</h3><blockquote>{m.quote}</blockquote><span>이 문장의 원문 ↗</span></a>)}</div></section>}
+ {(e.evidence.length||mentions.length)>0&&<SourceRegister entries={[...e.evidence,...mentions]}/>}
+ <section class="local-proof" id="local-source"><h2>직접 파싱한 파일 근거</h2><p>{e.source}의 로컬 표와 한국어 TextMap을 다시 읽었습니다. 본문·화자·이름은 로컬 문자열에서 가져왔으며, 확인되지 않은 이름과 빈 본문을 창작하지 않았습니다.</p>{e.axis==='region'&&<p>지역별 자료는 WorldDataConfig의 세계 이름, MainMission·BookSeries의 세계 지정, LoadingDesc의 지역 그룹으로 연결했습니다.</p>}<details class="source-details"><summary>표 엔트리·파일 해시와 원문 식별자</summary>{Object.entries(dataset.evidence.tables).map(([name,s])=><p>{name} · {s.file} · 엔트리 {s.entry_hash}</p>)}{dataset.evidence.sources.map(s=><p>{s.file} · SHA-256 {s.sha256}</p>)}{e.stories.map(s=><p>StoryAtlas · 이야기 {s.story_id} · 한국어 문자열 {s.hash} · 행 바이트 {s.offset}–{s.end}</p>)}{e.sourceRow&&<p>WorldDataConfig · 이름 문자열 {e.sourceRow.WorldName.Hash} · 행 바이트 {e.sourceRow._offset}–{e.sourceRow._end}</p>}</details></section>
+</StarlightPage>

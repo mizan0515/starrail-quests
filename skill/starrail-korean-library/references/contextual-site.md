@@ -77,6 +77,15 @@ GitHub 연결 도구에 저장소 생성·Pages 관리 기능이 없으면 사�
 
 ## 가독성과 버전 탐색
 
+### 전체 수록과 대사 재생성
+
+1. `tools/export_dialogue_browser.py --game-data <StarRail_Data> --skill <skill> --site <site> --cache <snapshot cache>`는 로컬 TalkSentenceConfig와 한국어 TextMap을 다시 디코딩한다. 고정한 버전별 표의 ID·해시 메타데이터만 사용하고 본문은 로컬에서 읽는다. 결과는 `data/dialogue-index.json`과 `data/dialogues`다. 숫자 ID 패턴으로 임무나 버전을 추측하지 않는다. 표 순서는 실행 순서가 아니다.
+2. `tools/build_explorer.py --game-data <StarRail_Data> --skill <skill> --site <site> --structure <structure>`는 WorldDataConfig, StoryAtlas, LoadingDesc, RogueAeonDisplay/StoryConfig를 재파싱한다. 전체 지역·인물 기록·배경 설명·에이언즈를 `data/explorer.json`으로 만든다. 이름 미확인 기록도 제외하지 않으며 확인된 수록 수는 실행 결과에서 읽는다. 짧은 이름의 일반 단어 내부 일치를 제외한다.
+3. `tools/verify_complete_data.py --site <site>`로 전수 범위를 검증한다. `--local-csv <전체대사.csv> --snapshot-cache <cache>`를 추가하면 모든 대사의 본문·화자·해시·바이트 범위 및 최초 등장 근거를 독립 대조한다. 렌더링 후 `tools/verify_site.py`로 모든 대사와 인물 이야기의 원문 보존·출처·링크를 검사한다.
+4. 추가 데이터는 `tools/pack_extra.py --site <site> --output <빈 bundle 폴더>`로 묶고 원래 dataset과 함께 `tools/restore_dataset.py --bundle dataset-extra`로 복원한다. 원본 데이터 ZIP을 덮어쓰지 않는다. 게시 전 두 묶음의 복원과 검증을 확인한다.
+
+기본 목록 전체와 해설 목록을 구분한다. 지역 상세는 표의 설명·해당 지역 자료·LoadingDesc 지역 그룹, 인물 상세는 StoryAtlas 전체 이야기와 실제 이름 언급, 에이언즈는 기록 및 지역의 적용 사례에서 시작한다. 이름 언급 목록은 사실 관계도나 인과 분석을 대신하지 않는다. 확인되지 않은 캐릭터 이름, 한국어 누락, 미연결 컷신·임무는 빈틈으로 명시한다. 모든 읽기 화면의 하단에 실제 파일 해시와 원문 근거를 넣는다.
+
 - Pretendard Variable v1.3.9와 고정된 CDN CSS, 시스템 글꼴 fallback을 사용한다. 글꼴 로딩 전에도 본문을 표시한다. 18px 기본 크기와 높은 대비를 유지하고 선택된 사이드바 항목은 테마별 반전색을 직접 확인한다.
 - 설정 카드의 연결 흐름과 해설의 장별 이동은 `editorial/reading-guides.json`에서 편집한다. 이 흐름은 편집자가 읽는 순서이며 확정된 역사 연표가 아니다.
 - 버전은 `editorial/mission-versions.json`의 고정 커밋·해시와 공개 MainMission 표의 최초 등장으로 분류한다. `python -X utf8 tools/map_versions.py --cache <snapshot cache>`로 재현·검증한다. 대사 본문을 공개 TextMap에서 받지 않는다. 최초 2.6 스냅샷에 이미 있는 임무는 세부 버전 미확인으로 둔다. ID의 숫자 패턴으로 버전을 추측하지 않는다.

@@ -18,7 +18,9 @@ jobs:
         with:
           node-version: '24'
       - name: Restore verified reading data
-        run: python tools/restore_dataset.py
+        run: |
+          python tools/restore_dataset.py
+          python tools/restore_dataset.py --bundle dataset-extra
       - name: Install locked official dependencies
         run: npx --yes pnpm@11.19.0 install --ignore-scripts --frozen-lockfile
       - name: Build Starlight and Korean full text search
@@ -27,7 +29,9 @@ jobs:
           ASTRO_TELEMETRY_DISABLED: '1'
         run: node node_modules/astro/bin/astro.mjs build
       - name: Check links and source references
-        run: python tools/verify_site.py --root dist --base /starrail-quests
+        run: |
+          python tools/verify_complete_data.py
+          python tools/verify_site.py --root dist --base /starrail-quests
       - name: Publish generated files to gh-pages
         run: bash tools/publish_branch.sh
       - name: Request a branch Pages build

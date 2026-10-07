@@ -1,2 +1,3 @@
 import {atlas,atlasUrl,evidenceUrl} from '../lib/atlas';
-export function GET(){return new Response(JSON.stringify(Object.fromEntries(atlas.nodes.map(n=>[n.id,{name:n.name,question:n.question,intro:n.intro,url:atlasUrl(n.id),evidence:n.evidence.map(e=>({...e,url:evidenceUrl(e)}))}]))),{headers:{'Content-Type':'application/json; charset=utf-8'}});}
+import {dataset,axes} from '../lib/explorer';
+export function GET(){const entries=dataset.entries.map(e=>[e.id,{name:e.name,question:axes.find(a=>a.id===e.axis)?.question,intro:e.excerpt,url:atlasUrl(e.id),evidence:e.evidence.map(x=>({...x,url:evidenceUrl(x)}))}]);const curated=atlas.nodes.map(n=>[n.id,{name:n.name,question:n.question,intro:n.intro,url:atlasUrl(n.id),evidence:n.evidence.map(e=>({...e,url:evidenceUrl(e)}))}]);return new Response(JSON.stringify(Object.fromEntries([...entries,...curated])),{headers:{'Content-Type':'application/json; charset=utf-8'}});}

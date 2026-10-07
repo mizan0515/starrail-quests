@@ -1,0 +1,22 @@
+---
+import {dataset,axes,entityUrl} from '../lib/explorer';
+const axis=Astro.props.axis||'region';
+---
+<section class="full-explorer" data-explorer data-default-axis={axis} id="explore">
+ <p class="eyebrow">한국어 원문 전체에서 찾아보기</p><h2>어떤 이야기부터 읽을까요?</h2>
+ <nav class="explorer-tabs" aria-label="설정 전체 탐색">{axes.map(a=><button type="button" data-full-axis={a.id} aria-pressed={a.id===axis?'true':'false'}>{a.name}<span>{a.count}</span></button>)}</nav>
+ <div class="explorer-controls"><label><span class="sr-only">인물·지역·개념 이름 찾기</span><input type="search" data-entity-query placeholder="이름이나 원문 내용으로 찾기"/></label><label><span class="sr-only">설정 묶음</span><select data-entity-group><option value="">모든 묶음</option></select></label><button type="button" data-entity-reset>초기화</button></div>
+ <p class="explorer-count" role="status" aria-live="polite"/>
+ <div class="entity-grid">{dataset.entries.map((e,i)=><a class="entity-card" data-entity data-axis={e.axis} data-group={e.group} data-search={e.name+' '+e.excerpt} href={entityUrl(e)} hidden={e.axis!==axis||i>=24}><span class="eyebrow">{e.group}</span><h3>{e.name}</h3><p>{e.excerpt}</p><span class="entity-action">{e.axis==='region'?'임무·서적·지역 설정':e.axis==='person'?`${e.stories.length}개 인물 이야기`:e.axis==='aeon'?`${e.documents.length}개 기록 묶음`:'원문 설정 읽기'} <span aria-hidden="true">↗</span></span></a>)}</div>
+ <p class="entity-empty" hidden>찾은 항목이 없습니다. 검색어를 줄이거나 묶음을 초기화해 보세요.</p><button type="button" class="entity-more" data-entity-more hidden>더 보기</button>
+ <p class="source-caption">로컬 WorldDataConfig·StoryAtlas·LoadingDesc·RogueAeonStoryConfig에서 읽었습니다. 인물 {dataset.counts.person}개 중 {dataset.evidence.unresolvedCharacters}개는 이름 연결이 확인되지 않은 기록으로 구분합니다. 원문 인용은 각 문서 하단에서 확인할 수 있습니다.</p>
+</section>
+<script>
+ for(const root of document.querySelectorAll<HTMLElement>('[data-explorer]')){
+  const cards=[...root.querySelectorAll<HTMLElement>('[data-entity]')],q=root.querySelector<HTMLInputElement>('[data-entity-query]')!,group=root.querySelector<HTMLSelectElement>('[data-entity-group]')!,more=root.querySelector<HTMLButtonElement>('[data-entity-more]')!,params=new URLSearchParams(location.search);
+  let axis=params.get('view')||root.dataset.defaultAxis||'region',limit=24;if(!['region','person','concept','aeon'].includes(axis))axis='region';q.value=params.get('find')||'';
+  const groups=()=>{group.replaceChildren(new Option('모든 묶음',''));[...new Set(cards.filter(c=>c.dataset.axis===axis).map(c=>c.dataset.group!))].forEach(g=>group.add(new Option(g,g)));};groups();if(params.get('group'))group.value=params.get('group')!;
+  const render=(save=true)=>{const query=q.value.trim().toLocaleLowerCase('ko');const result=cards.filter(c=>c.dataset.axis===axis&&(!group.value||c.dataset.group===group.value)&&(c.dataset.search||'').toLocaleLowerCase('ko').includes(query));cards.forEach(c=>c.hidden=true);result.slice(0,limit).forEach(c=>c.hidden=false);root.querySelector('[role=status]')!.textContent=`${result.length}개 항목 · ${Math.min(limit,result.length)}개 표시`;(root.querySelector('.entity-empty') as HTMLElement).hidden=!!result.length;more.hidden=result.length<=limit;more.textContent=`더 보기 · ${Math.min(24,result.length-limit)}개`;root.querySelectorAll<HTMLElement>('[data-full-axis]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.fullAxis===axis)));if(save){const u=new URL(location.href);u.searchParams.set('view',axis);q.value?u.searchParams.set('find',q.value):u.searchParams.delete('find');group.value?u.searchParams.set('group',group.value):u.searchParams.delete('group');history.replaceState(null,'',u);}};
+  root.querySelectorAll<HTMLElement>('[data-full-axis]').forEach(b=>b.addEventListener('click',()=>{axis=b.dataset.fullAxis!;limit=24;q.value='';groups();render();}));q.addEventListener('input',()=>{limit=24;render();});group.addEventListener('change',()=>{limit=24;render();});more.addEventListener('click',()=>{limit+=24;render();});root.querySelector('[data-entity-reset]')!.addEventListener('click',()=>{q.value='';group.value='';limit=24;render();});render(false);
+ }
+</script>

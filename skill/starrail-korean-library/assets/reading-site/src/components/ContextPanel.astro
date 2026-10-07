@@ -15,7 +15,7 @@ import {href} from '../lib/data';
  let cached:Promise<Record<string,any>>|undefined;
  let trigger:HTMLElement|null=null;
  const base=new URL(dialog.dataset.endpoint!,location.href).pathname.replace(/\/atlas-data\.json$/,'');
- const safeReturn=(value:string|null)=>{if(!value)return null;try{const url=new URL(value,location.origin);const decoded=decodeURI(url.pathname);return url.origin===location.origin&&decoded.startsWith(base+'/문서/')&&decoded.endsWith('.html')?url.pathname+url.hash:null;}catch{return null;}};
+ const safeReturn=(value:string|null)=>{if(!value)return null;try{const url=new URL(value,location.origin);const decoded=decodeURI(url.pathname);url.searchParams.delete('from');return url.origin===location.origin&&['문서','대사','대상'].some(folder=>decoded.startsWith(base+'/'+folder+'/'))&&decoded.endsWith('.html')?url.pathname+url.search+url.hash:null;}catch{return null;}};
  const inherited=safeReturn(new URLSearchParams(location.search).get('from'));
  const returnNav=document.querySelector<HTMLElement>('[data-reading-return]')!;
  // Starlight's main and right sidebar have separate stacking contexts. Keep
@@ -23,7 +23,7 @@ import {href} from '../lib/data';
  // intercept its pointer events.
  if(inherited){document.body.append(returnNav);returnNav.hidden=false;returnNav.querySelector('a')!.setAttribute('href',inherited);}
  const withReturn=(href:string,from:string|null)=>{const url=new URL(href,location.href);if(from)url.searchParams.set('from',from);return url.href;};
- const readingOrigin=inherited||safeReturn(location.pathname+(location.hash||'#original'));
+ const readingOrigin=inherited||safeReturn(location.pathname+location.search+(location.hash||'#original'));
  if(readingOrigin)document.querySelectorAll<HTMLAnchorElement>('a[data-reading-link]').forEach(a=>a.href=withReturn(a.href,readingOrigin));
  const close=()=>{dialog.close();trigger?.focus({preventScroll:true});};
  dialog.querySelector('.context-close')!.addEventListener('click',close);
@@ -35,7 +35,7 @@ import {href} from '../lib/data';
   if(!target.dataset.contextKey){if(readingOrigin)target.href=withReturn(target.href,readingOrigin);return;}
   event.preventDefault();trigger=target;
   const row=target.closest('.original-body') as HTMLElement|null;
-  const origin=inherited||safeReturn(location.pathname+'#'+(target.id||row?.id||target.closest('.source-section')?.id||'original'));
+  const origin=inherited||safeReturn(location.pathname+location.search+'#'+(target.id||row?.id||target.closest('.source-section')?.id||'original'));
   const explore=dialog.querySelector<HTMLAnchorElement>('.context-explore')!;explore.href=withReturn(target.href,origin);
   dialog.querySelector('#context-title')!.textContent=target.textContent;
   dialog.querySelector('.context-question')!.textContent='배경을 불러오는 중…';dialog.querySelector('.context-definition')!.textContent='';dialog.querySelector('.context-proof')!.replaceChildren();
@@ -51,3 +51,4 @@ import {href} from '../lib/data';
   }catch{if(trigger===target){dialog.querySelector('.context-question')!.textContent='배경을 더 깊이 읽기';(dialog.querySelector('.context-error') as HTMLElement).hidden=false;}}
  });
 </script>
+
