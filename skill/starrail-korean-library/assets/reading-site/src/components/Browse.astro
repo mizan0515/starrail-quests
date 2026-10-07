@@ -1,15 +1,17 @@
 ---
-import {catalog,docUrl,href,kinds} from '../lib/data';
-const {mode='quests',kind='개척 임무'}=Astro.props;
+import {catalog,docUrl,href,kinds,versions,versionLabel} from '../lib/data';
+const {mode='quests',kind='개척 임무',version=''}=Astro.props;
 const isQuest=mode==='quests';
-const initial=catalog.filter(d=>isQuest?d.category==='퀘스트'&&d.kind===kind:d.category==='서적·문서').sort((a,b)=>Number(a.world==='분류 미확인')-Number(b.world==='분류 미확인')||Number(a.worldRank)-Number(b.worldRank)||Number(a.chapterRank)-Number(b.chapterRank)||a.rank-b.rank||a.title.localeCompare(b.title,'ko')).slice(0,60);
+const initial=catalog.filter(d=>isQuest?d.category==='퀘스트'&&(!kind||d.kind===kind)&&(!version||d.versions.includes(version)):d.category==='서적·문서').sort((a,b)=>Number(a.world==='분류 미확인')-Number(b.world==='분류 미확인')||Number(a.worldRank)-Number(b.worldRank)||Number(a.chapterRank)-Number(b.chapterRank)||a.rank-b.rank||a.title.localeCompare(b.title,'ko')).slice(0,60);
 const worlds=[...new Set(catalog.filter(d=>isQuest?d.category==='퀘스트':d.category!=='퀘스트').map(d=>d.world))].filter(w=>w&&w!=='분류 미확인');
 const categories=['서적·문서','캐릭터 이야기','에이언즈·운명의 길','세계관·용어','광추 이야기','유물 이야기','아이템 설정','시뮬레이션 우주 설정','메시지','기타 장면'];
 ---
-<section class="browse" data-mode={mode} data-kind={kind} data-catalog={href('catalog.json')} data-base={href('문서/')} data-pagefind-ignore>
-  {isQuest&&<nav class="type-tabs" aria-label="임무 종류">{Object.entries(kinds).map(([key,name])=><a aria-current={kind===name?'page':undefined} href={href(`quests/${key}.html`)}>{name}</a>)}</nav>}
+<section class="browse" data-mode={mode} data-kind={kind} data-version={version} data-versions={href("versions-data.json")} data-catalog={href('catalog.json')} data-base={href('문서/')} data-pagefind-ignore>
+  {isQuest&&kind&&<nav class="type-tabs" aria-label="임무 종류">{Object.entries(kinds).map(([key,name])=><a aria-current={kind===name?'page':undefined} href={href(`quests/${key}.html`)}>{name}</a>)}</nav>}
   <form class="browse-filters" role="search" aria-label={isQuest?'임무 목록 필터':'원문 자료 필터'}>
     <label class="query-label">{isQuest?'다시 읽을 이야기':'원문 자료 찾기'}<input type="search" name="q" placeholder={isQuest?'임무 제목으로 찾기':'서적·인물·설정 제목으로 찾기'} autocomplete="off"/></label>
+    {isQuest&&<label>추가 버전<select name="version"><option value="">모든 버전</option>{versions.map(v=><option value={v} selected={v===version}>{versionLabel(v)}</option>)}</select></label>}
+    {isQuest&&!kind&&<label>임무 종류<select name="kind"><option value="">모든 임무</option>{Object.values(kinds).map(k=><option>{k}</option>)}</select></label>}
     <label>세계<select name="world"><option value="">모든 세계</option>{worlds.map(w=><option>{w}</option>)}<option value="분류 미확인">세계 미분류</option></select></label>
     {!isQuest&&<label>자료 종류<select name="category">{categories.map(c=><option>{c}</option>)}</select></label>}
     <button class="reset-button" type="reset">초기화</button>
@@ -27,18 +29,19 @@ const categories=['서적·문서','캐릭터 이야기','에이언즈·운명�
     let data:any[]=[],limit=60;
     const el=(tag:string,cls:string,text:string)=>{const n=document.createElement(tag);n.className=cls;n.textContent=text;return n;};
     const render=()=>{
-      const fields=new FormData(form),q=String(fields.get('q')||'').trim().toLocaleLowerCase(),world=fields.get('world'),category=fields.get('category'),quest=root.dataset.mode==='quests';
-      const result=data.filter(d=>(quest?d.category==='퀘스트'&&d.kind===root.dataset.kind:d.category===category)&&(!world||d.world===world)&&(!q||d.title.toLocaleLowerCase().includes(q))).sort((a,b)=>quest?Number(a.world==='분류 미확인')-Number(b.world==='분류 미확인')||a.worldRank-b.worldRank||a.world.localeCompare(b.world,'ko')||a.chapterRank-b.chapterRank||a.chapter.localeCompare(b.chapter,'ko')||a.rank-b.rank:a.title.localeCompare(b.title,'ko'));
+      const fields=new FormData(form),q=String(fields.get('q')||'').trim().toLocaleLowerCase(),world=fields.get('world'),category=fields.get('category'),version=fields.get('version'),selectedKind=root.dataset.kind||fields.get('kind'),quest=root.dataset.mode==='quests';
+      const kindOrder=['개척 임무','개척 후문','동행 임무','모험 임무','일일 임무'];
+      const result=data.filter(d=>(quest?d.category==='퀘스트'&&(!selectedKind||d.kind===selectedKind)&&(!version||d.versions?.includes(version)):d.category===category)&&(!world||d.world===world)&&(!q||d.title.toLocaleLowerCase().includes(q))).sort((a,b)=>quest?(!selectedKind?kindOrder.indexOf(a.kind)-kindOrder.indexOf(b.kind):0)||Number(a.world==='분류 미확인')-Number(b.world==='분류 미확인')||a.worldRank-b.worldRank||a.world.localeCompare(b.world,'ko')||a.chapterRank-b.chapterRank||a.chapter.localeCompare(b.chapter,'ko')||a.rank-b.rank:a.title.localeCompare(b.title,'ko'));
       container.replaceChildren();count.textContent=`${result.length.toLocaleString()}개 ${quest?'임무 기록':'자료'}`;
       if(!result.length){container.append(el('p','empty-state','찾는 자료가 없습니다. 검색어를 줄이거나 세계 필터를 초기화해 보세요.'));}
       const groups=new Map<string,any[]>();
-      for(const d of result.slice(0,limit)){const group=quest?(d.world+' / '+d.chapter):(category==='유물 이야기'?d.collection:(d.world==='분류 미확인'?'세계 미분류':d.world));if(!groups.has(group))groups.set(group,[]);groups.get(group)!.push(d);}
+      for(const d of result.slice(0,limit)){const group=quest?((!selectedKind?d.kind+' / ':'')+d.world+' / '+d.chapter):(category==='유물 이야기'?d.collection:(d.world==='분류 미확인'?'세계 미분류':d.world));if(!groups.has(group))groups.set(group,[]);groups.get(group)!.push(d);}
       for(const [title,rows] of groups){
         const section=el('section','catalog-group','');section.append(el('h2','group-heading',title));const list=el('ul','catalog-list','');
         const byTitle=new Map<string,any[]>();for(const d of rows){const key=quest?d.title:d.id;if(!byTitle.has(key))byTitle.set(key,[]);byTitle.get(key)!.push(d);}
         for(const variants of byTitle.values()){
           const li=document.createElement('li');
-          const row=(d:any,label:string)=>{const a=document.createElement('a');a.className='catalog-row';a.href=root.dataset.base+d.id+'.html';a.append(el('span','row-type',quest?d.kind:d.category),el('span','row-title',label),el('span','row-detail',d.count?`${d.count.toLocaleString()}개 원문 항목`:'임무 개요'));return a;};
+          const row=(d:any,label:string)=>{const a=document.createElement('a');a.className='catalog-row';a.href=root.dataset.base+d.id+'.html';a.append(el('span','row-type',quest?d.kind:d.category),el('span','row-title',label),el('span','row-detail',[...(quest?(d.versions||[]).map((v:string)=>v==='early'?'2.6 및 이전':v==='unknown'?'버전 미확인':v):[]),d.count?`${d.count.toLocaleString()}개 원문 항목`:'임무 개요'].join(' · ')));return a;};
           li.append(row(variants[0],variants[0].title));
           if(variants.length>1){const details=el('details','catalog-variants','');details.append(el('summary','',`같은 제목의 별도 기록 ${variants.length-1}개`));variants.slice(1).forEach((d,i)=>details.append(row(d,`추가 기록 ${i+1} · ${d.title}`)));li.append(details);}
           list.append(li);
@@ -48,6 +51,6 @@ const categories=['서적·문서','캐릭터 이야기','에이언즈·운명�
       more.hidden=result.length<=limit;more.textContent=`더 보기 · ${Math.min(60,result.length-limit)}개`;
     };
     form.addEventListener('submit',e=>e.preventDefault());form.addEventListener('input',()=>{limit=60;render();});form.addEventListener('reset',()=>queueMicrotask(()=>{limit=60;render();}));more.addEventListener('click',()=>{limit+=60;render();});
-    fetch(root.dataset.catalog!).then(r=>{if(!r.ok)throw new Error();return r.json();}).then(x=>{data=x;render();}).catch(()=>{count.textContent='목록을 불러오지 못했습니다. 새로고침해 다시 시도하세요.';});
+    Promise.all([fetch(root.dataset.catalog!).then(r=>{if(!r.ok)throw new Error();return r.json();}),root.dataset.mode==='quests'?fetch(root.dataset.versions!).then(r=>{if(!r.ok)throw new Error();return r.json();}):Promise.resolve({})]).then(([x,v])=>{data=x.map((d:any)=>({...d,versions:v[d.id]||[]}));render();}).catch(()=>{count.textContent='목록을 불러오지 못했습니다. 새로고침해 다시 시도하세요.';});
   }
 </script>

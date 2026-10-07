@@ -7,6 +7,8 @@ import aliases from '../../../data/aliases.json';
 export function getStaticPaths(){return [...catalog.map(d=>({params:{id:d.id}})),...Object.keys(aliases).map(id=>({params:{id}}))];}
 if(aliases[Astro.params.id!])return Astro.redirect(encodeURI(docUrl(aliases[Astro.params.id!])),301);
 const d=doc(Astro.params.id!),quest=d.category==='퀘스트';
+const stageGroups:any[]=[];
+for(const step of d.stages){const last=stageGroups.at(-1);if(last?.title===step.title)last.steps.push(step);else stageGroups.push({...step,steps:[step]});}
 const additional=d.sections.filter(s=>!d.stages.some(x=>x.id===s.stage));
 const headings=[...(d.topics.length?[{depth:2,slug:'connections',text:'与 관련 설정 읽기'.replace('与 ','')}]:[]),...(d.stages.length?[{depth:2,slug:'progress',text:'임무의 흐름'}]:[]),{depth:2,slug:'original',text:quest?'대화와 선택':'원문 읽기'}];
 const peers=d.collection?catalog.filter(x=>x.collection===d.collection&&x.id!==d.id):[];
@@ -24,12 +26,15 @@ const rows=d.sections.flatMap(s=>s.rows),mostlyChoices=quest&&rows.length&&rows.
   {d.stages.length>0&&<>
     <AnchorHeading level={2} id="progress">임무의 흐름</AnchorHeading>
     <p class="muted">임무 설정의 선행 조건으로 정리했습니다. 선택·동시 경로는 한 회차의 직선 순서와 다를 수 있습니다.</p>
-    <ol class="progress-outline" data-pagefind-ignore>{d.stages.map((s,i)=><li><a href={'#stage-'+s.id}>{s.title}</a>{s.optional&&<span class="optional-badge">선택 경로</span>}</li>)}</ol>
+    <ol class="progress-outline" data-pagefind-ignore>{stageGroups.map((s,i)=><li><a href={'#stage-'+s.id}>{s.title}</a>{s.optional&&<span class="optional-badge">선택 경로</span>}</li>)}</ol>
     <AnchorHeading level={2} id="original">대화와 선택</AnchorHeading>
-    {d.stages.map((s,i)=><section class:list={['stage',s.optional&&'optional-stage']} id={'stage-'+s.id}><div class="stage-heading"><span class="stage-number" aria-hidden="true">{String(i+1).padStart(2,'0')}</span><h3>{s.title}</h3>{s.optional&&<span class="optional-badge">선택</span>}</div>{s.description&&<p class="stage-context">{s.description}</p>}
+    {stageGroups.map((s,i)=><section class:list={['stage',s.optional&&'optional-stage']} id={'stage-'+s.id}>
+      {s.steps.slice(1).map(step=><span id={'stage-'+step.id} aria-hidden="true"/>)}
+      <div class="stage-heading"><span class="stage-number" aria-hidden="true">{String(i+1).padStart(2,'0')}</span><h3>{s.title}</h3>{s.optional&&<span class="optional-badge">선택</span>}</div>
+      {[...new Set(s.steps.map(step=>step.description).filter(Boolean))].map(description=><p class="stage-context">{description}</p>)}
       {s.predecessors.length>0&&<p class="stage-predecessor" data-pagefind-ignore>앞선 조건: {s.predecessors.map(id=>d.stages.find(x=>x.id===id)?.title||'내부 진행 단계 완료').join(' · ')}</p>}
-      {d.sections.filter(x=>x.stage===s.id).map(section=><Scene section={section} quest/>)}
-      <details class="source-details" data-pagefind-ignore><summary>임무 단계 출처</summary><p>SubMission · {s.id} · 목표 문자열 {s.hash} · 설명 문자열 {s.description_hash}</p><p>진행 조건: MissionInfo 보조 구조</p></details>
+      {d.sections.filter(x=>s.steps.some(step=>step.id===x.stage)).map(section=><Scene section={section} quest/>)}
+      <details class="source-details" data-pagefind-ignore><summary>임무 단계 출처{s.steps.length>1&&` · 같은 목표 ${s.steps.length}개 진행 조건 통합`}</summary>{s.steps.map(step=><p>SubMission · {step.id} · 목표 문자열 {step.hash} · 설명 문자열 {step.description_hash}</p>)}<p>진행 조건: MissionInfo 보조 구조</p></details>
     </section>)}
     {additional.length>0&&<section class="additional-scenes"><h3>연결된 추가 대화</h3><p class="muted">임무 소속은 연결되어 있으나, 목표 단계와의 연결 또는 실행 순서가 확인되지 않은 장면입니다.</p>{additional.map(section=><Scene section={section} quest/>)}</section>}
   </>}

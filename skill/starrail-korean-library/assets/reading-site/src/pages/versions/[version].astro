@@ -1,0 +1,13 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import Browse from '../../components/Browse.astro';
+import {versions,versionLabel,href,catalog} from '../../lib/data';
+export function getStaticPaths(){return ['index',...versions].map(version=>({params:{version}}));}
+const v=Astro.params.version==='index'?'':Astro.params.version!;
+---
+<StarlightPage frontmatter={{title:v?`${versionLabel(v)} · 임무`:'버전별 임무',editUrl:false,tableOfContents:false}}>
+ <p class="page-deck">버전을 고르고, 세계와 임무 종류로 좁혀 읽으세요.</p>
+ <nav class="version-strip" aria-label="버전 바로 선택"><a href={href('versions/index.html')} aria-current={!v?'page':undefined}>전체</a>{versions.filter(x=>!v||v==='early'||x.startsWith(v.split('.')[0]+'.')).map(x=><a href={href(`versions/${x}.html`)} aria-current={v===x?'page':undefined}><strong>{x==='early'?'2.6 및 이전':versionLabel(x)}</strong><span>{catalog.filter(d=>d.versions.includes(x)).length}</span></a>)}</nav>
+ <details class="version-note"><summary>버전 분류 기준과 미확인 범위</summary><p>2.7 이후는 버전별 임무 표에 처음 등장한 시점으로 분류했습니다. 실제 개방 시점과 다를 수 있습니다. 2.6 및 이전은 초기 자료가 부족해 세부 버전을 확정하지 않았습니다. <a href={href('자료안내.html')+'#versions'}>분류 근거</a></p></details>
+ <Browse kind="" version={v}/>
+</StarlightPage>

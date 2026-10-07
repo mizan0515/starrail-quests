@@ -1,6 +1,7 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
+import guides from '../../../editorial/reading-guides.json';
 import {topics,docUrl,href,topicUrl} from '../../lib/data';
 export function getStaticPaths(){return topics.map(t=>({params:{id:t.id},props:{topic:t}}));}
 const t=Astro.props.topic;
@@ -19,7 +20,8 @@ const headings=[...t.sections.map((s,i)=>({depth:2,slug:'reading-'+i,text:s.titl
   <nav class="breadcrumbs" aria-label="현재 위치" data-pagefind-ignore><a href={href('설정집.html')}>설정집</a><span>/</span><span>{t.world}</span></nav>
   <p class="page-deck">{t.deck}</p>
   <div class="essay-meta"><span class="kind-badge">편집자 해설</span><span>{t.sources.length}개 근거·추천 원문</span><a href="#sources">원문부터 읽기 ↓</a></div>
-  <p class="editor-note">아래 글은 기록을 함께 읽은 편집자의 해석입니다. 게임 원문은 근거 카드와 추천 목록에서 직접 확인할 수 있습니다. 이야기의 주요 설정이 포함되어 있습니다.</p>
+  <nav class="essay-map" aria-label="해설 읽는 흐름">{t.sections.map((section,i)=><a href={"#reading-"+i}><span>{String(i+1).padStart(2,"0")}</span><strong>{guides[t.id].trail[i]||section.title}</strong><span aria-hidden="true">↓</span></a>)}</nav>
+  <details class="editor-note"><summary>편집자 해설 · 근거는 원문에서 확인하세요</summary><p>아래 글은 기록을 함께 읽은 편집자의 해석입니다. 게임 원문은 근거 카드와 추천 목록에서 직접 확인할 수 있습니다. 이야기의 주요 설정이 포함되어 있습니다.</p></details>
   {t.sections.map((s,i)=><section class="essay-section"><AnchorHeading level={2} id={'reading-'+i}>{s.title}</AnchorHeading><p class="essay-paragraph">{s.text}</p><div class="evidence-grid">{s.evidence.map(e=><a class="evidence-card" href={docUrl(e.id)+'#'+e.anchor}><span class="eyebrow">근거 원문</span><strong>{e.title}</strong><blockquote>“{e.quote}”</blockquote><span class="evidence-action">인용한 원문으로 이동 →</span></a>)}</div></section>)}
   <AnchorHeading level={2} id="relations">관계 한눈에 보기</AnchorHeading>
   <div class="relation-table-wrap"><table class="relation-table"><thead><tr><th>대상</th><th>기록 속 관계</th><th>연결되는 대상</th><th>근거</th></tr></thead><tbody>{t.relations.map(([a,r,b,source])=><tr><th scope="row">{a}</th><td>{r}</td><td>{b}</td><td><a href={docUrl(source)}>원문</a></td></tr>)}</tbody></table></div>

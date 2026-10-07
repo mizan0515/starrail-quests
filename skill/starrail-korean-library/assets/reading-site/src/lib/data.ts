@@ -1,9 +1,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import catalog from '../../data/catalog.json';
+import originalCatalog from '../../data/catalog.json';
+import versionEvidence from '../../editorial/mission-versions.json';
+import aliases from '../../data/aliases.json';
 import topics from '../../data/topics.json';
 import stats from '../../data/stats.json';
-export {catalog,topics,stats};
+const versionMap=versionEvidence.missions as Record<string,string>;
+const partVersions=new Map<string,Set<string>>();
+for(const [id,parent] of Object.entries(aliases)){if(versionMap[id]){if(!partVersions.has(parent))partVersions.set(parent,new Set());partVersions.get(parent)!.add(versionMap[id]);}}
+export const catalog=originalCatalog.map(d=>({...d,versions:d.category==='퀘스트'?[...new Set([versionMap[d.id]||'unknown',...(partVersions.get(d.id)||[])])]:[]}));
+export {topics,stats,versionEvidence};
+export const versionLabel=(v:string)=>v==='early'?'2.6 및 이전 · 세부 버전 미확인':v==='unknown'?'버전 미확인':v;
+export const versions=[...new Set(catalog.flatMap(d=>d.versions))].sort((a,b)=>a==='early'?1:b==='early'?-1:a==='unknown'?1:b==='unknown'?-1:b.localeCompare(a,undefined,{numeric:true}));
 export const kinds={main:'개척 임무',continuance:'개척 후문',companion:'동행 임무',adventure:'모험 임무',daily:'일일 임무'};
 export const href=(p:string)=>`${import.meta.env.BASE_URL.replace(/\/$/,'')}/${p}`;
 export const doc=(id:string)=>JSON.parse(fs.readFileSync(path.resolve('data/documents',id+'.json'),'utf8'));

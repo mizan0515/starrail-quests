@@ -50,6 +50,13 @@ def main():
                 if not matched:errors.append((t['id'],e['id'],'evidence mismatch'))
                 evidence+=1
     if not (root/'pagefind/pagefind.js').exists():errors.append(('pagefind','missing index'))
+    version_file=root/'versions-data.json'
+    if not version_file.exists():errors.append(('versions','missing metadata'))
+    else:
+        version_data=json.loads(version_file.read_text('utf8'))
+        if set(version_data)!={d['id'] for d in catalog if d['category']=='퀘스트'}:errors.append(('versions','catalog mismatch'))
+        for version in {v for values in version_data.values() for v in values}:
+            if not (root/'versions'/(version+'.html')).exists():errors.append(('versions',version,'missing page'))
     for d in catalog:
         if (root/'문서'/(d['id']+'.html')).resolve() not in pages:errors.append((d['id'],'missing document'))
     report={'status':'PASS' if not errors else 'FAIL','htmlPages':len(pages),'linksChecked':links,'documents':len(catalog),'verifiedEvidenceLinks':evidence,'errors':errors}
