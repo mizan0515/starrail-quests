@@ -1,0 +1,9 @@
+---
+import {evidenceUrl} from '../lib/atlas';
+const {e,compact=false}=Astro.props;
+---
+<div class:list={['atlas-evidence',compact&&'compact-evidence']}>
+  <span class="evidence-voice">{e.status}</span>
+  <blockquote>“{e.quote}”</blockquote>
+  <a href={evidenceUrl(e)} data-reading-link>{e.title} <span aria-hidden="true">↗</span><span class="sr-only"> · 인용한 원문 위치</span></a>
+</div>

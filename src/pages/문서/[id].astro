@@ -21,7 +21,7 @@ const rows=d.sections.flatMap(s=>s.rows),mostlyChoices=quest&&rows.length&&rows.
   {quest&&d.chapter!=='챕터 미지정'&&<p class="chapter-name">{d.chapter}</p>}
   <div class="document-meta" data-pagefind-ignore><span class="kind-badge">{d.kind||d.category}</span><span>{d.count.toLocaleString()}개 원문 항목</span>{d.aliases.length>0&&<span>{d.missionParts?'임무 진행 조각':'동일 본문'} {d.aliases.length+1}개 통합</span>}<a class="jump-link" href="#original">{quest?'대화로 이동 ↓':'원문으로 이동 ↓'}</a></div>
   {mostlyChoices&&<aside class="coverage-note"><strong>선택지와 컷신 대사를 구분해 읽어주세요.</strong><p>이 임무는 선택지는 추출되었지만 컷신 대사가 아직 연결되지 않은 부분이 있습니다. 임무 목표·설명으로 맥락을 이어 읽고, 분기별 선택을 구분해 표시했습니다.</p></aside>}
-  {d.topics.length>0&&<section class="related-panel" id="connections" data-pagefind-ignore><h2>관련 설정 읽기</h2><div>{d.topics.map(t=><a href={topicUrl(t.id)}><strong>{t.title}</strong><span>{t.reason}</span><span aria-hidden="true">→</span></a>)}</div></section>}
+  {d.topics.length>0&&<section class="related-panel" id="connections" data-pagefind-ignore><h2>관련 설정 읽기</h2><div>{d.topics.map(t=><a href={topicUrl(t.id)} data-reading-link><strong>{t.title}</strong><span>{t.reason}</span><span aria-hidden="true">→</span></a>)}</div></section>}
   {peers.length>0&&<aside class="collection-panel" data-pagefind-ignore><strong>같은 세트 · {d.collection}</strong><ul>{peers.map(p=><li><a href={docUrl(p.id)}>{p.title}</a></li>)}</ul></aside>}
   {d.stages.length>0&&<>
     <AnchorHeading level={2} id="progress">임무의 흐름</AnchorHeading>

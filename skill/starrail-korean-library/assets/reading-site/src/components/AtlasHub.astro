@@ -1,0 +1,32 @@
+---
+import {atlas,atlasUrl} from '../lib/atlas';
+const groups=[...atlas.axes,{id:'bridge',name:'세력·종족',question:'축 사이를 잇는 또 하나의 관점'}];
+const defaultAxis=Astro.props.axis||'all';
+---
+<section class="atlas-hub" id="atlas" data-atlas-hub data-default-axis={defaultAxis}>
+  <div class="atlas-intro"><p class="eyebrow">어디서부터 궁금한가요?</p><h2>하나의 기록, 여러 갈래의 이야기</h2><p>지역의 역사에서 인물의 선택으로, 인물의 기억에서 세계의 큰 질서로.</p></div>
+  <div class="atlas-controls" data-pagefind-ignore>
+    <div class="axis-switch" role="group" aria-label="설정을 읽는 관점"><button type="button" data-axis="all" aria-pressed="true">전체</button>{groups.map(a=><button type="button" data-axis={a.id} aria-pressed="false">{a.name}</button>)}</div>
+    <label class="atlas-search"><span class="sr-only">설정의 이름과 질문 찾기</span><input type="search" placeholder="인물, 지역, 궁금한 질문" data-atlas-search/></label>
+  </div>
+  <p class="atlas-result-count sr-only" role="status" aria-live="polite" data-atlas-count/>
+  <div class="atlas-axis-grid">{groups.map(axis=><section class="atlas-axis" data-axis-group={axis.id}><div class="axis-heading"><h3>{axis.name}</h3><p>{axis.question}</p></div><div class="atlas-entry-list">{atlas.nodes.filter(n=>n.axis===axis.id).map(n=><a class="atlas-entry" data-atlas-entry data-search={[n.name,n.question,...n.terms].join(' ')} href={atlasUrl(n.id)}><strong>{n.name}</strong><span>{n.question}</span><span class="atlas-entry-arrow" aria-hidden="true">↗</span></a>)}</div></section>)}</div>
+  <div class="atlas-empty" hidden><strong>이 관점에서 찾은 항목이 없어요.</strong><p>이름을 짧게 입력하거나 전체 관점으로 돌아가세요.</p><button type="button" data-atlas-reset>전체 항목 보기</button></div>
+  <p class="atlas-curation-note">원문을 대조해 편집한 입문 경로입니다. 전체 원문은 아래 자료실과 본문 검색에서 찾을 수 있습니다.</p>
+</section>
+<script>
+ for(const hub of document.querySelectorAll<HTMLElement>('[data-atlas-hub]')){
+  const input=hub.querySelector<HTMLInputElement>('[data-atlas-search]')!,params=new URLSearchParams(location.search);
+  let axis=params.get('axis')||hub.dataset.defaultAxis||'all';if(!['all','region','person','concept','bridge'].includes(axis))axis='all';input.value=params.get('q')||'';
+  const update=(save=true)=>{let count=0;const query=input.value.trim().toLocaleLowerCase('ko');
+   for(const group of hub.querySelectorAll<HTMLElement>('[data-axis-group]')){let visible=0;for(const entry of group.querySelectorAll<HTMLElement>('[data-atlas-entry]')){const show=(axis==='all'||group.dataset.axisGroup===axis)&&(entry.dataset.search||'').toLocaleLowerCase('ko').includes(query);entry.hidden=!show;if(show)visible++;}group.hidden=!visible;count+=visible;}
+   hub.querySelector('[data-atlas-count]')!.textContent=`${count}개 읽기 항목`;
+   (hub.querySelector('.atlas-empty') as HTMLElement).hidden=count>0;
+   for(const button of hub.querySelectorAll('[data-axis]'))button.setAttribute('aria-pressed',String((button as HTMLElement).dataset.axis===axis));
+   hub.classList.toggle('single-axis',axis!=='all');
+   if(save){const url=new URL(location.href);axis==='all'?url.searchParams.delete('axis'):url.searchParams.set('axis',axis);query?url.searchParams.set('q',input.value):url.searchParams.delete('q');history.replaceState(null,'',url);}
+  };
+  hub.querySelectorAll<HTMLElement>('[data-axis]').forEach(button=>button.addEventListener('click',()=>{axis=button.dataset.axis!;update();}));
+  input.addEventListener('input',()=>update());hub.querySelector('[data-atlas-reset]')!.addEventListener('click',()=>{axis='all';input.value='';update();input.focus();});update(false);
+ }
+</script>

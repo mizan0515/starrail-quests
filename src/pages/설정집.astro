@@ -1,6 +1,7 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import Browse from '../components/Browse.astro';
+import AtlasHub from '../components/AtlasHub.astro';
 import {topics,topicUrl} from '../lib/data';
 import guides from '../../editorial/reading-guides.json';
 const shelves=[
@@ -11,8 +12,8 @@ const shelves=[
 ];
 ---
 <StarlightPage frontmatter={{title:'설정집 · 연결해서 읽기',editUrl:false,tableOfContents:false}}>
-  <p class="eyebrow">원문에서 관계를 읽는 일</p>
-  <p class="page-deck">흩어진 기록을, 하나의 질문으로.<br/>서적·인물·세력의 이야기를 연결해 세계를 읽습니다.</p>
+  <AtlasHub/>
+  <h2 id="essays">질문으로 묶은 해설</h2>
   <nav class="shelf-nav" aria-label="설정집 주제">{shelves.map((s,i)=><a href={'#shelf-'+i}>{s.title}</a>)}</nav>
   {shelves.map((s,i)=><section class="topic-shelf" id={'shelf-'+i}><div class="shelf-heading"><h2>{s.title}</h2><p>{s.deck}</p></div><div class="topic-grid">{s.ids.map(id=>topics.find(t=>t.id===id)!).map(t=><a class="topic-card" href={topicUrl(t.id)}><span class="row-type">{t.world}</span><h3>{t.title}</h3><p>{guides[t.id].question}</p><div class="card-trail" aria-label="연결해서 읽는 흐름">{guides[t.id].trail.map((step,j)=><><span>{step}</span>{j<guides[t.id].trail.length-1&&<span aria-hidden="true">→</span>}</>)}</div><span class="topic-meta">{t.sources.length}개 근거·추천 원문 <span aria-hidden="true">→</span></span></a>)}</div></section>)}
   <h2 id="originals">원문 자료실</h2><p class="muted">해설을 읽다가 궁금해진 기록을 종류별로 찾아보세요.</p><Browse mode="settings"/>

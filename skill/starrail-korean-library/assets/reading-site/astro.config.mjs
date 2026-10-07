@@ -11,10 +11,11 @@ export default defineConfig({
   integrations:[starlight({
     title:'스타레일 · 별의 기록',description:'스타레일 한국어 임무와 설정을 맥락으로 연결한 자료집',
     defaultLocale:'root',locales:{root:{label:'한국어',lang:'ko'}},
-    customCss:['./src/styles/library.css'],
+    customCss:['./src/styles/library.css','./src/styles/context.css'],
     tableOfContents:{minHeadingLevel:2,maxHeadingLevel:2},
     sidebar:[
       {label:'자료집',items:[{label:'이야기 찾아보기',link:link('index.html')},{label:'설정집 · 연결해서 읽기',link:link('설정집.html')}]},
+      {label:'설정을 읽는 관점',items:[{label:'지역 · 역사와 사건',link:link('관점/region.html')},{label:'인물 · 행적과 관계',link:link('관점/person.html')},{label:'세계관 · 법칙과 사례',link:link('관점/concept.html')}]},
       {label:'임무 종류',items:[['main','개척 임무'],['continuance','개척 후문'],['companion','동행 임무'],['adventure','모험 임무'],['daily','일일 임무']].map(([k,label])=>({label,link:link(`quests/${k}.html`)}))},
       {label:'버전으로 찾기',items:[{label:'버전별 임무 전체',link:link('versions/index.html')},...['4.5','4.4','4.3','4.2','4.1','4.0'].map(v=>({label:v+' 버전',link:link(`versions/${v}.html`)})),{label:'3.x · 2.x',collapsed:true,items:[...['3.8','3.7','3.6','3.5','3.4','3.3','3.2','3.1','3.0','2.7'].map(v=>({label:v+' 버전',link:link(`versions/${v}.html`)})),{label:'2.6 및 이전 · 미확인',link:link('versions/early.html')}]}]},
       {label:'설정의 연결',collapsed:true,items:[['paths-and-factions','에이언즈와 파벌'],['xianzhou-immortality','선주 · 영생과 마각'],['borisin-and-foxians','보리인과 여우족'],['belobog-preservation','벨로보그 · 보존의 의미'],['penacony-memory','페나코니 · 꿈과 기록'],['amphoreus-myth-and-life','앰포리어스 · 신화와 일상'],['herta-life-and-knowledge','헤르타 · 생명과 지식']].map(([k,label])=>({label,link:link(`설정/${k}.html`)}))},

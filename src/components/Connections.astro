@@ -1,0 +1,15 @@
+---
+import {atlasNode,atlasUrl,axisName} from '../lib/atlas';
+import Evidence from './Evidence.astro';
+const {node}=Astro.props;
+---
+<section class="connection-focus" aria-label={`${node.name}에서 이어 읽는 관계`}>
+  <div class="focus-origin"><span class="eyebrow">현재 읽는 대상</span><strong>{node.name}</strong></div>
+  <ol class="connection-branches">{node.links.map(l=>{const target=atlasNode(l.target);return <li>
+    <span class="relation-verb">{l.verb}</span>
+    <a class="connection-target" href={atlasUrl(target.id)} data-reading-link><span class="eyebrow">{axisName(target.axis)}</span><strong>{target.name}</strong><span class="reading-arrow" aria-hidden="true">→</span></a>
+    <p class="connection-reason">{l.why}</p>
+    <span class="connection-status">{l.status}</span>
+    <details class="connection-proof"><summary>이 연결의 원문 근거</summary><Evidence e={l.evidence} compact/></details>
+  </li>})}</ol>
+</section>

@@ -2,6 +2,9 @@
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
 import guides from '../../../editorial/reading-guides.json';
+import Perspectives from '../../components/Perspectives.astro';
+import SourceRegister from '../../components/SourceRegister.astro';
+import {atlas,atlasUrl,axisName} from '../../lib/atlas';
 import {topics,docUrl,href,topicUrl} from '../../lib/data';
 export function getStaticPaths(){return topics.map(t=>({params:{id:t.id},props:{topic:t}}));}
 const t=Astro.props.topic;
@@ -14,19 +17,22 @@ const connections={
  'amphoreus-myth-and-life':[['herta-life-and-knowledge','신앙과 지식의 논쟁을 실험과 감정의 문제와 비교하기']],
  'herta-life-and-knowledge':[['amphoreus-myth-and-life','세계를 설명하는 학파의 여러 목소리 이어 읽기']],
 };
-const headings=[...t.sections.map((s,i)=>({depth:2,slug:'reading-'+i,text:s.title})),{depth:2,slug:'relations',text:'관계 한눈에 보기'},{depth:2,slug:'sources',text:'추천 읽기 순서'}];
+const headings=[...t.sections.map((s,i)=>({depth:2,slug:'reading-'+i,text:s.title})),{depth:2,slug:'perspectives',text:'기록의 관점 비교'},{depth:2,slug:'relations',text:'관계 한눈에 보기'},{depth:2,slug:'sources',text:'추천 읽기 순서'},{depth:2,slug:'verified-sources',text:'확인한 원문과 근거'}];
 ---
 <StarlightPage headings={headings} frontmatter={{title:t.title,description:t.deck,editUrl:false}}>
   <nav class="breadcrumbs" aria-label="현재 위치" data-pagefind-ignore><a href={href('설정집.html')}>설정집</a><span>/</span><span>{t.world}</span></nav>
   <p class="page-deck">{t.deck}</p>
   <div class="essay-meta"><span class="kind-badge">편집자 해설</span><span>{t.sources.length}개 근거·추천 원문</span><a href="#sources">원문부터 읽기 ↓</a></div>
+  <nav class="essay-lenses" aria-label="같은 설정을 다른 관점에서 읽기">{atlas.nodes.filter(n=>n.topic===t.id).map(n=><a href={atlasUrl(n.id)} data-reading-link><span>{axisName(n.axis)}</span><strong>{n.name}</strong><span aria-hidden="true">↗</span></a>)}</nav>
   <nav class="essay-map" aria-label="해설 읽는 흐름">{t.sections.map((section,i)=><a href={"#reading-"+i}><span>{String(i+1).padStart(2,"0")}</span><strong>{guides[t.id].trail[i]||section.title}</strong><span aria-hidden="true">↓</span></a>)}</nav>
   <details class="editor-note"><summary>편집자 해설 · 근거는 원문에서 확인하세요</summary><p>아래 글은 기록을 함께 읽은 편집자의 해석입니다. 게임 원문은 근거 카드와 추천 목록에서 직접 확인할 수 있습니다. 이야기의 주요 설정이 포함되어 있습니다.</p></details>
-  {t.sections.map((s,i)=><section class="essay-section"><AnchorHeading level={2} id={'reading-'+i}>{s.title}</AnchorHeading><p class="essay-paragraph">{s.text}</p><div class="evidence-grid">{s.evidence.map(e=><a class="evidence-card" href={docUrl(e.id)+'#'+e.anchor}><span class="eyebrow">근거 원문</span><strong>{e.title}</strong><blockquote>“{e.quote}”</blockquote><span class="evidence-action">인용한 원문으로 이동 →</span></a>)}</div></section>)}
+  {t.sections.map((s,i)=><section class="essay-section"><AnchorHeading level={2} id={'reading-'+i}>{s.title}</AnchorHeading><p class="essay-paragraph">{s.text}</p><div class="evidence-grid">{s.evidence.map(e=><a class="evidence-card" href={docUrl(e.id)+'#'+e.anchor} data-reading-link><span class="eyebrow">근거 원문</span><strong>{e.title}</strong><blockquote>“{e.quote}”</blockquote><span class="evidence-action">인용한 원문으로 이동 →</span></a>)}</div></section>)}
+  <Perspectives topic={t.id}/>
   <AnchorHeading level={2} id="relations">관계 한눈에 보기</AnchorHeading>
-  <div class="relation-table-wrap"><table class="relation-table"><thead><tr><th>대상</th><th>기록 속 관계</th><th>연결되는 대상</th><th>근거</th></tr></thead><tbody>{t.relations.map(([a,r,b,source])=><tr><th scope="row">{a}</th><td>{r}</td><td>{b}</td><td><a href={docUrl(source)}>원문</a></td></tr>)}</tbody></table></div>
+  <div class="named-relations">{t.relations.map(([a,r,b,source])=><article><strong>{a}</strong><span class="relation-verb">{r}</span><strong>{b}</strong><a href={docUrl(source)} data-reading-link>관계가 기록된 원문 ↗</a></article>)}</div>
   <aside class="interpretation-note"><strong>읽을 때 구분할 점</strong><p>{t.caution}</p></aside>
   <AnchorHeading level={2} id="sources">추천 읽기 순서</AnchorHeading>
-  <ol class="reading-list">{t.reading.map(r=><li><a href={docUrl(r.id)}><strong>{r.title}</strong><span>{r.why}</span><span class="reading-arrow" aria-hidden="true">→</span></a></li>)}</ol>
+  <ol class="reading-list">{t.reading.map(r=><li><a href={docUrl(r.id)} data-reading-link><strong>{r.title}</strong><span>{r.why}</span><span class="reading-arrow" aria-hidden="true">→</span></a></li>)}</ol>
   <aside class="related-panel" data-pagefind-ignore><h2>질문을 이어서 읽기</h2><p class="muted">같은 설정이라는 뜻이 아니라, 서로 비춰 읽을 만한 질문을 연결했습니다.</p><div>{connections[t.id]?.map(([id,why])=><a href={topicUrl(id)}><strong>{topics.find(x=>x.id===id)?.title}</strong><span>{why}</span><span aria-hidden="true">→</span></a>)}</div></aside>
+  <SourceRegister entries={[...t.sections.flatMap(s=>s.evidence),...atlas.comparisons[t.id].panels.map(p=>p.evidence)]}/>
 </StarlightPage>

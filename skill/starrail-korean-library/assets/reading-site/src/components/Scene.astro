@@ -1,4 +1,5 @@
 ---
+import {annotate,atlasUrl} from '../lib/atlas';
 const {section,quest=false}=Astro.props;
 const s=section;
 ---
@@ -6,9 +7,9 @@ const s=section;
   <h3>{s.title}</h3>
   {s.editorialPlacement&&<p class="placement-note">목표와 대사 내용을 대조한 편집자 배치</p>}
   <div class:list={['original-text',quest&&'dialogue']}>
-    {s.rows.map((r)=><div class:list={['original-row',r.label==='선택지'&&'choice']}>
+    {s.rows.map((r,index)=><div class:list={['original-row',r.label==='선택지'&&'choice']}>
       <span class="speaker">{r.label==='선택지'?'선택지':r.speaker&&r.speaker!=='화자 미지정'?r.speaker:r.label==='배경 이야기'?'이야기':r.label&&r.label!=='본문'?r.label:'원문'}</span>
-      <p class="original-body" data-pagefind-weight="1">{r.text}</p>
+      <p class="original-body" id={`${s.anchor}-row-${index+1}`} data-pagefind-weight="1">{annotate(r.text).map((part,termIndex)=>part.id?<a class="context-term" id={`${s.anchor}-row-${index+1}-term-${termIndex}`} href={atlasUrl(part.id)} data-context-key={part.id} data-context-excerpt={r.text.length<=220?r.text:(r.text.indexOf(part.text)>70?'…':'')+r.text.slice(Math.max(0,r.text.indexOf(part.text)-70),r.text.indexOf(part.text)+part.text.length+100)+'…'} aria-label={`${part.text} · 배경과 연결 보기`}>{part.text}</a>:part.text)}</p>
       {r.destinations&&Object.keys(r.destinations).length>0&&r.label==='선택지'&&<span class="branch-note">선택 이후의 분기 조건이 있는 항목</span>}
     </div>)}
   </div>

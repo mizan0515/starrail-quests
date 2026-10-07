@@ -5,7 +5,7 @@ from html.parser import HTMLParser
 from urllib.parse import urlsplit,unquote
 
 class Page(HTMLParser):
-    def __init__(self):super().__init__();self.ids=set();self.links=[];self.labels=[];self.capture=False;self.duplicates=[]
+    def __init__(self):super().__init__();self.ids=set();self.links=[];self.labels=[];self.capture=False;self.duplicates=[];self.original={};self.original_id=None
     def handle_starttag(self,tag,attrs):
         a=dict(attrs)
         if a.get('id'):
@@ -16,10 +16,13 @@ class Page(HTMLParser):
             src=a.get('src') or a.get('href')
             if src:self.links.append(src)
         if tag in ('h1','h2','h3','h4'):self.capture=True
+        if tag=='p' and 'original-body' in a.get('class','').split():self.original_id=a.get('id');self.original[self.original_id]=''
     def handle_endtag(self,tag):
         if tag in ('h1','h2','h3','h4'):self.capture=False
+        if tag=='p':self.original_id=None
     def handle_data(self,data):
         if self.capture:self.labels.append(data)
+        if self.original_id is not None:self.original[self.original_id]+=data
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--root',type=Path,required=True);p.add_argument('--base',default='/starrail-quests');p.add_argument('--report',type=Path);a=p.parse_args();root=a.root.resolve();pages={};errors=[];links=0
@@ -57,9 +60,32 @@ def main():
         if set(version_data)!={d['id'] for d in catalog if d['category']=='퀘스트'}:errors.append(('versions','catalog mismatch'))
         for version in {v for values in version_data.values() for v in values}:
             if not (root/'versions'/(version+'.html')).exists():errors.append(('versions',version,'missing page'))
+    original_rows=0
     for d in catalog:
         if (root/'문서'/(d['id']+'.html')).resolve() not in pages:errors.append((d['id'],'missing document'))
-    report={'status':'PASS' if not errors else 'FAIL','htmlPages':len(pages),'linksChecked':links,'documents':len(catalog),'verifiedEvidenceLinks':evidence,'errors':errors}
+        else:
+            document=json.loads((data/'documents'/(d['id']+'.json')).read_text('utf8'));rendered=pages[(root/'문서'/(d['id']+'.html')).resolve()].original
+            for section in document['sections']:
+                for i,row in enumerate(section['rows'],1):
+                    anchor=f"{section['anchor']}-row-{i}"
+                    if rendered.get(anchor)!=row['text']:errors.append((d['id'],anchor,'rendered original text differs'))
+                    original_rows+=1
+    atlas=json.loads((root.parent/'editorial/context-atlas.json').read_text('utf8'));atlas_evidence={};node_ids={n['id'] for n in atlas['nodes']}
+    for node in atlas['nodes']:
+        target=root/'맥락'/(node['id']+'.html')
+        if not target.exists() or 'verified-sources' not in pages[target.resolve()].ids:errors.append((node['id'],'missing dossier or bottom sources'))
+        for link in node['links']:
+            if link['target'] not in node_ids:errors.append((node['id'],link['target'],'unknown atlas connection'))
+        for item in node['evidence']+[x['evidence'] for x in node['links']]+[x['evidence'] for x in node['timeline']]:atlas_evidence[(item['id'],item['hash'],item['quote'])]=item
+    for topic,comparison in atlas['comparisons'].items():
+        if 'verified-sources' not in pages[(root/'설정'/(topic+'.html')).resolve()].ids:errors.append((topic,'missing bottom sources'))
+        for panel in comparison['panels']:
+            item=panel['evidence'];atlas_evidence[(item['id'],item['hash'],item['quote'])]=item
+    for item in atlas_evidence.values():
+        document=json.loads((data/'documents'/(item['id']+'.json')).read_text('utf8'))
+        if not any(s['anchor']==item['anchor'] and any(r['hash']==item['hash'] and item['quote'] in r['text'] for r in s['rows']) for s in document['sections']):errors.append((item['id'],item['quote'],'atlas source quote/hash mismatch'))
+    if not (root/'atlas-data.json').exists():errors.append(('atlas','missing context endpoint'))
+    report={'status':'PASS' if not errors else 'FAIL','htmlPages':len(pages),'linksChecked':links,'documents':len(catalog),'verifiedEvidenceLinks':evidence,'verifiedAtlasQuotes':len(atlas_evidence),'originalParagraphsPreserved':original_rows,'errors':errors}
     if a.report:a.report.parent.mkdir(parents=True,exist_ok=True);a.report.write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding='utf8')
     print(json.dumps({**report,'errors':errors[:20],'errorCount':len(errors)},ensure_ascii=False));raise SystemExit(bool(errors))
 if __name__=='__main__':main()

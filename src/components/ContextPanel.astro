@@ -1,0 +1,53 @@
+---
+import {href} from '../lib/data';
+---
+<nav class="reading-return" aria-label="읽던 위치" hidden data-reading-return data-pagefind-ignore><a><span aria-hidden="true">↶</span> 읽던 원문으로 돌아가기</a></nav>
+<dialog class="context-dialog" aria-labelledby="context-title" data-context-dialog data-endpoint={href('atlas-data.json')} data-pagefind-ignore>
+ <div class="context-dialog-head"><span class="eyebrow">잠깐, 필요한 맥락만</span><button type="button" class="context-close" aria-label="맥락 닫고 원문 계속 읽기">닫기 <span aria-hidden="true">×</span></button></div>
+ <h2 id="context-title"></h2><p class="context-question"></p><p class="context-definition"></p>
+ <div class="context-current"><strong>읽고 있던 문장</strong><blockquote></blockquote></div>
+ <div class="context-proof"></div>
+ <a class="context-explore">관계·행적·관점 비교로 이어 읽기 →</a>
+ <p class="context-error" role="status" hidden>맥락 정보를 불러오지 못했습니다. 연결된 설정 페이지에서 계속 읽을 수 있습니다.</p>
+</dialog>
+<script>
+ const dialog=document.querySelector<HTMLDialogElement>('[data-context-dialog]')!;
+ let cached:Promise<Record<string,any>>|undefined;
+ let trigger:HTMLElement|null=null;
+ const base=new URL(dialog.dataset.endpoint!,location.href).pathname.replace(/\/atlas-data\.json$/,'');
+ const safeReturn=(value:string|null)=>{if(!value)return null;try{const url=new URL(value,location.origin);const decoded=decodeURI(url.pathname);return url.origin===location.origin&&decoded.startsWith(base+'/문서/')&&decoded.endsWith('.html')?url.pathname+url.hash:null;}catch{return null;}};
+ const inherited=safeReturn(new URLSearchParams(location.search).get('from'));
+ const returnNav=document.querySelector<HTMLElement>('[data-reading-return]')!;
+ // Starlight's main and right sidebar have separate stacking contexts. Keep
+ // the fixed return control outside main so the transparent sidebar cannot
+ // intercept its pointer events.
+ if(inherited){document.body.append(returnNav);returnNav.hidden=false;returnNav.querySelector('a')!.setAttribute('href',inherited);}
+ const withReturn=(href:string,from:string|null)=>{const url=new URL(href,location.href);if(from)url.searchParams.set('from',from);return url.href;};
+ const readingOrigin=inherited||safeReturn(location.pathname+(location.hash||'#original'));
+ if(readingOrigin)document.querySelectorAll<HTMLAnchorElement>('a[data-reading-link]').forEach(a=>a.href=withReturn(a.href,readingOrigin));
+ const close=()=>{dialog.close();trigger?.focus({preventScroll:true});};
+ dialog.querySelector('.context-close')!.addEventListener('click',close);
+ dialog.addEventListener('cancel',()=>trigger?.focus({preventScroll:true}));
+ dialog.addEventListener('click',event=>{if(event.target===dialog){const rect=dialog.getBoundingClientRect();if(event.clientX<rect.left||event.clientX>rect.right||event.clientY<rect.top||event.clientY>rect.bottom)close();}});
+ document.addEventListener('click',async event=>{
+  const target=event.target instanceof Element?event.target.closest<HTMLAnchorElement>('a[data-context-key],a[data-reading-link]'):null;
+  if(!target||event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
+  if(!target.dataset.contextKey){if(readingOrigin)target.href=withReturn(target.href,readingOrigin);return;}
+  event.preventDefault();trigger=target;
+  const row=target.closest('.original-body') as HTMLElement|null;
+  const origin=inherited||safeReturn(location.pathname+'#'+(target.id||row?.id||target.closest('.source-section')?.id||'original'));
+  const explore=dialog.querySelector<HTMLAnchorElement>('.context-explore')!;explore.href=withReturn(target.href,origin);
+  dialog.querySelector('#context-title')!.textContent=target.textContent;
+  dialog.querySelector('.context-question')!.textContent='배경을 불러오는 중…';dialog.querySelector('.context-definition')!.textContent='';dialog.querySelector('.context-proof')!.replaceChildren();
+  dialog.querySelector('.context-current blockquote')!.textContent=target.dataset.contextExcerpt||(row?.textContent||'').trim().slice(0,220);
+  (dialog.querySelector('.context-error') as HTMLElement).hidden=true;
+  dialog.showModal();(dialog.querySelector('.context-close') as HTMLButtonElement).focus();
+  try{
+   cached??=fetch(dialog.dataset.endpoint!).then(r=>{if(!r.ok)throw new Error('context fetch');return r.json();}).catch(error=>{cached=undefined;throw error;});
+   const data=(await cached)[target.dataset.contextKey];if(!data)throw new Error('missing concept');if(trigger!==target||!dialog.open)return;
+   dialog.querySelector('#context-title')!.textContent=data.name;dialog.querySelector('.context-question')!.textContent=data.question;dialog.querySelector('.context-definition')!.textContent=data.intro;
+   const proof=dialog.querySelector('.context-proof')!;
+   for(const e of data.evidence.slice(0,2)){const box=document.createElement('div'),voice=document.createElement('span'),quote=document.createElement('blockquote'),link=document.createElement('a');voice.className='evidence-voice';voice.textContent=e.status;quote.textContent='“'+e.quote+'”';link.textContent=e.title+' ↗';link.href=withReturn(e.url,origin);box.append(voice,quote,link);proof.append(box);}
+  }catch{if(trigger===target){dialog.querySelector('.context-question')!.textContent='배경을 더 깊이 읽기';(dialog.querySelector('.context-error') as HTMLElement).hidden=false;}}
+ });
+</script>
