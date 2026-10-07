@@ -5,12 +5,12 @@ const v=Astro.props.version||'';const pages=dialogueData.pages.filter(p=>!v||p.v
 const names=Object.fromEntries(catalog.filter(d=>d.category==='퀘스트').map(d=>[d.id,d.title]));
 const speakers=[...new Set(pages.flatMap(p=>p.speakers))].sort((a,b)=>a.localeCompare(b,'ko'));
 ---
-<section class="dialogue-browser" data-dialogue-browser id="dialogues">
- <p class="eyebrow">실제 한국어 대사 {total.toLocaleString()}개</p><h2>{v?versionLabel(v)+'의 대사 읽기':'버전별 대사 전체'}</h2>
- <p class="page-deck">퀘스트에 연결된 대사와 아직 장면을 연결하지 못한 대사를 함께 수록했습니다. 임무 개요와 대사 본문을 구분해서 읽을 수 있습니다.</p>
+<section class="dialogue-browser" data-dialogue-browser>
+ <p class="eyebrow">한국어 대사 {total.toLocaleString()}개</p><h2>{v?versionLabel(v)+' · 전체 대사 원문':'전체 대사 원문'}</h2>
+ <p class="page-deck">임무 연결 여부와 함께 전체 대사를 수록했습니다. 아래 원문 페이지는 대사 표의 순서에 따라 나뉩니다.</p>
  <div class="explorer-controls"><label><span class="sr-only">대사 묶음의 화자·임무 찾기</span><input type="search" data-dialogue-query placeholder="화자나 연결된 임무 이름"/></label><label><span class="sr-only">대사 화자</span><select data-dialogue-speaker><option value="">모든 화자</option>{speakers.map(s=><option>{s}</option>)}</select></label><button type="button" data-dialogue-reset>초기화</button></div>
  <p class="explorer-count" role="status" aria-live="polite"/>
- <div class="dialogue-page-grid">{pages.map((p,i)=><a class="dialogue-page-card" href={dialogueUrl(p.id)} data-dialogue-page data-search={[...p.speakers,...p.missions.map(id=>names[id]||'')].join(' ')} data-speakers={JSON.stringify(p.speakers)} hidden={i>=24}><span class="eyebrow">{versionLabel(p.version)} · 묶음 {p.part}</span><h3>{p.preview||'대사 원문'}</h3><p>{p.speakers.slice(0,7).map(s=>s==='{NICKNAME}'?'개척자':s).join(' · ')}{p.speakers.length>7?' 외':''}</p><span>{p.count}개 대사 · 임무 연결 {p.linked}개</span><span class="entity-action">대사 본문 읽기 ↗</span></a>)}</div>
+ <div class="dialogue-page-grid">{pages.map((p,i)=><a class="dialogue-page-card" href={dialogueUrl(p.id)} data-dialogue-page data-search={[...p.speakers,...p.missions.map(id=>names[id]||'')].join(' ')} data-speakers={JSON.stringify(p.speakers)} hidden={i>=24}><span class="eyebrow">{versionLabel(p.version)}</span><div><h3>원문 {p.part} · {p.count}개 대사</h3><p>{p.speakers.slice(0,4).map(s=>s==='{NICKNAME}'?'개척자':s).join(' · ')}{p.speakers.length>4?' 외':''}</p><span class="archive-meta">임무에 연결된 대사 {p.linked}개</span></div><span class="entity-action" aria-hidden="true">→</span></a>)}</div>
  <p class="dialogue-empty" hidden>해당 화자·임무가 포함된 묶음이 없습니다.</p><button type="button" data-dialogue-more>더 보기</button>
  <details class="version-note"><summary>버전·순서·미연결 대사의 근거</summary><p>버전별 TalkSentenceConfig 표에서 대사 ID가 처음 등장한 스냅샷을 대조했습니다. 본문과 화자는 설치된 게임의 한국어 파일에서 직접 읽었습니다. 실제 공개 날짜와는 다를 수 있습니다. 2.6 및 이전은 세부 버전을 미확인으로 표시합니다. 대사 묶음은 표 행 순서이며, 장면 실행 순서나 한 회차의 줄거리를 확정하지 않습니다. 컷신·분기를 연결하지 못한 대사도 삭제하지 않고 여기에 보존합니다.</p><a href={href('대사근거.json')}>파일·버전 표 해시 근거</a></details>
 </section>

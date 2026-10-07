@@ -6,11 +6,9 @@ import {versions,versionLabel,href,catalog} from '../../lib/data';
 export function getStaticPaths(){return ['index',...versions].map(version=>({params:{version}}));}
 const v=Astro.params.version==='index'?'':Astro.params.version!;
 ---
-<StarlightPage frontmatter={{title:v?`${versionLabel(v)} · 대사와 임무`:'버전별 대사와 임무',editUrl:false,tableOfContents:false}}>
- <p class="page-deck">버전의 실제 대사를 읽고, 임무별 진행과 원문을 함께 확인하세요.</p>
- <nav class="version-strip" aria-label="버전 바로 선택"><a href={href('versions/index.html')} aria-current={!v?'page':undefined}>전체</a>{versions.filter(x=>!v||v==='early'||x.startsWith(v.split('.')[0]+'.')).map(x=><a href={href(`versions/${x}.html`)} aria-current={v===x?'page':undefined}><strong>{x==='early'?'2.6 및 이전':versionLabel(x)}</strong><span>{catalog.filter(d=>d.versions.includes(x)).length} 임무</span></a>)}</nav>
- <details class="version-note"><summary>버전 분류 기준과 미확인 범위</summary><p>2.7 이후는 버전별 임무 표에 처음 등장한 시점으로 분류했습니다. 실제 개방 시점과 다를 수 있습니다. 2.6 및 이전은 초기 자료가 부족해 세부 버전을 확정하지 않았습니다. <a href={href('자료안내.html')+'#versions'}>분류 근거</a></p></details>
- <nav class="shelf-nav" aria-label="버전의 읽기 방식"><a href="#dialogues">대사 원문</a><a href="#mission-list">임무 목록</a></nav>
- <DialogueBrowse version={v}/>
- <details id="mission-list" class="mission-list-disclosure"><summary>임무 목록 · 종류와 지역으로 찾기</summary><Browse kind="" version={v}/></details>
+<StarlightPage frontmatter={{title:v?`${versionLabel(v)} · 임무 목록`:'버전별 임무 목록',editUrl:false,tableOfContents:false}}>
+ <p class="page-deck">다시 읽을 임무를 찾아 대화와 선택지를 확인하세요.</p>
+ <section id="mission-list"><Browse kind="" version={v}/></section>
+ <details class="version-note"><summary>버전 분류와 수록 범위</summary><p>2.7 이후는 버전별 임무 표의 최초 수록 시점으로 분류했습니다. 2.6 및 이전은 세부 버전 미확인으로 묶었습니다. <a href={href('자료안내.html')+'#versions'}>수록 기준 읽기</a></p></details>
+ <details class="archive-disclosure" id="dialogues"><summary>버전의 전체 대사 원문 찾아보기</summary><DialogueBrowse version={v}/></details>
 </StarlightPage>

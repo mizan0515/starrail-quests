@@ -2,6 +2,7 @@
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
 import Scene from '../../components/Scene.astro';
+import CatalogReturn from '../../components/CatalogReturn.astro';
 import {catalog,doc,docUrl,topicUrl,href} from '../../lib/data';
 import aliases from '../../../data/aliases.json';
 export function getStaticPaths(){return [...catalog.map(d=>({params:{id:d.id}})),...Object.keys(aliases).map(id=>({params:{id}}))];}
@@ -17,6 +18,7 @@ const previous=quest?catalog.filter(x=>x.category==='퀘스트'&&x.kind===d.kind
 const rows=d.sections.flatMap(s=>s.rows),mostlyChoices=quest&&rows.length&&rows.filter(r=>r.label==='선택지').length/rows.length>.55;
 ---
 <StarlightPage headings={headings} frontmatter={{title:d.title,description:`${d.kind||d.category} · ${d.world} · 한국어 원문과 관련 설정`,editUrl:false}}>
+  <CatalogReturn/>
   <nav class="breadcrumbs" aria-label="현재 위치" data-pagefind-ignore><a href={href(quest?'index.html':'설정집.html')}>{quest?'임무':'설정집'}</a><span>/</span><span>{d.kind||d.category}</span>{d.world!=='분류 미확인'&&<><span>/</span><span>{d.world}</span></>}</nav>
   {quest&&d.chapter!=='챕터 미지정'&&<p class="chapter-name">{d.chapter}</p>}
   <div class="document-meta" data-pagefind-ignore><span class="kind-badge">{d.kind||d.category}</span><span>{d.count.toLocaleString()}개 원문 항목</span>{d.aliases.length>0&&<span>{d.missionParts?'임무 진행 조각':'동일 본문'} {d.aliases.length+1}개 통합</span>}<a class="jump-link" href="#original">{quest?'대화로 이동 ↓':'원문으로 이동 ↓'}</a></div>
