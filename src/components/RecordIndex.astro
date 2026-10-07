@@ -1,0 +1,13 @@
+---
+import {href} from '../lib/data';
+const {records}=Astro.props;
+---
+<div class="record-index rw-index" data-record-index>
+ <label class="atlas-search"><span class="sr-only">기록의 제목과 인용 구절 찾기</span><input type="search" data-record-query placeholder="기록의 제목과 인용 구절 찾기"/></label>
+ <p class="explorer-count" role="status" aria-live="polite" data-record-count/>
+ <div class="rw-index-links">{records.map((r,i)=><a class="rw-index-entry" data-record data-search={[r.title,...r.matches.map(h=>h.quote)].join(' ')} href={href(r.url)+'#'+r.matches[0].anchor} data-reading-link hidden={i>=12}><small>{r.category}</small><strong>{r.title}</strong><span>{r.matches[0].quote}</span><span class="rw-index-arrow" aria-hidden="true">↗</span></a>)}</div>
+ <p data-record-empty hidden>이 제목이나 인용 구절이 포함된 기록이 없습니다.</p><button type="button" class="record-more" data-record-more>더 보기</button>
+</div>
+<script>
+for(const root of document.querySelectorAll<HTMLElement>('[data-record-index]')){const records=[...root.querySelectorAll<HTMLElement>('[data-record]')],input=root.querySelector<HTMLInputElement>('[data-record-query]')!,more=root.querySelector<HTMLButtonElement>('[data-record-more]')!;let limit=12;const update=()=>{const q=input.value.trim().toLocaleLowerCase('ko'),matches=records.filter(r=>(r.dataset.search||'').toLocaleLowerCase('ko').includes(q));records.forEach(r=>r.hidden=true);matches.slice(0,limit).forEach(r=>r.hidden=false);root.querySelector('[data-record-count]')!.textContent=`${matches.length}개 기록 · ${Math.min(limit,matches.length)}개 표시`;(root.querySelector('[data-record-empty]') as HTMLElement).hidden=!!matches.length;more.hidden=matches.length<=limit;};input.addEventListener('input',()=>{limit=12;update();});more.addEventListener('click',()=>{limit+=12;update();});update();}
+</script>

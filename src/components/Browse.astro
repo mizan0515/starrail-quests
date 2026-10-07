@@ -9,7 +9,7 @@ const total=source.filter(d=>(!kind||d.kind===kind)&&(!version||d.versions.inclu
 const worlds=[...new Set(catalog.filter(d=>isQuest?d.category==='퀘스트':d.category!=='퀘스트').map(d=>d.world))].filter(w=>w&&w!=='분류 미확인');
 const categories=['서적·문서','캐릭터 이야기','에이언즈·운명의 길','세계관·용어','광추 이야기','유물 이야기','아이템 설정','시뮬레이션 우주 설정','메시지','기타 장면'];
 ---
-<section class="browse" data-mode={mode} data-kind={kind} data-version={version} data-order={JSON.stringify(versions)} data-versions={href('versions-data.json')} data-catalog={href('catalog.json')} data-base={href('문서/')} data-pagefind-ignore>
+<section class="browse" data-mode={mode} data-kind={kind} data-version={version} data-order={JSON.stringify(versions)} data-versions={href('versions-data.json')} data-catalog={href('reading-catalog.json')} data-base={href('문서/')} data-pagefind-ignore>
  {isQuest&&kind&&<nav class="type-tabs" aria-label="임무 종류">{Object.entries(kinds).map(([key,name])=><a aria-current={kind===name?'page':undefined} href={href(`quests/${key}.html`)}>{name}</a>)}</nav>}
  <form class="browse-filters" role="search" aria-label={isQuest?'임무 목록 필터':'원문 자료 필터'}>
   <label class="query-label">{isQuest?'임무 제목 또는 ID':'원문 자료 찾기'}<input type="search" name="q" placeholder={isQuest?'다시 읽을 임무 제목, ID':'서적·인물·설정 제목, ID'} autocomplete="off"/></label>

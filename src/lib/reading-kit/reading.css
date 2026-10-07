@@ -11,3 +11,30 @@
 @media(max-width:40rem){.rw-directory,.rw-map-sources{grid-template-columns:1fr}.rw-directory>a{padding:1.1rem 0}.rw-map-evidence[open]{grid-column:auto}.rw-directory strong{font-size:1.05rem}}
 
 .rw-mobile-origin{display:none}@container(max-width:30rem){.rw-mobile-origin{display:inline}}
+
+/* The index responds to its readable column, including when a sidebar is open. */
+.rw-index{container-type:inline-size;container-name:reading-index}
+.rw-index-groups{display:grid;gap:2.5rem;margin-block:1.25rem}
+.rw-index-group{margin:0!important;min-width:0}
+.rw-index-heading{display:flex;flex-wrap:wrap;align-items:baseline;gap:.5rem 1.25rem;padding-block:0 .8rem;border-bottom:2px solid var(--brass,var(--sl-color-text-accent));margin:0!important}
+.rw-index-heading h3{font-size:1.2rem!important;line-height:1.5;margin:0!important}
+.rw-index-heading p{font-size:.85rem;line-height:1.75;color:var(--muted,var(--sl-color-gray-2));margin:0!important}
+.rw-index-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:2rem;margin:0!important}
+.rw-index-entry{position:relative;display:flex;flex-direction:column;gap:.5rem;padding:1.15rem 1.5rem 1.15rem 0;border-bottom:1px solid var(--line,var(--sl-color-hairline));margin:0!important;min-width:0;color:var(--ink,var(--sl-color-white))!important;text-decoration:none!important}
+.rw-index-entry>*{margin:0!important}
+.rw-index-entry strong{font-size:1.0625rem;line-height:1.55}
+.rw-index-entry>span:not(.rw-index-arrow){font-size:.9rem;line-height:1.8;color:var(--muted,var(--sl-color-gray-2));word-break:keep-all;overflow-wrap:anywhere}
+.rw-index-arrow{position:absolute;inset-inline-end:0;inset-block-start:1.2rem;color:var(--brass,var(--sl-color-text-accent))}
+.rw-index-entry:hover strong{text-decoration:underline;text-underline-offset:.25em}
+.rw-index-entry:focus-visible{outline:3px solid var(--brass,var(--sl-color-text-accent));outline-offset:4px}
+@container reading-index (min-width:55rem){.rw-index-links{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@container reading-index (max-width:30rem){.rw-index-links{grid-template-columns:1fr}.rw-index-heading{display:block}.rw-index-heading p{margin-top:.35rem!important}}
+@media(max-width:40rem){.rw-index-links{grid-template-columns:1fr}}
+
+/* Reserve separate space for the theme icon, native label and caret. */
+starlight-theme-select{display:block}
+starlight-theme-select label{margin:0;display:flex;align-items:center;position:relative;color:var(--ink,var(--sl-color-text))}
+starlight-theme-select select{box-sizing:border-box;width:9.5rem;max-width:none;min-height:44px;height:44px;margin:0;padding:.5rem 2rem .5rem 2.1rem;font-family:var(--sl-font);font-size:.875rem;line-height:1.5;appearance:none;background:var(--paper,var(--sl-color-bg));color:inherit;border:1px solid var(--line,var(--sl-color-hairline));border-radius:7px}
+starlight-theme-select .label-icon{inset-inline-start:.7rem;inset-inline-end:auto;font-size:.875rem}
+starlight-theme-select .caret{inset-inline-end:.55rem;inset-inline-start:auto;font-size:1rem}
+starlight-theme-select .icon{top:50%;transform:translateY(-50%);pointer-events:none}

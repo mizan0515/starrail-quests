@@ -3,17 +3,20 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
 import Scene from '../../components/Scene.astro';
 import CatalogReturn from '../../components/CatalogReturn.astro';
-import {catalog,doc,docUrl,topicUrl,href,versionEvidence} from '../../lib/data';
+import {catalog,doc,docUrl,topicUrl,href,versionEvidence,missionDialogue} from '../../lib/data';
 import aliases from '../../../data/aliases.json';
 export function getStaticPaths(){return [...catalog.map(d=>({params:{id:d.id}})),...Object.keys(aliases).map(id=>({params:{id}}))];}
 if(aliases[Astro.params.id!])return Astro.redirect(encodeURI(docUrl(aliases[Astro.params.id!])),301);
 const d=doc(Astro.params.id!),quest=d.category==='퀘스트';
+const supplements=quest?missionDialogue[d.id]||[]:[];
+const addedDialogue=supplements.reduce((count,s)=>count+s.rows.length,0);
+const supplementTitle=(s:any,i:number)=>{const speakers=[...new Set(s.rows.map(r=>r.speaker).filter(x=>x&&x!=='화자 미지정'))];return `대화 ${i+1}${speakers.length?' · '+speakers.slice(0,3).join(' · '):' · 원문'}`;};
 const observedVersion=versionEvidence.firstObservedVersions[d.id];
 const release=versionEvidence.releaseEvidence[d.id];
 const stageGroups:any[]=[];
 for(const step of d.stages){const last=stageGroups.at(-1);if(last?.title===step.title)last.steps.push(step);else stageGroups.push({...step,steps:[step]});}
 const additional=d.sections.filter(s=>!d.stages.some(x=>x.id===s.stage));
-const headings=[...(d.topics.length?[{depth:2,slug:'connections',text:'与 관련 설정 읽기'.replace('与 ','')}]:[]),...(d.stages.length?[{depth:2,slug:'progress',text:'임무의 흐름'}]:[]),{depth:2,slug:'original',text:quest?'대화와 선택':'원문 읽기'}];
+const headings=[...(d.topics.length?[{depth:2,slug:'connections',text:'관련 설정 읽기'}]:[]),...(d.stages.length?[{depth:2,slug:'progress',text:'임무의 흐름'}]:[]),...(supplements.length?[{depth:2,slug:'linked-dialogue',text:'대사 원문'}]:[]),{depth:2,slug:'original',text:quest?'장면과 선택지':'원문 읽기'}];
 const peers=d.collection?catalog.filter(x=>x.collection===d.collection&&x.id!==d.id):[];
 const next=d.next?catalog.find(x=>x.id==='quest-'+d.next):null;
 const previous=quest?catalog.filter(x=>x.category==='퀘스트'&&x.kind===d.kind&&x.world===d.world&&x.chapter===d.chapter&&x.rank<d.rank).sort((a,b)=>b.rank-a.rank)[0]:null;
@@ -23,16 +26,24 @@ const rows=d.sections.flatMap(s=>s.rows),mostlyChoices=quest&&rows.length&&rows.
   <CatalogReturn/>
   <nav class="breadcrumbs" aria-label="현재 위치" data-pagefind-ignore><a href={href(quest?'index.html':'설정집.html')}>{quest?'임무':'설정집'}</a><span>/</span><span>{d.kind||d.category}</span>{d.world!=='분류 미확인'&&<><span>/</span><span>{d.world}</span></>}</nav>
   {quest&&d.chapter!=='챕터 미지정'&&<p class="chapter-name">{d.chapter}</p>}
-  <div class="document-meta" data-pagefind-ignore><span class="kind-badge">{d.kind||d.category}</span><span>{d.count.toLocaleString()}개 원문 항목</span>{d.aliases.length>0&&<span>{d.missionParts?'임무 진행 조각':'동일 본문'} {d.aliases.length+1}개 통합</span>}<a class="jump-link" href="#original">{quest?'대화로 이동 ↓':'원문으로 이동 ↓'}</a></div>
+  <div class="document-meta" data-pagefind-ignore><span class="kind-badge">{d.kind||d.category}</span><span>{(d.count+addedDialogue).toLocaleString()}개 원문 항목</span>{d.aliases.length>0&&<span>{d.missionParts?'임무 진행 조각':'동일 본문'} {d.aliases.length+1}개 통합</span>}<a class="jump-link" href={addedDialogue?'#linked-dialogue':'#original'}>{quest?'대사 원문으로 이동 ↓':'원문으로 이동 ↓'}</a></div>
   {quest&&observedVersion&&<p class="document-meta" data-pagefind-ignore><a href={href(`versions/${observedVersion}.html`)}>임무 표에서 확인 · {observedVersion}</a>{release&&<><a href={href(`versions/${release.version}.html`)}>출시 확인 · {release.version}</a>{release.sources.map(s=><a href={s.url}>{s.title} ↗</a>)}</>}</p>}
-  {mostlyChoices&&<aside class="coverage-note"><strong>선택지와 컷신 대사를 구분해 읽어주세요.</strong><p>이 임무는 선택지는 추출되었지만 컷신 대사가 아직 연결되지 않은 부분이 있습니다. 임무 목표·설명으로 맥락을 이어 읽고, 분기별 선택을 구분해 표시했습니다.</p></aside>}
+  {mostlyChoices&&<aside class="coverage-note"><strong>장면과 선택지{addedDialogue>0&&<> · 연결된 대사 {addedDialogue.toLocaleString()}행</>}</strong><p>{addedDialogue>0?'임무 구조의 대사 식별자를 한국어 대사표와 대조한 원문을 함께 수록합니다. 아래 대사와 장면별 선택지를 각각 읽을 수 있습니다.':'임무 목표와 장면별 선택지를 수록합니다. 컷신 대사 중 식별자가 확인된 항목은 대사 자료실에서 찾아 읽을 수 있습니다.'}</p></aside>}
   {d.topics.length>0&&<section class="related-panel" id="connections" data-pagefind-ignore><h2>관련 설정 읽기</h2><div>{d.topics.map(t=><a href={topicUrl(t.id)} data-reading-link><strong>{t.title}</strong><span>{t.reason}</span><span aria-hidden="true">→</span></a>)}</div></section>}
   {peers.length>0&&<aside class="collection-panel" data-pagefind-ignore><strong>같은 세트 · {d.collection}</strong><ul>{peers.map(p=><li><a href={docUrl(p.id)}>{p.title}</a></li>)}</ul></aside>}
   {d.stages.length>0&&<>
     <AnchorHeading level={2} id="progress">임무의 흐름</AnchorHeading>
     <p class="muted">임무 설정의 선행 조건으로 정리했습니다. 선택·동시 경로는 한 회차의 직선 순서와 다를 수 있습니다.</p>
     <ol class="progress-outline" data-pagefind-ignore>{stageGroups.map((s,i)=><li><a href={'#stage-'+s.id}>{s.title}</a>{s.optional&&<span class="optional-badge">선택 경로</span>}</li>)}</ol>
-    <AnchorHeading level={2} id="original">대화와 선택</AnchorHeading>
+  </>}
+  {supplements.length>0&&<section class="mission-dialogue" aria-labelledby="linked-dialogue">
+    <AnchorHeading level={2} id="linked-dialogue">대사 원문</AnchorHeading>
+    <p class="muted">임무 구조에 참조된 대사 식별자로 연결했습니다. 본문과 화자는 보존된 게임 파일의 한국어 추출 원문입니다. 대화 묶음은 구조 파일의 참조 순서로 배열했으며, 실제 재생 순서는 미확인입니다.</p>
+    {supplements.length>1&&<nav class="mission-dialogue-outline" aria-label="연결된 대화"><ol>{supplements.map((s,i)=><li><a href={'#'+s.anchor}>{supplementTitle(s,i)}<span>{s.rows.length}행</span></a></li>)}</ol></nav>}
+    {supplements.map((s,i)=><Scene section={{...s,title:supplementTitle(s,i)}} quest/>)}
+  </section>}
+  {d.stages.length>0&&<>
+    <AnchorHeading level={2} id="original">장면과 선택지</AnchorHeading>
     {stageGroups.map((s,i)=><section class:list={['stage',s.optional&&'optional-stage']} id={'stage-'+s.id}>
       {s.steps.slice(1).map(step=><span id={'stage-'+step.id} aria-hidden="true"/>)}
       <div class="stage-heading"><span class="stage-number" aria-hidden="true">{String(i+1).padStart(2,'0')}</span><h3>{s.title}</h3>{s.optional&&<span class="optional-badge">선택</span>}</div>
@@ -43,6 +54,6 @@ const rows=d.sections.flatMap(s=>s.rows),mostlyChoices=quest&&rows.length&&rows.
     </section>)}
     {additional.length>0&&<section class="additional-scenes"><h3>연결된 추가 대화</h3><p class="muted">임무 소속은 연결되어 있으나, 목표 단계와의 연결 또는 실행 순서가 확인되지 않은 장면입니다.</p>{additional.map(section=><Scene section={section} quest/>)}</section>}
   </>}
-  {!d.stages.length&&<><AnchorHeading level={2} id="original">{quest?'대화와 선택':'원문 읽기'}</AnchorHeading>{d.sections.length?d.sections.map(section=><Scene section={section} quest={quest}/>):<p class="empty-state">이 임무의 한국어 본문은 아직 연결되지 않았습니다. 다른 임무나 관련 설정을 찾아 읽을 수 있습니다.</p>}</>}
+  {!d.stages.length&&<><AnchorHeading level={2} id="original">{quest?'장면과 선택지':'원문 읽기'}</AnchorHeading>{d.sections.length?d.sections.map(section=><Scene section={section} quest={quest}/>):!addedDialogue&&<p class="empty-state">이 임무의 한국어 본문은 아직 연결되지 않았습니다. 다른 임무나 관련 설정을 찾아 읽을 수 있습니다.</p>}</>}
   {quest&&<nav class="reading-next" aria-label="이어서 읽기" data-pagefind-ignore>{previous&&<a href={docUrl(previous.id)}><span>앞선 자료</span><strong>{previous.title}</strong></a>}{next&&<a href={docUrl(next.id)}><span>다음 진행 참조</span><strong>{next.title}</strong></a>}</nav>}
 </StarlightPage>
