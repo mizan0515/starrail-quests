@@ -7,6 +7,7 @@ export function getStaticPaths(){return ['index',...versions].map(version=>({par
 const v=Astro.params.version==='index'?'':Astro.params.version!;
 const snapshot=versionEvidence.snapshots.find(s=>s.version===v);
 const releases=Object.entries(versionEvidence.releaseEvidence).filter(([id,e])=>!v||e.version===v);
+const releaseGroups=Array.from(Map.groupBy(releases,([id,e])=>`${e.version}:${e.title}`).values());
 ---
 <StarlightPage frontmatter={{title:v?`${versionLabel(v)} · 임무 목록`:'버전별 임무 목록',editUrl:false,tableOfContents:false}}>
  <p class="page-deck">다시 읽을 임무를 찾아 대화와 선택지를 확인하세요.</p>
@@ -14,6 +15,6 @@ const releases=Object.entries(versionEvidence.releaseEvidence).filter(([id,e])=>
  {v&&v!=="early"&&<p class="page-deck">{v} 임무 자료에서 처음 확인한 항목과 출시가 확인된 임무를 함께 수록합니다. 표에 수록된 시점과 플레이 개방 시점은 각 근거로 구분합니다.</p>}
  <section id="mission-list"><Browse kind="" version={v}/></section>
  <details class="version-note"><summary>버전 분류와 수록 범위</summary><p>1.0~4.6의 공개 임무 표에서 ID가 처음 확인된 버전을 표시합니다. 출시가 확인된 임무는 아래에 별도 근거를 표시합니다. 같은 임무의 진행 조각이 다른 버전에 추가된 경우 각 버전에서 찾을 수 있습니다. <a href={href('자료안내.html')+'#versions'}>수록 기준 읽기</a></p>{snapshot&&<p><a href={snapshot.commitUrl||`https://github.com/${'repository' in snapshot?snapshot.repository:versionEvidence.repository}/commit/${snapshot.commit}`}>{v} 생산 버전 임무 표의 고정 기록 ↗</a></p>}</details>
- {releases.length>0&&<details class="version-note"><summary>출시가 확인된 임무와 근거</summary><ul>{releases.map(([id,e])=><li><a href={docUrl(id)}>{e.title}</a> · {e.version} {e.sources.map(s=><a href={s.url}>{s.title} ↗ </a>)}</li>)}</ul></details>}
+ {releaseGroups.length>0&&<details class="version-note"><summary>출시가 확인된 임무와 근거</summary>{releaseGroups.map(entries=>{const e=entries[0][1];return <section class="release-group"><h3>{e.title} · {e.version}</h3><p>{e.sources.map(s=><a href={s.url}>{s.title} ↗ </a>)}</p><ul aria-label={`${e.title} 원문 진행 항목`}>{entries.map(([id])=><li><a href={docUrl(id)}>원문 진행 항목 · {id.replace(/^quest-/,'')}</a></li>)}</ul></section>})}</details>}
  <details class="archive-disclosure" id="dialogues"><summary>버전의 전체 대사 원문 찾아보기</summary><DialogueBrowse version={v}/></details>
 </StarlightPage>
