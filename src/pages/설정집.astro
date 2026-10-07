@@ -6,17 +6,17 @@ import Explorer from '../components/Explorer.astro';
 import {topics,topicUrl} from '../lib/data';
 import guides from '../../editorial/reading-guides.json';
 const shelves=[
- {title:'신앙과 질서',deck:'신의 이념은 조직과 사람을 거치며 어떻게 달라질까?',ids:['paths-and-factions']},
- {title:'영생과 전쟁',deck:'죽지 않는 몸, 오래 남는 권력, 종족과 소속의 경계.',ids:['xianzhou-immortality','borisin-and-foxians']},
- {title:'도시와 기억',deck:'누구를 지키는 도시인가. 누가 역사를 기록하는가.',ids:['belobog-preservation','penacony-memory']},
- {title:'생명과 지식',deck:'신화와 실험으로 세계를 설명할 때 놓치는 것들.',ids:['amphoreus-myth-and-life','herta-life-and-knowledge']},
+ {title:'신앙과 질서',deck:'에이언즈의 이념과 이를 계승하는 파벌의 기록.',ids:['paths-and-factions']},
+ {title:'영생과 종족',deck:'장생이 남긴 사회의 변화와 부족별 생활·소속.',ids:['xianzhou-immortality','borisin-and-foxians']},
+ {title:'도시와 기억',deck:'도시의 건설, 주민의 생활, 역사의 작성과 복원.',ids:['belobog-preservation','penacony-memory']},
+ {title:'생명과 지식',deck:'달력과 학문의 규칙, 생명과 감정에 관한 연구.',ids:['amphoreus-myth-and-life','herta-life-and-knowledge']},
 ];
 ---
 <StarlightPage frontmatter={{title:'설정집 · 연결해서 읽기',editUrl:false,tableOfContents:false}}>
-  <Explorer/>
-  <details class="curated-disclosure"><summary>질문으로 연결한 해설 경로</summary><AtlasHub/></details>
-  <h2 id="essays">질문으로 묶은 해설</h2>
+  <AtlasHub/>
+  <h2 id="essays">기록을 함께 읽기</h2>
   <nav class="shelf-nav" aria-label="설정집 주제">{shelves.map((s,i)=><a href={'#shelf-'+i}>{s.title}</a>)}</nav>
-  {shelves.map((s,i)=><section class="topic-shelf" id={'shelf-'+i}><div class="shelf-heading"><h2>{s.title}</h2><p>{s.deck}</p></div><div class="topic-grid">{s.ids.map(id=>topics.find(t=>t.id===id)!).map(t=><a class="topic-card" href={topicUrl(t.id)}><span class="row-type">{t.world}</span><h3>{t.title}</h3><p>{guides[t.id].question}</p><div class="card-trail" aria-label="연결해서 읽는 흐름">{guides[t.id].trail.map((step,j)=><><span>{step}</span>{j<guides[t.id].trail.length-1&&<span aria-hidden="true">→</span>}</>)}</div><span class="topic-meta">{t.sources.length}개 근거·추천 원문 <span aria-hidden="true">→</span></span></a>)}</div></section>)}
-  <h2 id="originals">원문 자료실</h2><p class="muted">해설을 읽다가 궁금해진 기록을 종류별로 찾아보세요.</p><Browse mode="settings"/>
+  {shelves.map((s,i)=><section class="topic-shelf" id={'shelf-'+i}><div class="shelf-heading"><h2>{s.title}</h2><p>{s.deck}</p></div><div class="topic-grid">{s.ids.map(id=>topics.find(t=>t.id===id)!).map(t=><a class="topic-card" href={topicUrl(t.id)}><span class="row-type">{t.world}</span><h3>{t.title}</h3><p>{t.deck}</p><div class="card-trail" aria-label="연결해서 읽는 흐름">{guides[t.id].trail.map((step,j)=><><span>{step}</span>{j<guides[t.id].trail.length-1&&<span aria-hidden="true">→</span>}</>)}</div><span class="topic-meta">{t.sources.length}개 근거·추천 원문 <span aria-hidden="true">→</span></span></a>)}</div></section>)}
+  <h2 id="explorer-library">지역·인물·개념 찾아보기</h2><Explorer/>
+  <h2 id="originals">원문 자료실</h2><p class="muted">서적·인물 기록·용어의 본문을 자료 종류별로 찾아 읽습니다.</p><Browse mode="settings"/>
 </StarlightPage>

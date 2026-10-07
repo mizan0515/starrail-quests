@@ -3,9 +3,16 @@ import path from 'node:path';
 import originalCatalog from '../../data/catalog.json';
 import versionEvidence from '../../editorial/mission-versions.json';
 import aliases from '../../data/aliases.json';
-import topics from '../../data/topics.json';
+import resolvedTopics from '../../data/topics.json';
+import editedTopics from '../../editorial/topics.json';
 import stats from '../../data/stats.json';
 const versionMap=versionEvidence.missions as Record<string,string>;
+// Keep the original resolved citations while consuming the editorial text directly.
+const topics=resolvedTopics.map(topic=>{
+ const edited=editedTopics.find(item=>item.id===topic.id);
+ if(!edited||edited.sections.length!==topic.sections.length)throw new Error(`Topic structure mismatch: ${topic.id}`);
+ return {...topic,title:edited.title,deck:edited.deck,caution:edited.caution,sections:topic.sections.map((section,index)=>({...section,title:edited.sections[index].title,text:edited.sections[index].text}))};
+});
 const partVersions=new Map<string,Set<string>>();
 for(const [id,parent] of Object.entries(aliases)){if(versionMap[id]){if(!partVersions.has(parent))partVersions.set(parent,new Set());partVersions.get(parent)!.add(versionMap[id]);}}
 export const catalog=originalCatalog.map(d=>({...d,versions:d.category==='퀘스트'?[...new Set([versionMap[d.id]||'unknown',...(partVersions.get(d.id)||[])])]:[]}));
