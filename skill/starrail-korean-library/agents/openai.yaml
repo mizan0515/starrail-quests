@@ -1,0 +1,4 @@
+interface:
+  display_name: "스타레일 한국어 자료집"
+  short_description: "로컬 스타레일 대사·서적·설정 본문을 추출하고 검색 자료집으로 정리"
+  default_prompt: "$starrail-korean-library로 지정한 StarRail_Data에서 한국어 퀘스트 대사와 설정 본문을 추출하고 원문·검색 자료집·검증 결과를 만들어 주세요."

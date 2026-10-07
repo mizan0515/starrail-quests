@@ -1,0 +1,11 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import catalog from '../../data/catalog.json';
+import topics from '../../data/topics.json';
+import stats from '../../data/stats.json';
+export {catalog,topics,stats};
+export const kinds={main:'개척 임무',continuance:'개척 후문',companion:'동행 임무',adventure:'모험 임무',daily:'일일 임무'};
+export const href=(p:string)=>`${import.meta.env.BASE_URL.replace(/\/$/,'')}/${p}`;
+export const doc=(id:string)=>JSON.parse(fs.readFileSync(path.resolve('data/documents',id+'.json'),'utf8'));
+export const docUrl=(id:string)=>href('문서/'+id+'.html');
+export const topicUrl=(id:string)=>href('설정/'+id+'.html');

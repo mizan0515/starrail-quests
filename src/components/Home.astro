@@ -1,0 +1,8 @@
+---
+import Browse from './Browse.astro';
+import {topics,topicUrl,href} from '../lib/data';
+---
+<p class="eyebrow">HONKAI: STAR RAIL · 한국어 이야기 자료집</p>
+<p class="home-deck">기억에 남은 한마디를 찾고, 흩어진 기록 사이의 이야기를 읽으세요.</p>
+<a class="editorial-banner compact-banner" href={href('설정집.html')}><span><strong>설정집 · 연결해서 읽기</strong><span>영생과 전쟁, 꿈과 기억. 해설을 읽고 근거 원문으로 이어가세요.</span></span><span aria-hidden="true">→</span></a>
+<Browse kind="개척 임무"/>

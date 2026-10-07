@@ -1,0 +1,7 @@
+{
+  "name": "starrail-korean-library",
+  "private": true,
+  "type": "module",
+  "scripts": {"build": "astro build", "preview": "astro preview"},
+  "devDependencies": {"astro": "7.3.6", "@astrojs/starlight": "0.42.5", "satteri":"0.10.5"}
+}

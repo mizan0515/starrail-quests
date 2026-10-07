@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.astro/
+data/
+public/catalog.json
+verification/
+.DS_Store

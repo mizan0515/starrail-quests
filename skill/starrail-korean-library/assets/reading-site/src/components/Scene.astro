@@ -1,0 +1,16 @@
+---
+const {section,quest=false}=Astro.props;
+const s=section;
+---
+<section class="source-section" id={s.anchor}>
+  <h3>{s.title}</h3>
+  {s.editorialPlacement&&<p class="placement-note">목표와 대사 내용을 대조한 편집자 배치</p>}
+  <div class:list={['original-text',quest&&'dialogue']}>
+    {s.rows.map((r)=><div class:list={['original-row',r.label==='선택지'&&'choice']}>
+      <span class="speaker">{r.label==='선택지'?'선택지':r.speaker&&r.speaker!=='화자 미지정'?r.speaker:r.label==='배경 이야기'?'이야기':r.label&&r.label!=='본문'?r.label:'원문'}</span>
+      <p class="original-body" data-pagefind-weight="1">{r.text}</p>
+      {r.destinations&&Object.keys(r.destinations).length>0&&r.label==='선택지'&&<span class="branch-note">선택 이후의 분기 조건이 있는 항목</span>}
+    </div>)}
+  </div>
+  <details class="source-details" data-pagefind-ignore><summary>원문 출처와 식별자</summary><dl><dt>자료</dt><dd>{s.source}</dd>{s.sourceTitle&&<><dt>원본 장면명</dt><dd>{s.sourceTitle}</dd></>}<dt>연결 근거</dt><dd>{s.mapping==='LOCAL_TABLE'?'로컬 표의 한국어 문자열':s.mapping==='LOCAL_SCENE_ID_ORDER_MATCH'?'로컬 장면에 대사 ID의 상대순서 일치':'보조 구조의 참조 · 실행 순서 미확인'}</dd></dl><ul>{s.rows.map(r=><li>{r.talk_id&&<>대사 {r.talk_id} · </>}문자열 {r.hash}{r.destinations&&Object.keys(r.destinations).length>0&&<pre>{JSON.stringify(r.destinations,null,2)}</pre>}</li>)}</ul></details>
+</section>

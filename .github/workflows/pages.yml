@@ -1,0 +1,45 @@
+name: Publish Korean story library
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - name: Restore verified reading data
+        run: python tools/restore_dataset.py
+      - name: Install locked official dependencies
+        run: npx --yes pnpm@11.19.0 install --ignore-scripts --frozen-lockfile
+      - name: Build Starlight and Korean full text search
+        env:
+          SITE_BASE: /starrail-quests
+          ASTRO_TELEMETRY_DISABLED: '1'
+        run: node node_modules/astro/bin/astro.mjs build
+      - name: Check links and source references
+        run: python tools/verify_site.py --root dist --base /starrail-quests
+      - name: Publish generated files to gh-pages
+        run: bash tools/publish_branch.sh
+      - name: Request a branch Pages build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if ! gh api "repos/$GITHUB_REPOSITORY/pages" --jq '.source.branch' > "$RUNNER_TEMP/pages-source"; then
+            echo 'Choose Deploy from a branch / gh-pages / root in Settings > Pages to activate the site.'
+            exit 0
+          fi
+          if [ "$(cat "$RUNNER_TEMP/pages-source")" = 'gh-pages' ]; then
+            gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds"
+          else
+            echo 'The built files are on gh-pages. Choose that branch in Settings > Pages.'
+          fi
