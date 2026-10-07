@@ -33,7 +33,7 @@ const categories=['서적·문서','캐릭터 이야기','에이언즈·운명�
   for(const name of ['q','world','version','kind','category']){const input=field(name);if(input&&params.has(name)){input.value=params.get(name)!;if(input instanceof HTMLSelectElement&&input.selectedIndex<0)input.selectedIndex=0;}}
   const el=(tag:string,cls:string,text:string)=>{const n=document.createElement(tag);n.className=cls;n.textContent=text;return n;};
   const normalize=(s:string)=>s.normalize('NFKC').toLocaleLowerCase('ko').replace(/\s/g,'');
-  const versionName=(v:string)=>v==='early'?'2.6 및 이전 · 세부 버전 미확인':v==='unknown'?'버전 미확인':v;
+  const versionName=(v:string)=>v==='early'?'1.0~2.6 · 초기 임무 전체':v==='unknown'?'버전 미확인':v;
   const state=()=>Object.fromEntries(new FormData(form));
   const save=()=>{const u=new URL(location.href);for(const name of ['q','world','version','kind','category']){const input=field(name);if(input){input.value?u.searchParams.set(name,input.value):u.searchParams.delete(name);}}limit>60?u.searchParams.set('limit',String(limit)):u.searchParams.delete('limit');history.replaceState(history.state,'',u);};
   const render=(persist=true)=>{

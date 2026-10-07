@@ -15,9 +15,9 @@ const topics=resolvedTopics.map(topic=>{
 });
 const partVersions=new Map<string,Set<string>>();
 for(const [id,parent] of Object.entries(aliases)){if(versionMap[id]){if(!partVersions.has(parent))partVersions.set(parent,new Set());partVersions.get(parent)!.add(versionMap[id]);}}
-export const catalog=originalCatalog.map(d=>({...d,versions:d.category==='퀘스트'?[...new Set([versionMap[d.id]||'unknown',...(partVersions.get(d.id)||[])])]:[]}));
+export const catalog=originalCatalog.map(d=>{const observed=d.category==='퀘스트'?[...new Set([versionMap[d.id]||'unknown',...(partVersions.get(d.id)||[])])]:[];return {...d,versions:[...observed,...(observed.some(v=>/^\d+\.\d+$/.test(v)&&Number(v)<=2.6)?['early']:[])]};});
 export {topics,stats,versionEvidence};
-export const versionLabel=(v:string)=>v==='early'?'2.6 및 이전 · 세부 버전 미확인':v==='unknown'?'버전 미확인':v;
+export const versionLabel=(v:string)=>v==='early'?'1.0~2.6 · 초기 임무 전체':v==='unknown'?'버전 미확인':v;
 export const versions=[...new Set(catalog.flatMap(d=>d.versions))].sort((a,b)=>a==='early'?1:b==='early'?-1:a==='unknown'?1:b==='unknown'?-1:b.localeCompare(a,undefined,{numeric:true}));
 export const kinds={main:'개척 임무',continuance:'개척 후문',companion:'동행 임무',adventure:'모험 임무',daily:'일일 임무'};
 export const href=(p:string)=>`${import.meta.env.BASE_URL.replace(/\/$/,'')}/${p}`;

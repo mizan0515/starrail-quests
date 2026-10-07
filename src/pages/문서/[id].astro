@@ -3,11 +3,13 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
 import Scene from '../../components/Scene.astro';
 import CatalogReturn from '../../components/CatalogReturn.astro';
-import {catalog,doc,docUrl,topicUrl,href} from '../../lib/data';
+import {catalog,doc,docUrl,topicUrl,href,versionEvidence} from '../../lib/data';
 import aliases from '../../../data/aliases.json';
 export function getStaticPaths(){return [...catalog.map(d=>({params:{id:d.id}})),...Object.keys(aliases).map(id=>({params:{id}}))];}
 if(aliases[Astro.params.id!])return Astro.redirect(encodeURI(docUrl(aliases[Astro.params.id!])),301);
 const d=doc(Astro.params.id!),quest=d.category==='퀘스트';
+const observedVersion=versionEvidence.firstObservedVersions[d.id];
+const release=versionEvidence.releaseEvidence[d.id];
 const stageGroups:any[]=[];
 for(const step of d.stages){const last=stageGroups.at(-1);if(last?.title===step.title)last.steps.push(step);else stageGroups.push({...step,steps:[step]});}
 const additional=d.sections.filter(s=>!d.stages.some(x=>x.id===s.stage));
@@ -22,6 +24,7 @@ const rows=d.sections.flatMap(s=>s.rows),mostlyChoices=quest&&rows.length&&rows.
   <nav class="breadcrumbs" aria-label="현재 위치" data-pagefind-ignore><a href={href(quest?'index.html':'설정집.html')}>{quest?'임무':'설정집'}</a><span>/</span><span>{d.kind||d.category}</span>{d.world!=='분류 미확인'&&<><span>/</span><span>{d.world}</span></>}</nav>
   {quest&&d.chapter!=='챕터 미지정'&&<p class="chapter-name">{d.chapter}</p>}
   <div class="document-meta" data-pagefind-ignore><span class="kind-badge">{d.kind||d.category}</span><span>{d.count.toLocaleString()}개 원문 항목</span>{d.aliases.length>0&&<span>{d.missionParts?'임무 진행 조각':'동일 본문'} {d.aliases.length+1}개 통합</span>}<a class="jump-link" href="#original">{quest?'대화로 이동 ↓':'원문으로 이동 ↓'}</a></div>
+  {quest&&observedVersion&&<p class="document-meta" data-pagefind-ignore><a href={href(`versions/${observedVersion}.html`)}>임무 표에서 확인 · {observedVersion}</a>{release&&<><a href={href(`versions/${release.version}.html`)}>출시 확인 · {release.version}</a>{release.sources.map(s=><a href={s.url}>{s.title} ↗</a>)}</>}</p>}
   {mostlyChoices&&<aside class="coverage-note"><strong>선택지와 컷신 대사를 구분해 읽어주세요.</strong><p>이 임무는 선택지는 추출되었지만 컷신 대사가 아직 연결되지 않은 부분이 있습니다. 임무 목표·설명으로 맥락을 이어 읽고, 분기별 선택을 구분해 표시했습니다.</p></aside>}
   {d.topics.length>0&&<section class="related-panel" id="connections" data-pagefind-ignore><h2>관련 설정 읽기</h2><div>{d.topics.map(t=><a href={topicUrl(t.id)} data-reading-link><strong>{t.title}</strong><span>{t.reason}</span><span aria-hidden="true">→</span></a>)}</div></section>}
   {peers.length>0&&<aside class="collection-panel" data-pagefind-ignore><strong>같은 세트 · {d.collection}</strong><ul>{peers.map(p=><li><a href={docUrl(p.id)}>{p.title}</a></li>)}</ul></aside>}
