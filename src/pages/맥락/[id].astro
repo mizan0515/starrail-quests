@@ -6,8 +6,10 @@ import Perspectives from '../../components/Perspectives.astro';
 import SourceRegister from '../../components/SourceRegister.astro';
 import {atlas,axisName,atlasUrl} from '../../lib/atlas';
 import {href,topicUrl,topics} from '../../lib/data';
+import {readingCluster,readingKit} from '../../lib/reading-data';
 export function getStaticPaths(){return atlas.nodes.map(node=>({params:{id:node.id},props:{node}}));}
 const {node}=Astro.props;
+const reading=readingCluster(node.id);
 const headings=[{depth:2,slug:'connections',text:'이어서 읽는 관계'},...(node.timeline.length?[{depth:2,slug:'moments',text:node.axis==='person'?'삶의 전환점':'기록 속 사건 흐름'}]:[]),{depth:2,slug:'perspectives',text:'기록의 관점 비교'},{depth:2,slug:'reading',text:'더 깊이 읽기'},{depth:2,slug:'verified-sources',text:'확인한 원문과 근거'}];
 const essay=topics.find(t=>t.id===node.topic)!;
 const sources=[...node.evidence,...node.links.map(l=>l.evidence),...node.timeline.map(m=>m.evidence),...atlas.comparisons[node.topic].panels.map(p=>p.evidence)];
@@ -16,10 +18,9 @@ const sources=[...node.evidence,...node.links.map(l=>l.evidence),...node.timelin
  <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('설정집.html#atlas')}>설정집</a><span>/</span><a href={href(`설정집.html?axis=${node.axis}#atlas`)}>{axisName(node.axis)}</a><span>/</span><span>{node.name}</span></nav>
  <div class="dossier-lead"><p class="dossier-question">{node.question}</p><p class="dossier-intro">{node.intro}</p><span class="kind-badge">근거를 연결한 편집자 안내</span></div>
  <nav class="dossier-jumps" aria-label="이 자료에서 읽기"><a href="#connections">관계</a>{node.timeline.length>0&&<a href="#moments">{node.axis==='person'?'행적':'사건'}</a>}<a href="#perspectives">관점 비교</a><a href="#reading">원문·해설</a></nav>
- <div class="dossier-evidence">{node.evidence.map(e=><Evidence e={e}/>)}</div>
+ <Fragment set:html={reading.sections.map(readingKit.section).join('')} />
  <section id="connections"><h2>이어서 읽는 관계</h2><p class="section-purpose">대상을 선택하면 같은 기록을 다른 관점에서 읽을 수 있습니다.</p><Connections node={node}/></section>
- {node.timeline.length>0&&<section id="moments" class="moment-section"><h2>{node.axis==='person'?'삶의 전환점':'기록 속 사건 흐름'}</h2><p class="timeline-scope">{node.timeNote}</p><ol class:list={['evidence-timeline',node.id==='bronya'&&'independent-moments']}>{node.timeline.map(m=><li><span class="moment-time">{m.when}</span><div class="moment-body"><h3>{m.title}</h3><p>{m.text}</p><Evidence e={m.evidence} compact/></div></li>)}</ol></section>}
- {node.id==='memory'&&<section class="concept-layers" aria-label="기억의 세 층"><h2>재료 → 공간 → 존재</h2><ol><li><span>재료</span><strong>기억 물질</strong><p>기억과 의식을 운반한다.</p></li><li><span>공간</span><strong>기억의 영역</strong><p>기억 물질이 응집해 형성된다.</p></li><li><span>존재</span><strong>기억의 영역 밈</strong><p>잠재의식 조각이 쌓인 실체다.</p></li></ol><p class="timeline-scope">개념의 층을 구분하는 그림입니다. 모든 기억 물질이 자동으로 밈이 된다는 인과를 뜻하지 않습니다.</p></section>}
+ {node.timeline.length>0&&<section id="moments"><h2>{node.axis==='person'?'삶의 전환점':'기록 속 사건 흐름'}</h2><Fragment set:html={readingKit.timeline(reading.events,{ordered:reading.timeOrdered,note:reading.timeNote})}/></section>}
  <Perspectives topic={node.topic}/>
  <section id="reading"><h2>더 깊이 읽기</h2><a class="dossier-essay-link" href={topicUrl(node.topic)} data-reading-link><span class="eyebrow">함께 읽을 이유를 풀어 쓴 해설</span><strong>{essay.title}</strong><span>{essay.deck}</span><span aria-hidden="true">→</span></a><p class="atlas-curation-note">정체·역사·인물 행적의 스포일러가 포함됩니다. 원문 서술, 기록자의 견해, 편집자의 연결은 각 근거에 표시했습니다.</p></section>
  <SourceRegister entries={sources}/>

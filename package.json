@@ -2,6 +2,14 @@
   "name": "starrail-korean-library",
   "private": true,
   "type": "module",
-  "scripts": {"build": "astro build", "preview": "astro preview"},
-  "devDependencies": {"astro": "7.3.6", "@astrojs/starlight": "0.42.5", "satteri":"0.10.5"}
+  "scripts": {
+    "build": "astro build",
+    "preview": "astro preview",
+    "qa:reading": "node src/lib/reading-kit/integrity.mjs && node --test src/lib/reading-kit/*.test.mjs && node src/lib/reading-kit/qa.mjs public/reading-data"
+  },
+  "devDependencies": {
+    "astro": "7.3.6",
+    "@astrojs/starlight": "0.42.5",
+    "satteri": "0.10.5"
+  }
 }

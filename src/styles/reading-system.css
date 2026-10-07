@@ -271,3 +271,4 @@ body,h1,h2,h3,input,select,button,.lore-heading h1,.lore-statement,.lore-card h3
 :root[data-theme=light]{--sl-color-bg:var(--paper);--sl-color-bg-nav:var(--surface);--sl-color-bg-sidebar:var(--paper);--sl-color-text:var(--ink);--sl-color-hairline:var(--line);--sl-color-hairline-light:var(--line)}
 .browse .catalog-results { display: block; }
 .version-grid a[aria-current="page"] { color: var(--ink); background: var(--selected); }
+.early-records-entry{display:flex;flex-direction:column;gap:.35rem;padding:1rem 0;border-bottom:1px solid var(--archive-border);font-family:var(--sl-font)}.early-records-entry span{font-size:.85rem;color:var(--sl-color-gray-2)}

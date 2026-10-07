@@ -1,11 +1,12 @@
 ---
 import {atlas} from '../lib/atlas';
-import Evidence from './Evidence.astro';
+import {readingGraph,readingKit,readingClaim} from '../lib/reading-data';
 const comparison=atlas.comparisons[Astro.props.topic];
+const cluster=readingGraph.clusters.find(c=>c.topic===Astro.props.topic);
 ---
 {comparison&&<section class="perspective-section" id="perspectives">
   <p class="eyebrow">기록을 나란히 읽기</p><h2>{comparison.title}</h2>
   <p class="comparison-scope">{comparison.scope}</p>
-  <div class="perspective-grid">{comparison.panels.map((panel,i)=><article class="perspective-panel"><span class="panel-number" aria-hidden="true">{String(i+1).padStart(2,'0')}</span><h3>{panel.label}</h3><p>{panel.text}</p><Evidence e={panel.evidence}/></article>)}</div>
+  <Fragment set:html={readingKit.comparison(cluster!.comparisons.map(p=>({...p,...readingClaim(p.claimId)})))} />
   <dl class="comparison-conclusions"><div><dt>함께 말하는 것</dt><dd>{comparison.same}</dd></div><div><dt>갈라지는 초점</dt><dd>{comparison.different}</dd></div><div><dt>편집자의 읽기</dt><dd>{comparison.reading}</dd></div></dl>
 </section>}
