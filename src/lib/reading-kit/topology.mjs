@@ -18,8 +18,8 @@ export function renderTopology(t,{escape,href,inline,evidence}){
  const group=Array.from({length:layers},(_,i)=>t.nodes.filter(n=>n.layer===i));const height=Math.max(260,...group.map(g=>g.length*160+40));
  const positions=new Map();for(const [i,g]of group.entries())for(const [j,n]of g.entries())positions.set(n.id,{x:(i+.5)/layers*1000,y:(j+.5)/g.length*height});
  const marker='arrow-'+String(t.id).replace(/[^a-zA-Z0-9_-]/g,'-');
- const paths=t.edges.map(e=>{const a=positions.get(e.from),b=positions.get(e.to),half=500/layers-17,back=e.kind==='return';let d;
- if(back)d=`M ${a.x} ${a.y+65} C ${a.x} ${height-5}, ${b.x} ${height-5}, ${b.x} ${b.y+65}`;
+ const paths=t.edges.map(e=>{const a=positions.get(e.from),b=positions.get(e.to),half=500/layers-17,back=e.kind==='return',skip=Math.abs(t.nodes.find(n=>n.id===e.from).layer-t.nodes.find(n=>n.id===e.to).layer)>1;let d;
+ if(back||skip)d=`M ${a.x} ${a.y+65} C ${a.x} ${height-5}, ${b.x} ${height-5}, ${b.x} ${b.y+75}`;
  else {const x=a.x+half,y=b.x-half,mid=(x+y)/2;d=`M ${x} ${a.y} C ${mid} ${a.y}, ${mid} ${b.y}, ${y} ${b.y}`;}
  return `<path d="${d}" class="${back?'rw-back-edge':''}" marker-end="url(#${marker})"/>`;}).join('');
  const name=id=>t.nodes.find(n=>n.id===id).name;
