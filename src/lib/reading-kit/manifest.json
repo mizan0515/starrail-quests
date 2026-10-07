@@ -10,7 +10,7 @@
     "render.mjs": "06cc13ad8dd1384fffce8f1da79238d1b252be7767e43dcb31fa2f297c693675",
     "render.test.mjs": "fb46a6bf9903d3d7becfc3cf66dd515786cbcfdb77f2e31e648f8911b1f970cd",
     "state.mjs": "4452dd30d6c59616d79dcaf134cc96e7cb9843c5def2f327febb9c0f5510fe78",
-    "topology.mjs": "61d6fdc77609ecc4be4898f37f701819e55fa6906f9883d34e67586852d45ab6",
+    "topology.mjs": "c7a0affd080e4ebd877357ebab88d9e2b98aa3b20f80bcb9f142877db07b3074",
     "topology.test.mjs": "3418c1fe9bc60381e2e8592ecf3ed0a1a5cc51e83672fb272c539ebb8677b96f",
     "write.mjs": "b243bac141f82faa81a86c27246c3d258b7409d5851bb68bf07fc7054e6be979"
   }
