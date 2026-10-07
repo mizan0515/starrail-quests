@@ -5,7 +5,7 @@ const node=atlas.nodes.find(n=>n.id===Astro.props.nodeId);
 const comparison=node?.comparison||atlas.comparisons[Astro.props.topic];
 const cluster=readingGraph.clusters.find(c=>node?c.id==='atlas/'+node.id:c.topic===Astro.props.topic);
 ---
-{comparison&&<section class="perspective-section" id="perspectives">
+{comparison?.panels.length>0&&<section class="perspective-section" id="perspectives">
   <p class="eyebrow">기록을 나란히 읽기</p><h2>{comparison.title}</h2>
   <p class="comparison-scope">{comparison.scope}</p>
   <Fragment set:html={readingKit.comparison(cluster!.comparisons.map(p=>({...p,...readingClaim(p.claimId)})))} />

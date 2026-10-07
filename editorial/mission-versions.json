@@ -4754,6 +4754,39 @@
         }
       ],
       "basis": "버전의 신규 임무 목록과 로컬 임무 제목 대조"
+    },
+    "quest-1030101": {
+      "version": "2.0",
+      "title": "밤으로의 긴 여로",
+      "sources": [
+        {
+          "title": "2.0 프리뷰 · 신규 임무의 한국어 제목",
+          "url": "https://ghostweb.tistory.com/1855"
+        }
+      ],
+      "basis": "2.0 공개 프리뷰의 신규 임무 목록과 로컬 임무 제목 대조"
+    },
+    "quest-2021801": {
+      "version": "2.0",
+      "title": "가면의 듀엣",
+      "sources": [
+        {
+          "title": "2.0 프리뷰 · 신규 임무의 한국어 제목",
+          "url": "https://ghostweb.tistory.com/1855"
+        }
+      ],
+      "basis": "2.0 공개 프리뷰의 신규 임무 목록과 로컬 임무 제목 대조"
+    },
+    "quest-2021802": {
+      "version": "2.0",
+      "title": "가면의 듀엣",
+      "sources": [
+        {
+          "title": "2.0 프리뷰 · 신규 임무의 한국어 제목",
+          "url": "https://ghostweb.tistory.com/1855"
+        }
+      ],
+      "basis": "2.0 공개 프리뷰의 신규 임무 목록과 로컬 임무 제목 대조"
     }
   }
 }
