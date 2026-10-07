@@ -868,7 +868,140 @@
           "status": "원문 서술"
         }
       ],
-      "timeline": []
+      "timeline": [],
+      "topology": {
+        "id": "memory-structure",
+        "title": "기억 물질이 이루는 공간과 존재",
+        "scaleNote": "원문은 두 집합체의 크기 차이를 명시한다. 크기의 대소와 비율은 미확인이다.",
+        "nodes": [
+          {
+            "id": "material",
+            "name": "기억 물질",
+            "kind": "기억·의식의 운반체이자 재료",
+            "layer": 0,
+            "url": "/starrail-quests/문서/lore-10164.html"
+          },
+          {
+            "id": "field",
+            "name": "기억의 영역",
+            "kind": "기억 물질의 집합체 · 공간",
+            "layer": 1,
+            "url": "/starrail-quests/문서/lore-10163.html"
+          },
+          {
+            "id": "bubble",
+            "name": "기억 거품",
+            "kind": "크기가 다른 집합체",
+            "layer": 1,
+            "url": "/starrail-quests/문서/lore-10164.html"
+          },
+          {
+            "id": "meme",
+            "name": "기억의 영역 밈",
+            "kind": "특정 인지가 있는 실체",
+            "layer": 2,
+            "url": "/starrail-quests/문서/lore-10173.html"
+          }
+        ],
+        "edges": [
+          {
+            "id": "space",
+            "from": "material",
+            "to": "field",
+            "label": "응집하여 공간을 형성한다",
+            "text": "기억의 영역은 기억 물질이 응집되어 형성된 공간이다.",
+            "evidence": [
+              {
+                "id": "lore-10163",
+                "title": "기억의 영역",
+                "anchor": "section-1",
+                "quote": "「기억 물질」이 응집되어 형성된 공간.",
+                "hash": "13936765313414142839",
+                "status": "원문 서술"
+              }
+            ]
+          },
+          {
+            "id": "bubble",
+            "from": "material",
+            "to": "bubble",
+            "label": "집합체를 이룬다",
+            "text": "기억의 영역과 기억 거품은 기억 물질의 집합체이며 서로 크기만 다르다.",
+            "evidence": [
+              {
+                "id": "lore-10164",
+                "title": "기억 물질",
+                "anchor": "section-1",
+                "quote": "「기억의 영역」과 「기억 거품」 모두 기억 물질의 집합체이며 서로 크기만 다르다",
+                "hash": "2366099796471264462",
+                "status": "원문 서술"
+              }
+            ]
+          },
+          {
+            "id": "meme",
+            "from": "field",
+            "to": "meme",
+            "label": "잠재의식 조각이 쌓여 형성한다",
+            "text": "기억의 영역 밈은 기억의 영역 속 잠재의식 조각이 쌓여 만들어진 실체다.",
+            "evidence": [
+              {
+                "id": "lore-10173",
+                "title": "기억의 영역 밈",
+                "anchor": "section-1",
+                "quote": "기억의 영역 속 잠재의식 조각이 쌓여서 만들어졌다",
+                "hash": "5248990216332377645",
+                "status": "원문 서술"
+              }
+            ]
+          }
+        ]
+      },
+      "comparison": {
+        "title": "재료·공간·실체를 구분하기",
+        "scope": "게임의 개념 설명에서 기억 물질, 기억의 영역, 기억의 영역 밈의 정의를 나란히 읽는다.",
+        "panels": [
+          {
+            "label": "기억 물질",
+            "text": "인간의 기억과 의식의 운반체이자 재료.",
+            "evidence": {
+              "id": "lore-10164",
+              "title": "기억 물질",
+              "anchor": "section-1",
+              "quote": "인간의 기억과 의식의 운반체이자 재료.",
+              "hash": "2366099796471264462",
+              "status": "원문 서술"
+            }
+          },
+          {
+            "label": "기억의 영역",
+            "text": "「기억 물질」이 응집되어 형성된 공간.",
+            "evidence": {
+              "id": "lore-10163",
+              "title": "기억의 영역",
+              "anchor": "section-1",
+              "quote": "「기억 물질」이 응집되어 형성된 공간.",
+              "hash": "13936765313414142839",
+              "status": "원문 서술"
+            }
+          },
+          {
+            "label": "기억의 영역 밈",
+            "text": "기억의 영역 속 잠재의식 조각이 쌓여서 만들어졌다",
+            "evidence": {
+              "id": "lore-10173",
+              "title": "기억의 영역 밈",
+              "anchor": "section-1",
+              "quote": "기억의 영역 속 잠재의식 조각이 쌓여서 만들어졌다",
+              "hash": "5248990216332377645",
+              "status": "원문 서술"
+            }
+          }
+        ],
+        "same": "세 개념은 기억과 의식에 관한 설명으로 연결된다.",
+        "different": "기억 물질은 물리적 상태의 기억·의식이며, 기억의 영역은 그 물질이 응집한 공간이다. 기억의 영역 밈은 그 공간에서 잠재의식 조각이 쌓여 만들어진 실체다.",
+        "reading": "기억 물질에서 공간으로, 공간에서 실체로 이어지는 관계를 각 정의의 원문과 함께 읽는다."
+      }
     },
     {
       "id": "watchmaker",

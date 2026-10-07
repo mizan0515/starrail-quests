@@ -1,8 +1,9 @@
 ---
 import {atlas} from '../lib/atlas';
 import {readingGraph,readingKit,readingClaim} from '../lib/reading-data';
-const comparison=atlas.comparisons[Astro.props.topic];
-const cluster=readingGraph.clusters.find(c=>c.topic===Astro.props.topic);
+const node=atlas.nodes.find(n=>n.id===Astro.props.nodeId);
+const comparison=node?.comparison||atlas.comparisons[Astro.props.topic];
+const cluster=readingGraph.clusters.find(c=>node?c.id==='atlas/'+node.id:c.topic===Astro.props.topic);
 ---
 {comparison&&<section class="perspective-section" id="perspectives">
   <p class="eyebrow">기록을 나란히 읽기</p><h2>{comparison.title}</h2>
