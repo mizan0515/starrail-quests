@@ -1,5 +1,5 @@
 {
-  "version": "1.1.0",
+  "version": "1.1.1",
   "files": {
     "graph.mjs": "65fe495f2d260fed91fa4610fe47dec6c127819f1268d09a803f81f2e695da14",
     "graph.test.mjs": "1334a91d1da97ac8501acf4708e412de2ca489ef43e1725a6b4f65c9219bbe3a",
@@ -7,7 +7,7 @@
     "qa.mjs": "9316945172f6fe586be2b9ffbd64f725cd59ab8482604c6fd64340265ae0c168",
     "qa.test.mjs": "69065045ad6f5f8df4c1f1898b0540a20d665c721f6e5ff8ba45452d206e43f4",
     "reading.css": "9790fc29b904306b4b404dcfc0f9a18e51b88b4f941b0eb909e30e2bb641b4d9",
-    "render.mjs": "06cc13ad8dd1384fffce8f1da79238d1b252be7767e43dcb31fa2f297c693675",
+    "render.mjs": "0f4e634c193494024d1dabb3c708e22abf6f50ba3c2913ed9d67cccf8f34d15c",
     "render.test.mjs": "fb46a6bf9903d3d7becfc3cf66dd515786cbcfdb77f2e31e648f8911b1f970cd",
     "state.mjs": "4452dd30d6c59616d79dcaf134cc96e7cb9843c5def2f327febb9c0f5510fe78",
     "topology.mjs": "c7a0affd080e4ebd877357ebab88d9e2b98aa3b20f80bcb9f142877db07b3074",

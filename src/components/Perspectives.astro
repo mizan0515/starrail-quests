@@ -9,5 +9,5 @@ const cluster=readingGraph.clusters.find(c=>node?c.id==='atlas/'+node.id:c.topic
   <p class="eyebrow">기록을 나란히 읽기</p><h2>{comparison.title}</h2>
   <p class="comparison-scope">{comparison.scope}</p>
   <Fragment set:html={readingKit.comparison(cluster!.comparisons.map(p=>({...p,...readingClaim(p.claimId)})))} />
-  <dl class="comparison-conclusions"><div><dt>함께 말하는 것</dt><dd>{comparison.same}</dd></div><div><dt>갈라지는 초점</dt><dd>{comparison.different}</dd></div><div><dt>편집자의 읽기</dt><dd>{comparison.reading}</dd></div></dl>
+  {comparison.same&&<dl class="comparison-conclusions"><div><dt>함께 말하는 것</dt><dd>{comparison.same}</dd></div><div><dt>갈라지는 초점</dt><dd>{comparison.different}</dd></div><div><dt>편집자의 읽기</dt><dd>{comparison.reading}</dd></div></dl>}
 </section>}

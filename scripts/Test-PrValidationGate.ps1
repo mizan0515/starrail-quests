@@ -11,5 +11,7 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Complete source QA failed'}
   & python tools/verify_site.py --root dist --base /starrail-quests
   if($LASTEXITCODE -ne 0){throw 'Source and link QA failed'}
+  & python tools/verify_mission_versions.py
+  if($LASTEXITCODE -ne 0){throw 'Mission version boundary QA failed'}
   Write-Output 'RESULT: PASS'
 } finally {Pop-Location}

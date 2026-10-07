@@ -1,0 +1,10 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import AtlasHub from '../components/AtlasHub.astro';
+import {href} from '../lib/data';
+---
+<StarlightPage frontmatter={{title:'세력과 위협',description:'세력의 목적·소속·발언과 개척자의 여정',editUrl:false,tableOfContents:false}}>
+<p class="page-deck">군대의 목표, 조직의 신앙, 인물의 소속과 발언에서 개척자의 여정으로 이어 읽습니다.</p>
+<AtlasHub axis="bridge"/>
+<p><a href={href('맥락/stellaron.html')}>스텔라론과 열계, 우주정거장의 수용체 →</a></p>
+</StarlightPage>

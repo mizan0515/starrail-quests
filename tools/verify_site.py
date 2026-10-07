@@ -70,7 +70,7 @@ def main():
                     anchor=f"{section['anchor']}-row-{i}"
                     if rendered.get(anchor)!=row['text']:errors.append((d['id'],anchor,'rendered original text differs'))
                     original_rows+=1
-    atlas=json.loads((root.parent/'editorial/context-atlas.json').read_text('utf8'));atlas_evidence={};node_ids={n['id'] for n in atlas['nodes']}
+    atlas=json.loads((root.parent/'editorial/context-atlas.json').read_text('utf8'));atlas_evidence={};node_ids={n['id'] for n in atlas['nodes']}|{e['id'] for e in json.loads((data/'explorer.json').read_text('utf8'))['entries']}
     for node in atlas['nodes']:
         target=root/'맥락'/(node['id']+'.html')
         if not target.exists() or 'verified-sources' not in pages[target.resolve()].ids:errors.append((node['id'],'missing dossier or bottom sources'))
