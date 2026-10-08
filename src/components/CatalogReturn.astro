@@ -3,6 +3,9 @@ import {href} from '../lib/data';
 ---
 <a class="catalog-return" data-catalog-return href={href('index.html')} hidden>← 읽던 목록으로 돌아가기</a>
 <script>
- const from=new URLSearchParams(location.search).get('from');
- if(from){try{const u=new URL(from,location.origin),base=import.meta.env.BASE_URL.replace(/\/$/,'')+'/';if(u.origin===location.origin&&u.pathname.startsWith(base)&&/^(index\.html|versions\/[^/]+\.html|quests\/[^/]+\.html|설정집\.html)$/.test(decodeURI(u.pathname.slice(base.length)))){for(const link of document.querySelectorAll<HTMLAnchorElement>('[data-catalog-return]')){link.href=u.href;link.hidden=false;}}}catch{}}
+ import {safeReadingReturn} from '../lib/reading-return.mjs';
+ const base=import.meta.env.BASE_URL.replace(/\/$/,'');
+ const current=safeReadingReturn(location.pathname+location.search+location.hash,{origin:location.origin,base});
+ const from=current&&new URL(current,location.origin).searchParams.get('from');
+ if(from)for(const link of document.querySelectorAll<HTMLAnchorElement>('[data-catalog-return]')){link.href=from;link.hidden=false;}
 </script>

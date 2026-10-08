@@ -9,6 +9,69 @@ def at(obj,pointer):
     for component in pointer.split('/')[1:]:obj=obj[int(component)] if isinstance(obj,list) else obj[component]
     return obj
 
+def verify_started_event_branch(edge,evidence,metadata=None,event_objects=None):
+    assert edge['source'].startswith('Config/Level/Mission/') and Path(edge['source']).name.startswith('MissionInfo_')
+    assert edge['graphSource'].startswith(('Config/Level/NPCDialogue/','Config/Level/PropDialogue/','Config/Level/GroupGraph/'))
+    for path_key,hash_key in [('graphSource','graphSha256'),('missionSource','missionSha256'),('tableSource','tableSha256')]:
+        assert edge[hash_key]==evidence['structureFiles'][edge[path_key]]
+    assert re.fullmatch(r'/SubMissionList/\d+/ID',edge['pointer'])
+    base=edge['pointer'].rsplit('/',1)[0]
+    assert edge['ownerPointer']==base+'/MainMissionID' and edge['missionPathPointer']==base+'/MissionJsonPath' and edge['finishKeyPointer']==base+'/ParamStr1'
+    branch_pointer=edge['predicatePointer'].rsplit('/',1)[0]
+    assert edge['scopePointer']==branch_pointer+'/SuccessTaskList'
+    assert re.fullmatch(re.escape(edge['scopePointer'])+r'/\d+/PerformanceID',edge['performancePointer'])
+    assert re.fullmatch(re.escape(edge['scopePointer'])+r'/\d+/CustomString(?:/Value)?',edge['sendPointer'])
+    if metadata is None:return
+    mi=at(metadata[edge['source']],base)
+    assert mi['ID']==edge['submissionId'] and mi['MainMissionID']==edge['missionId']
+    all_owners={row['MainMissionID'] for name,obj in metadata.items() if name.startswith('Config/Level/Mission/') and Path(name).name.startswith('MissionInfo_') and isinstance(obj,dict) for row in obj.get('SubMissionList',[]) if row.get('ID')==edge['submissionId'] and type(row.get('MainMissionID')) is int}
+    assert all_owners=={edge['missionId']}
+    assert mi['FinishType']=='Talk' and mi['ParamType']=='Equal'
+    assert mi['MissionJsonPath']==edge['missionSource'] and mi['ParamStr1']==edge['finishKey']
+    graph=metadata[edge['graphSource']];branch=at(graph,branch_pointer);pred=at(graph,edge['predicatePointer'])
+    assert pred['$type']=='RPG.GameCore.ByCompareSubMissionState' and pred['SubMissionID']==mi['ID'] and pred['SubMissionState']=='Started'
+    parts=branch_pointer.split('/')[1:];assert not any(key in ('DefaultTask','FailTaskList','FailureTaskList','OnFailure','OnFail','OnFailed') for key in parts)
+    ancestor_conditions=[]
+    for i,key in enumerate(parts):
+        ancestor=at(graph,'/'+('/'.join(parts[:i]))) if i else graph
+        parent_predicate=ancestor.get('Predicate',{}) if isinstance(ancestor,dict) else {}
+        if parent_predicate and key in ('SuccessTaskList','FailedTaskList'):
+            ancestor_conditions.append({'predicatePointer':'/'+('/'.join(parts[:i]))+'/Predicate','branchKey':key,'predicate':parent_predicate})
+        assert key!='FailedTaskList' or parent_predicate
+        if parent_predicate.get('$type')!='RPG.GameCore.ByCompareSubMissionState':continue
+        same=parent_predicate.get('SubMissionID')==mi['ID'];started=parent_predicate.get('SubMissionState')=='Started'
+        assert not (key=='SuccessTaskList' and ((started and not same) or (same and not started)))
+        assert not (key=='FailedTaskList' and same and started)
+    assert edge['ancestorConditions']==ancestor_conditions
+    if branch.get('$type')!='RPG.GameCore.PredicateTaskList':
+        parent,key,index=branch_pointer.rsplit('/',2)
+        assert key=='TaskList' and index.isdigit() and at(graph,parent)['$type']=='RPG.GameCore.SwitchCase'
+    tasks=at(graph,edge['scopePointer']);perf_index=int(edge['performancePointer'].split('/')[-2]);send_index=int(edge['sendPointer'].split('/CustomString')[0].split('/')[-1])
+    assert perf_index<send_index
+    assert [i for i,t in enumerate(tasks) if t.get('$type')=='RPG.GameCore.TriggerPerformance']==[perf_index]
+    assert [i for i,t in enumerate(tasks) if t.get('$type')=='RPG.GameCore.TriggerCustomString']==[send_index]
+    perf=tasks[perf_index]
+    assert perf['PerformanceID']==edge['performanceId'] and perf['PerformanceType']==edge['performanceType']
+    assert at(graph,edge['sendPointer'])==edge['event']
+    assert at(metadata[edge['tableSource']],edge['idPointer'])==edge['performanceId'] and at(metadata[edge['tableSource']],edge['pathPointer'])==edge['target']
+    from build_mission_dialogue_supplements import performance_matches,event_refs
+    records={edge['performanceId']:[{'source':name,'target':row['PerformancePath']} for name,obj in metadata.items() if name.startswith('ExcelOutput/Performance') for row in obj if row.get('PerformanceID')==edge['performanceId'] and row.get('PerformancePath')]}
+    matches,scope=performance_matches(records,edge['performanceId'],edge['performanceType'])
+    assert {m['target'] for m in matches}=={edge['target']} and scope==edge['lookupScope']
+    mission=metadata[edge['missionSource']];wait_pointer=edge['receiverPointer'].split('/CustomString')[0];wait=at(mission,wait_pointer)
+    assert wait['$type']=='RPG.GameCore.WaitCustomString' and at(mission,edge['receiverPointer'])==edge['event']
+    finish=at(mission,edge['finishPointer'].rsplit('/',1)[0]);assert finish['$type']=='RPG.GameCore.FinishPerformanceMission' and finish['Key']==mi['ParamStr1']
+    wait_base,wait_i=wait_pointer.rsplit('/',1);finish_base,finish_i=edge['finishPointer'].rsplit('/Key',1)[0].rsplit('/',1)
+    assert wait_base==finish_base and wait_base.endswith('/TaskList') and int(wait_i)<int(finish_i)
+    mission_tasks=at(mission,wait_base)
+    assert [t['Key'] for t in mission_tasks if t.get('$type')=='RPG.GameCore.FinishPerformanceMission']==[mi['ParamStr1']]
+    if event_objects is not None:
+        producers,consumers=event_objects if isinstance(event_objects,tuple) else event_refs(event_objects,all_names=True)
+        assert producers[edge['event']]==edge['eventProducers'] and consumers[edge['event']]==edge['eventConsumers']
+    assert edge['eventConsumers']==[{'source':edge['missionSource'],'pointer':edge['receiverPointer']}]
+    direct={'source':edge['graphSource'],'pointer':edge['sendPointer']}
+    assert direct in edge['eventProducers'] and all(p==direct or p['source']==edge['target'] for p in edge['eventProducers'])
+
 def verify_branch(edge,evidence,metadata=None):
     assert edge['graphSha256']==evidence['structureFiles'][edge['graphSource']]
     assert edge['tableSha256']==evidence['structureFiles'][edge['tableSource']]
@@ -169,7 +232,7 @@ def main(archive=None):
                 assert edge['source']==current
                 assert edge['sourceSha256']==evidence['structureFiles'][edge['source']]
                 if i:
-                    assert edge['kind'] in ('EXPLICIT_JSON_PATH','EXPLICIT_PERFORMANCE_LOOKUP','EXACT_UNIQUE_EVENT_CHANNEL','EXPLICIT_SUBMISSION_PERFORMANCE_BRANCH','EXPLICIT_STARTED_SUBMISSION_MENU','EXPLICIT_SUBMISSION_FINISH_SCOPE','EXPLICIT_MISSION_FINISH_PERFORMANCE')
+                    assert edge['kind'] in ('EXPLICIT_JSON_PATH','EXPLICIT_PERFORMANCE_LOOKUP','EXACT_UNIQUE_EVENT_CHANNEL','EXPLICIT_SUBMISSION_PERFORMANCE_BRANCH','EXPLICIT_STARTED_PERFORMANCE_EVENT_BRANCH','EXPLICIT_STARTED_SUBMISSION_MENU','EXPLICIT_SUBMISSION_FINISH_SCOPE','EXPLICIT_MISSION_FINISH_PERFORMANCE')
                     assert edge['pointer'].startswith('/')
                     if edge['kind']=='EXPLICIT_PERFORMANCE_LOOKUP':
                         assert edge['tableSha256']==evidence['structureFiles'][edge['tableSource']]
@@ -246,11 +309,12 @@ def main(archive=None):
             for i,edge in enumerate(chain):
                 assert edge['source']==current and edge['sourceSha256']==evidence['structureFiles'][current]
                 if edge['kind']=='EXPLICIT_SUBMISSION_PERFORMANCE_BRANCH':verify_branch(edge,evidence)
+                if edge['kind']=='EXPLICIT_STARTED_PERFORMANCE_EVENT_BRANCH':verify_started_event_branch(edge,evidence)
                 if edge['kind']=='EXPLICIT_STARTED_SUBMISSION_MENU':verify_started_menu(edge,evidence)
                 if edge['kind']=='EXPLICIT_SUBMISSION_FINISH_SCOPE':verify_finish_scope(edge,evidence)
                 if edge['kind']=='EXPLICIT_MISSION_FINISH_PERFORMANCE':verify_finish_performance(edge,evidence)
                 if i:
-                    assert edge['kind'] in ('EXPLICIT_JSON_PATH','EXPLICIT_PERFORMANCE_LOOKUP','EXACT_UNIQUE_EVENT_CHANNEL','EXPLICIT_SUBMISSION_PERFORMANCE_BRANCH','EXPLICIT_STARTED_SUBMISSION_MENU','EXPLICIT_SUBMISSION_FINISH_SCOPE','EXPLICIT_MISSION_FINISH_PERFORMANCE')
+                    assert edge['kind'] in ('EXPLICIT_JSON_PATH','EXPLICIT_PERFORMANCE_LOOKUP','EXACT_UNIQUE_EVENT_CHANNEL','EXPLICIT_SUBMISSION_PERFORMANCE_BRANCH','EXPLICIT_STARTED_PERFORMANCE_EVENT_BRANCH','EXPLICIT_STARTED_SUBMISSION_MENU','EXPLICIT_SUBMISSION_FINISH_SCOPE','EXPLICIT_MISSION_FINISH_PERFORMANCE')
                     assert edge['pointer'].startswith('/')
                     if edge.get('tableSource'):assert edge['tableSha256']==evidence['structureFiles'][edge['tableSource']]
                     current=edge['target']
@@ -318,12 +382,13 @@ def main(archive=None):
             if included:
                 assert sha(raw)==evidence['structureFiles'][name]
                 metadata[name]=json.loads(raw)
-            if structure and b'Talk_' in raw and (b'WaitCustomString' in raw or b'TriggerCustomString' in raw):
+            if structure and (b'WaitCustomString' in raw or b'TriggerCustomString' in raw):
                 event_objects[name]=metadata.get(name) or json.loads(raw)
       assert set(metadata)==set(evidence['structureFiles'])
       legacy_membership=verify_primary_legacy_membership(out,metadata)
       from build_mission_dialogue_supplements import event_refs
       producers,consumers=event_refs(event_objects)
+      all_event_index=event_refs(event_objects,all_names=True)
       for conflict in out.get('runtimeGroupOwnershipConflicts',[]):
           origin=metadata[conflict['source']];graph=metadata[conflict['target']]
           assert origin['$type']=='RPG.GameCore.RtLevelGroupInfo'
@@ -362,6 +427,7 @@ def main(archive=None):
               for edge in chain:
                   origin=metadata[edge['source']]
                   if edge['kind']=='EXPLICIT_SUBMISSION_PERFORMANCE_BRANCH':verify_branch(edge,evidence,metadata)
+                  if edge['kind']=='EXPLICIT_STARTED_PERFORMANCE_EVENT_BRANCH':verify_started_event_branch(edge,evidence,metadata,all_event_index)
                   if edge['kind']=='EXPLICIT_STARTED_SUBMISSION_MENU':verify_started_menu(edge,evidence,metadata)
                   if edge['kind']=='EXPLICIT_SUBMISSION_FINISH_SCOPE':verify_finish_scope(edge,evidence,metadata)
                   if edge['kind']=='EXPLICIT_MISSION_FINISH_PERFORMANCE':verify_finish_performance(edge,evidence,metadata)
@@ -412,6 +478,7 @@ def main(archive=None):
           for mid,s in entries:
             for edge in s['ownership']:
                 origin=metadata[edge['source']]
+                if edge['kind']=='EXPLICIT_STARTED_PERFORMANCE_EVENT_BRANCH':verify_started_event_branch(edge,evidence,metadata,all_event_index)
                 if edge['kind']=='EXPLICIT_MAIN_MISSION_ID':assert at(origin,edge['pointer'])==edge['missionId']
                 elif edge['kind']=='EXPLICIT_JSON_PATH':assert at(origin,edge['pointer'])==edge['target']
                 elif edge['kind']=='EXPLICIT_PERFORMANCE_LOOKUP':
@@ -485,6 +552,25 @@ def main(archive=None):
         assert runtime_canary['primaryCompleteness']=='PARTIAL_MISSING_REFERENCED_STRUCTURE'
         assert any(ref['target']=='Story/Mission/1054411/Story105441100.json' for ref in runtime_canary['missingPrimaryStoryReferences'])
         assert any(ref['target']=='Story/Discussion/Mission/1054411/DS105441108.json' for ref in runtime_canary['missingPrimaryStoryReferences'])
+    started_target='Config/Level/Mission/8021201/Act/Act802120101.json'
+    started_chain=out['coverage']['quest-8021201']['sourceOwnership'][started_target]
+    started_edge=started_chain[-1]
+    assert started_edge['kind']=='EXPLICIT_STARTED_PERFORMANCE_EVENT_BRANCH'
+    assert started_edge['submissionId']==802120101
+    assert 'Config/Level/Mission/8021201/Act/Act802120106.json' not in {source for source,chain in out['coverage']['quest-8021201']['sourceOwnership'].items() if chain[0]['kind']=='EXPLICIT_MAIN_MISSION_ID'}
+    if archive:
+        from copy import deepcopy
+        verify_started_event_branch(started_edge,evidence,metadata,all_event_index)
+        mutations=[]
+        for field,value in [('submissionId',802120102),('finishKey','Mission_OTHER'),('scopePointer',started_edge['scopePointer'].replace('SuccessTaskList','DefaultTask')),('performancePointer',started_edge['performancePointer'].replace('SuccessTaskList','DefaultTask'))]:
+            altered=deepcopy(started_edge);altered[field]=value;mutations.append((altered,metadata))
+        altered_metadata=dict(metadata);altered_metadata[started_edge['graphSource']]=deepcopy(metadata[started_edge['graphSource']])
+        at(altered_metadata[started_edge['graphSource']],started_edge['predicatePointer'])['SubMissionState']='Finish'
+        mutations.append((started_edge,altered_metadata))
+        for altered,inputs in mutations:
+            try:verify_started_event_branch(altered,evidence,inputs,all_event_index)
+            except (AssertionError,KeyError,IndexError):continue
+            raise AssertionError('Invalid Started/event branch mutation was accepted')
     print(json.dumps({'status':'PASS','scope':'local-original-preservation-and-provenance-plus-archive-pointers' if archive else 'local-original-preservation-and-provenance','archivePointersVerified':bool(archive),'archiveSourcesVerified':len(verified),'primaryLegacyMembershipVerified':bool(archive),'primaryLegacyMembership':legacy_membership,'missions':len(out['missions']),'scenes':scene_count,'supplementRows':row_count,'uniqueTalkIds':len(unique),'unchangedLocalKoreanRows':len(local),'coverageMissions':len(quest_ids),'sourceOwnershipChains':sum(len(c['sourceOwnership']) for c in out['coverage'].values()),'requiredExamples':[803130057,845000106]}))
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--archive',type=Path);main(p.parse_args().archive)

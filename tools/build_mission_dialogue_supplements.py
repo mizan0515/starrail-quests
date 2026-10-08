@@ -57,7 +57,7 @@ def load_metadata(archive):
                         performances[row['PerformanceID']].append({'source':n,'idPointer':'/'+str(i)+'/PerformanceID','pathPointer':'/'+str(i)+'/PerformancePath','target':row['PerformancePath']})
     return metadata,hashes,performances
 
-def event_refs(metadata):
+def event_refs(metadata, all_names=False):
     producers=defaultdict(list);consumers=defaultdict(list)
     for source,obj in metadata.items():
         if not source.startswith(('Config/','Story/')):continue
@@ -67,9 +67,84 @@ def event_refs(metadata):
             value=task.get('CustomString');pointer=ptr+'/CustomString'
             if isinstance(value,dict):value=value.get('Value');pointer+='/Value'
             # Match the entire event name; never derive mission or talk IDs.
-            if isinstance(value,str) and re.fullmatch(r'Talk_\d+',value):
+            if isinstance(value,str) and value and (all_names or re.fullmatch(r'Talk_\d+',value)):
                 (consumers if kind=='WaitCustomString' else producers)[value].append({'source':source,'pointer':pointer})
     return producers,consumers
+
+def submission_started_event_performances(metadata, hashes, performances):
+    """Follow a direct Started branch through its exact mission completion event.
+
+    The branch and its explicitly called performance may both emit the event.
+    Other producers, default tasks and nested performance calls are excluded.
+    """
+    submissions=defaultdict(list);result=defaultdict(list);all_owners=defaultdict(set)
+    for source,obj in metadata.items():
+        if not source.startswith('Config/Level/Mission/') or not Path(source).name.startswith('MissionInfo_') or not isinstance(obj,dict):continue
+        for index,row in enumerate(obj.get('SubMissionList',[])):
+            if type(row.get('ID')) is int and type(row.get('MainMissionID')) is int:all_owners[row['ID']].add(row['MainMissionID'])
+            if type(row.get('ID')) is int and type(row.get('MainMissionID')) is int and row.get('FinishType')=='Talk' and row.get('ParamType')=='Equal' and row.get('MissionJsonPath') in metadata and isinstance(row.get('ParamStr1'),str):
+                submissions[row['ID']].append((source,index,row))
+    producers,consumers=event_refs(metadata,all_names=True)
+    for graph,obj in metadata.items():
+        if not graph.startswith(('Config/Level/NPCDialogue/','Config/Level/PropDialogue/','Config/Level/GroupGraph/')):continue
+        for branch,ptr in objects(obj):
+            predicate=branch.get('Predicate',{});sid=predicate.get('SubMissionID')
+            if predicate.get('$type')!='RPG.GameCore.ByCompareSubMissionState' or predicate.get('SubMissionState')!='Started' or sid not in submissions:continue
+            if len(all_owners[sid])!=1:continue
+            parts=ptr.split('/')[1:]
+            if any(key in ('DefaultTask','FailTaskList','FailureTaskList','OnFailure','OnFail','OnFailed') for key in parts):continue
+            conflict=False;ancestor_conditions=[]
+            ancestor=obj
+            for depth,key in enumerate(parts):
+                parent_predicate=ancestor.get('Predicate',{}) if isinstance(ancestor,dict) else {}
+                if parent_predicate and key in ('SuccessTaskList','FailedTaskList'):
+                    ancestor_conditions.append({'predicatePointer':'/'+('/'.join(parts[:depth]))+'/Predicate','branchKey':key,'predicate':parent_predicate})
+                if key=='FailedTaskList' and not parent_predicate:conflict=True
+                if parent_predicate.get('$type')=='RPG.GameCore.ByCompareSubMissionState':
+                    same=parent_predicate.get('SubMissionID')==sid;started=parent_predicate.get('SubMissionState')=='Started'
+                    if key=='SuccessTaskList' and ((started and not same) or (same and not started)):conflict=True
+                    if key=='FailedTaskList' and same and started:conflict=True
+                ancestor=ancestor[int(key)] if isinstance(ancestor,list) else ancestor[key]
+            if conflict:continue
+            # SwitchCase children have no type; validate their exact parent.
+            if branch.get('$type')!='RPG.GameCore.PredicateTaskList':
+                parts=ptr.rsplit('/',2)
+                if len(parts)!=3 or parts[1]!='TaskList' or not parts[2].isdigit():continue
+                parent=obj
+                for key in parts[0].split('/')[1:]:parent=parent[int(key)] if isinstance(parent,list) else parent[key]
+                if parent.get('$type')!='RPG.GameCore.SwitchCase':continue
+            tasks=branch.get('SuccessTaskList',[])
+            direct=[(i,t) for i,t in enumerate(tasks) if t.get('$type')=='RPG.GameCore.TriggerPerformance']
+            if len(direct)!=1:continue
+            perf_index,performance=direct[0]
+            matches,lookup=performance_matches(performances,performance.get('PerformanceID'),performance.get('PerformanceType'))
+            if len({r['target'] for r in matches})!=1:continue
+            record=matches[0];target=record['target']
+            if target not in metadata:continue
+            sends=[(i,t) for i,t in enumerate(tasks) if t.get('$type')=='RPG.GameCore.TriggerCustomString']
+            if len(sends)!=1 or sends[0][0]<=perf_index:continue
+            send_index,send=sends[0];event=send.get('CustomString');event=event.get('Value') if isinstance(event,dict) else event
+            if not isinstance(event,str) or not event:continue
+            send_pointer=ptr+f'/SuccessTaskList/{send_index}/CustomString'+('/Value' if isinstance(send.get('CustomString'),dict) else '')
+            actual=producers[event]
+            if {'source':graph,'pointer':send_pointer} not in actual:continue
+            if any(p!={'source':graph,'pointer':send_pointer} and p['source']!=target for p in actual):continue
+            if len(consumers[event])!=1:continue
+            for source,index,row in submissions[sid]:
+                mission=row['MissionJsonPath'];receiver=consumers[event][0]
+                if receiver['source']!=mission:continue
+                wait_pointer=receiver['pointer'].rsplit('/CustomString',1)[0]
+                base,position=wait_pointer.rsplit('/',1)
+                if not base.endswith('/TaskList') or not position.isdigit():continue
+                mission_tasks=metadata[mission]
+                for key in base.split('/')[1:]:mission_tasks=mission_tasks[int(key)] if isinstance(mission_tasks,list) else mission_tasks[key]
+                finishes=[i for i,t in enumerate(mission_tasks) if t.get('$type')=='RPG.GameCore.FinishPerformanceMission' and t.get('Key')==row['ParamStr1']]
+                if len(finishes)!=1 or finishes[0]<=int(position):continue
+                if any(t.get('$type')=='RPG.GameCore.FinishPerformanceMission' and t.get('Key')!=row['ParamStr1'] for t in mission_tasks):continue
+                edge={'kind':'EXPLICIT_STARTED_PERFORMANCE_EVENT_BRANCH','source':source,'pointer':f'/SubMissionList/{index}/ID','submissionId':sid,'missionId':row['MainMissionID'],'ownerPointer':f'/SubMissionList/{index}/MainMissionID','missionPathPointer':f'/SubMissionList/{index}/MissionJsonPath','finishKeyPointer':f'/SubMissionList/{index}/ParamStr1','finishKey':row['ParamStr1'],'graphSource':graph,'graphSha256':hashes[graph],'predicatePointer':ptr+'/Predicate','scopePointer':ptr+'/SuccessTaskList','performancePointer':ptr+f'/SuccessTaskList/{perf_index}/PerformanceID','performanceId':performance['PerformanceID'],'performanceType':performance['PerformanceType'],'lookupScope':lookup,'tableSource':record['source'],'idPointer':record['idPointer'],'pathPointer':record['pathPointer'],'target':target,'event':event,'sendPointer':send_pointer,'missionSource':mission,'missionSha256':hashes[mission],'receiverPointer':receiver['pointer'],'finishPointer':base+f'/{finishes[0]}/Key','eventProducers':actual,'eventConsumers':consumers[event]}
+                edge['ancestorConditions']=ancestor_conditions
+                result[source].append((target,edge))
+    return result
 
 def mission_ownership_index(metadata):
     result=defaultdict(list)
@@ -232,6 +307,7 @@ def build(archive):
     ownership_index=mission_ownership_index(metadata)
     group_index,group_conflicts=runtime_group_ownership_index(metadata)
     branch_links=submission_performance_branches(metadata,hashes,performances)
+    event_branch_links=submission_started_event_performances(metadata,hashes,performances)
     menu_links=submission_started_menu_links(metadata,hashes)
     dialogue_links=submission_dialogue_scopes(metadata,hashes)
     message_table='ExcelOutput/MessageSectionConfig.json'
@@ -280,6 +356,7 @@ def build(archive):
                 links=[(target,{'kind':'EXPLICIT_JSON_PATH','source':path,'pointer':ptr,'target':target}) for target,ptr in path_refs(obj) if allowed_pointer(path,ptr)]
                 if chain[0]['kind']=='EXPLICIT_MAIN_MISSION_ID':
                     links.extend((target,edge) for target,edge in branch_links.get(path,[]) if edge['missionId'] in membership)
+                    links.extend((target,edge) for target,edge in event_branch_links.get(path,[]) if edge['missionId'] in membership)
                     links.extend((target,edge) for target,edge in menu_links.get(path,[]) if edge['missionId'] in membership)
                     links.extend((target,edge) for target,edge in dialogue_links.get(path,[]) if edge['missionId'] in membership)
                 for task,ptr in objects(obj):
@@ -313,6 +390,7 @@ def build(archive):
                                 links.append((producer['source'],{'kind':'EXACT_UNIQUE_EVENT_CHANNEL','source':path,'pointer':event_pointer,'event':event,'producerPointer':producer['pointer'],'target':producer['source'],'producerCount':1,'consumerCount':1}))
                 for target,edge in links:
                     if edge.get('graphSource'):files[edge['graphSource']]=hashes[edge['graphSource']]
+                    if edge.get('missionSource'):files[edge['missionSource']]=hashes[edge['missionSource']]
                     if target not in metadata:
                         unavailable_paths.append({**edge,'sourceSha256':hashes[path],**({'tableSha256':hashes[edge['tableSource']]} if edge.get('tableSource') else {}),'ownershipSeed':chain[0]})
                         if edge.get('tableSource'):files[edge['tableSource']]=hashes[edge['tableSource']]

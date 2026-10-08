@@ -37,6 +37,19 @@ test('universe records retain their filtered list and exact reading anchor',()=>
  assert.equal(safe(base+'/우주/기록/a%2fb.html'),null);
 });
 
+test('official universe text retains its kind, query, expanded list and exact field',()=>{
+ const catalogue=base+'/우주/divergent-universe.html?textQuery='+encodeURIComponent('황금')+'&textKind=formula&textLimit=36#universe-source-official46-formula-10114000';
+ const path=base+'/우주/설정/official46-formula-10114000.html';
+ const source=path+'?from='+encodeURIComponent(catalogue)+'#official46-formula-10114000-FormulaStory-body';
+ const out=resolved(safe(source));
+ assert.equal(decodeURI(out.pathname),path);
+ assert.equal(out.searchParams.get('from'),resolved(catalogue).pathname+resolved(catalogue).search+resolved(catalogue).hash);
+ assert.equal(out.hash,'#official46-formula-10114000-FormulaStory-body');
+ assert.equal(safe(out.pathname+out.search+out.hash),out.pathname+out.search+out.hash);
+ assert.equal(safe(base+'/우주/설정/../../outside.html'),null);
+ assert.equal(safe(base+'/우주/설정/a%2fb.html'),null);
+});
+
 test('catalogue allowlist and one-level chain limit',()=>{
  for(const path of ['index.html','versions/early.html','quests/main.html','설정집.html']) {
   const out=resolved(safe(make(reading,base+'/'+path+'?q=abc&from='+encodeURIComponent(reading))));

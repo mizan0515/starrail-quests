@@ -13,6 +13,8 @@ export const missionDialogue=dialogueSupplements.missions as Record<string,any[]
 export const missionCoverage=(dialogueSupplements as any).coverage as Record<string,any>;
 export const missionStructureUrl=(source:string)=>`https://github.com/${dialogueSupplements.evidence.repository}/blob/${dialogueSupplements.evidence.commit}/${source}`;
 export const missionPassageKind=(row:any):'gap'|'choice'|'dialogue'=>row.label==='대사 누락'||typeof row.text!=='string'||!row.text.trim()||(row.text==='한국어 본문 미수록'&&row.hash===''&&/^MessageItemConfig:\d+\.(?:MainText|OptionText)$/.test(row.source||''))?'gap':row.label==='선택지'||row.displayKind==='choice'||row.displayKind==='선택지'?'choice':'dialogue';
+// This exact source row is an authoring notice reused by two original Acts.
+export const missionSourceNotice=(row:any)=>String(row.talk_id)==='999999999'&&row.text==='스토리 및 연출 콘텐츠는 제작 중입니다, 기대해주세요!';
 export const missionSectionLinked=(id:string,section:any)=>{
  return section.rows.every(row=>missionRowLinked(section,row,missionCoverage[id]));
 };

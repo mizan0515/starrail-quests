@@ -1,0 +1,261 @@
+{
+  "schemaVersion": "started-event-branch-fixture.v1",
+  "attribution": {
+    "commit": "8b178dd48698e5e7b12f0cc319ddab149f2ffc5c",
+    "sources": {
+      "Config/Level/Mission/8021201/Act/Act802120101.json": {
+        "fullOriginalSha256": "5bd104dda9c9dae67a201b7c81182395aadaeaea951e933f249d3b659e23d2ab"
+      },
+      "Config/Level/Mission/8021201/MissionInfo_8021201.partial.json": {
+        "fullOriginalSha256": "9c73cc7f0cc3207270e8c93a37b5a0b2ac7851e324b0d96e85135f76ac77af85"
+      },
+      "Config/Level/Mission/8021201/Mission_802120101.json": {
+        "fullOriginalSha256": "3a719130f3754e6c1c3d8e5a1f5c87c42b5eec1537ad947e7a504562f42d0c20"
+      },
+      "Config/Level/NPCDialogue/P20003/F20003001_G151/DialogueMain_F20003001_G151_N400001.json": {
+        "fullOriginalSha256": "c41e1aa1b8305b0b70f75cf641a15c736078c4c17a4c85bf1e361464bfd1888f"
+      },
+      "ExcelOutput/PerformanceE.json": {
+        "fullOriginalSha256": "1ab86805edbc838b1510662863f7dd69428675c86527ac51f0e180a928935b53",
+        "originalRowPointer": "/11509"
+      }
+    },
+    "hashContract": "fullOriginalSha256 attributes actual input bytes; fixtureHashes attributes compact canonical UTF-8 JSON object bytes; they are intentionally distinct"
+  },
+  "metadata": {
+    "Config/Level/Mission/8021201/Act/Act802120101.json": {
+      "OnInitSequece": [],
+      "OnStartSequece": [
+        {
+          "TaskList": [
+            {
+              "$type": "RPG.GameCore.LevelPerformanceInitialize",
+              "PerformanceType": "E",
+              "CreateCharacterList": [],
+              "CaptureNPCList": [],
+              "EntityVisiableList": [],
+              "HideMunicipalCrowd": false,
+              "HideMunicipalPedestrian": false,
+              "PropVisiableList": [],
+              "UseNewStreamingSourceType": false,
+              "StreamingSourcesInBlackMask": [],
+              "StreamingSourcesAfterBlackMask": [],
+              "MarkStreamingItems": []
+            },
+            {
+              "$type": "RPG.GameCore.AdvNpcFaceToPlayer"
+            },
+            {
+              "$type": "RPG.GameCore.PlayAndWaitSimpleTalk",
+              "SimpleTalkList": [
+                {
+                  "TextSpeed": 0,
+                  "TalkSentenceID": 821210102,
+                  "ProtectTime": 0
+                },
+                {
+                  "TextSpeed": 0,
+                  "TalkSentenceID": 821210104,
+                  "ProtectTime": 0
+                },
+                {
+                  "TextSpeed": 0,
+                  "TalkSentenceID": 821210105,
+                  "ProtectTime": 0
+                }
+              ]
+            },
+            {
+              "$type": "RPG.GameCore.TriggerCustomStringOnDialogEnd",
+              "CustomString": {
+                "Value": "Talk_802120101"
+              }
+            },
+            {
+              "$type": "RPG.GameCore.EndPerformance"
+            }
+          ]
+        },
+        {
+          "TaskList": [
+            {
+              "$type": "RPG.GameCore.WaitPerformanceEnd"
+            },
+            {
+              "$type": "RPG.GameCore.FinishLevelGraph"
+            }
+          ]
+        }
+      ]
+    },
+    "Config/Level/Mission/8021201/MissionInfo_8021201.partial.json": {
+      "SubMissionList": [
+        {
+          "ID": 802120101,
+          "MainMissionID": 8021201,
+          "MissionJsonPath": "Config/Level/Mission/8021201/Mission_802120101.json",
+          "LevelPlaneID": 20003,
+          "LevelFloorID": 20003001,
+          "TakeType": "Auto",
+          "TakeParamIntList": [
+            8021201
+          ],
+          "FinishType": "Talk",
+          "ParamType": "Equal",
+          "ParamStr1": "Mission_802120101",
+          "ParamIntList": [],
+          "ParamItemList": [],
+          "FinishActionList": [],
+          "Progress": 1,
+          "CustomValueList": [],
+          "CustomValueReward": [],
+          "GroupIDList": [
+            151
+          ],
+          "RequiredNPCSeriesIDList": [],
+          "WayPointType": "NPC",
+          "GotoParam": [],
+          "WayPointFloorID": 20003001,
+          "WayPointGroupID": 151,
+          "WayPointEntityID": 400001
+        },
+        {
+          "ID": 802120102,
+          "MainMissionID": 8021201,
+          "MissionJsonPath": "Config/Level/Mission/8021201/Mission_802120102.json",
+          "LevelPlaneID": 20003,
+          "LevelFloorID": 20003001,
+          "TakeType": "AnySequence",
+          "TakeParamIntList": [
+            802120101
+          ],
+          "FinishType": "Talk",
+          "ParamType": "Equal",
+          "ParamStr1": "Mission_802120102",
+          "ParamIntList": [],
+          "ParamItemList": [],
+          "FinishActionList": [],
+          "Progress": 1,
+          "CustomValueList": [],
+          "CustomValueReward": [],
+          "GroupIDList": [],
+          "RequiredNPCSeriesIDList": [],
+          "IsShowFinishEffect": 1,
+          "IsShowStartHint": "New",
+          "WayPointType": "NPC",
+          "GotoParam": [],
+          "WayPointFloorID": 20003001,
+          "WayPointGroupID": 149,
+          "WayPointEntityID": 400001
+        }
+      ]
+    },
+    "Config/Level/Mission/8021201/Mission_802120101.json": {
+      "OnInitSequece": [],
+      "OnStartSequece": [
+        {
+          "IsLoop": true,
+          "TaskList": [
+            {
+              "$type": "RPG.GameCore.WaitCustomString",
+              "CustomString": {
+                "Value": "Talk_802120101"
+              }
+            },
+            {
+              "$type": "RPG.GameCore.FinishPerformanceMission",
+              "Key": "Mission_802120101"
+            }
+          ]
+        }
+      ],
+      "Type": "Mission"
+    },
+    "Config/Level/NPCDialogue/P20003/F20003001_G151/DialogueMain_F20003001_G151_N400001.json": {
+      "OnInitSequece": [],
+      "OnStartSequece": [
+        {
+          "TaskList": [
+            {
+              "$type": "RPG.GameCore.CollectDataConditions",
+              "TaskIDList": [
+                802120101
+              ],
+              "MainMissionIDList": [],
+              "PerformanceIDList": [],
+              "PerformanceIDDsList": [],
+              "CustomValueMainMissionIDList": []
+            },
+            {
+              "$type": "RPG.GameCore.SwitchCase",
+              "TaskList": [
+                {
+                  "Predicate": {
+                    "$type": "RPG.GameCore.ByCompareSubMissionState",
+                    "SubMissionID": 802120101,
+                    "SubMissionState": "Started"
+                  },
+                  "SuccessTaskList": [
+                    {
+                      "$type": "RPG.GameCore.TriggerPerformance",
+                      "PerformanceType": "E",
+                      "PerformanceID": 802120101,
+                      "ValueSource": {}
+                    },
+                    {
+                      "$type": "RPG.GameCore.TriggerCustomString",
+                      "CustomString": {
+                        "Value": "Talk_802120101"
+                      }
+                    },
+                    {
+                      "$type": "RPG.GameCore.FinishLevelGraph"
+                    }
+                  ]
+                }
+              ],
+              "DefaultTask": [
+                {
+                  "$type": "RPG.GameCore.TriggerPerformance",
+                  "PerformanceType": "E",
+                  "PerformanceID": 802120106,
+                  "ValueSource": {}
+                },
+                {
+                  "$type": "RPG.GameCore.FinishLevelGraph"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "ExcelOutput/PerformanceE.json": [
+      {
+        "PerformanceID": 802120101,
+        "PerformancePath": "Config/Level/Mission/8021201/Act/Act802120101.json",
+        "ChangePlayerType": "StoryLine",
+        "PerformanceCharacter": "",
+        "PlaneID": 20003,
+        "FloorID": 20003001
+      }
+    ]
+  },
+  "fixtureHashes": {
+    "Config/Level/Mission/8021201/Act/Act802120101.json": "7df889f69459f23ee0f5dfedcdab3fdbee45030c8062b3df5d0fd0a84d6d27a6",
+    "Config/Level/Mission/8021201/MissionInfo_8021201.partial.json": "2d9bfa8763547533c8912b8b397e847d9c7e9357cdb2ee4c9de161507386e4b9",
+    "Config/Level/Mission/8021201/Mission_802120101.json": "edc8ff25b5030403ca6a191bfb2a7249b02fae148dcf89a50bc3c7af5bccbeca",
+    "Config/Level/NPCDialogue/P20003/F20003001_G151/DialogueMain_F20003001_G151_N400001.json": "62c1026ba62a619b9e00f11ba4f939d9eb464449e95ebe15937806ec0270fa96",
+    "ExcelOutput/PerformanceE.json": "82dc90e0943561066cdb30717a7f2976d41c5d4bbd01a35d069edd9e63b0533f"
+  },
+  "expected": {
+    "missionId": 8021201,
+    "submissionId": 802120101,
+    "target": "Config/Level/Mission/8021201/Act/Act802120101.json",
+    "talkIds": [
+      821210102,
+      821210104,
+      821210105
+    ]
+  }
+}

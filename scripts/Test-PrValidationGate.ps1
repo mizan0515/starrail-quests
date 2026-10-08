@@ -21,8 +21,14 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Universe editorial citation QA failed'}
   & python -B tools/verify_universe_source_site.py
   if($LASTEXITCODE -ne 0){throw 'Universe exact record and source link HTML QA failed'}
+  & python -B -X utf8 tools/verify_official_universe_texts.py
+  if($LASTEXITCODE -ne 0){throw 'Official Korean universe text binding QA failed'}
+  & python -B -X utf8 tools/verify_official_universe_site.py
+  if($LASTEXITCODE -ne 0){throw 'Official Korean universe source HTML QA failed'}
   & python tools/verify_mission_dialogue_supplements.py
   if($LASTEXITCODE -ne 0){throw 'Mission dialogue source QA failed'}
+  & python -B tools/test_started_event_branches.py
+  if($LASTEXITCODE -ne 0){throw 'Mission conditional ownership regression QA failed'}
   & python tools/verify_mission_readers.py
   if($LASTEXITCODE -ne 0){throw 'Primary reader source and classification QA failed'}
   & node --test tools/reading_return.test.mjs

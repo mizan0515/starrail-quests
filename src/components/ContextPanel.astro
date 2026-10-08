@@ -20,13 +20,13 @@ import {href} from '../lib/data';
  const inherited=safeReturn(new URLSearchParams(location.search).get('from'));
  // A universe list is the parent catalogue of its individual source records.
  // Once inside a record, related settings return to that record and retain the list.
- const catalogueParent=!!inherited&&decodeURIComponent(location.pathname).startsWith(base+'/우주/기록/')&&/^우주\/[a-z][a-z0-9-]*\.html$/.test(decodeURIComponent(new URL(inherited,location.origin).pathname).slice(base.length+1));
+ const catalogueParent=!!inherited&&/^우주\/(?:기록|설정)\//.test(decodeURIComponent(location.pathname).slice(base.length+1))&&/^우주\/[a-z][a-z0-9-]*\.html$/.test(decodeURIComponent(new URL(inherited,location.origin).pathname).slice(base.length+1));
  const returnNav=document.querySelector<HTMLElement>('[data-reading-return]')!;
  // Starlight's main and right sidebar have separate stacking contexts. Keep
  // the fixed return control outside main so the transparent sidebar cannot
  // intercept its pointer events.
- if(inherited){document.body.append(returnNav);returnNav.hidden=false;returnNav.querySelector('a')!.setAttribute('href',inherited);}
- const withReturn=(href:string,from:string|null)=>{const url=new URL(href,location.href);if(from)url.searchParams.set('from',from);return url.href;};
+ if(inherited&&!catalogueParent){document.body.append(returnNav);returnNav.hidden=false;returnNav.querySelector('a')!.setAttribute('href',inherited);}
+ const withReturn=(href:string,from:string|null)=>{const url=new URL(href,location.href);if(from){const origin=new URL(from,location.origin);if(url.origin===origin.origin&&url.pathname===origin.pathname)return origin.href;url.searchParams.set('from',from);}return url.href;};
  const currentReadingOrigin=(anchor=location.hash||'#original')=>(catalogueParent?null:inherited)||safeReturn(location.pathname+location.search+anchor);
  const readingOrigin=currentReadingOrigin();
  if(readingOrigin)document.querySelectorAll<HTMLAnchorElement>('a[data-reading-link]').forEach(a=>a.href=withReturn(a.href,readingOrigin));
