@@ -17,7 +17,7 @@ export function safeReadingReturn(value, {origin, base}) {
     } catch {return null;}
   }
   const reading=parse(value);
-  if (!reading || !/^(?:(?:문서|대사|대상)\/[^/]+|우주\/(?:기록\/)?[a-z][a-z0-9-]*)\.html$/.test(reading.relative)) return null;
+  if (!reading || !/^(?:(?:문서|대사|대상)\/[^/]+|우주\/(?:(?:기록|설정)\/)?[a-z][a-z0-9-]*)\.html$/.test(reading.relative)) return null;
   const nested=reading.url.searchParams.get('from');
   reading.url.searchParams.delete('from');
   const catalogue=parse(nested);

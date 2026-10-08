@@ -82,7 +82,7 @@ class SourcePage(Page):
             panel = self.ancestor(lambda x: 'data-cluster-panel' in x['attrs'])
             if panel:
                 self.panels[panel['attrs']['data-cluster-panel']]['quotes'].append(n)
-        if any(k in a for k in ('data-source-query', 'data-source-more', 'data-source-count', 'data-source-empty')):
+        if self.ancestor(lambda x: x['attrs'].get('id') == 'source-records') and any(k in a for k in ('data-source-query', 'data-source-more', 'data-source-count', 'data-source-empty')):
             self.controls.append((tag, a))
         if tag not in VOID:
             self.stack.append(n)

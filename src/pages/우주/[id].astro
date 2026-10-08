@@ -3,6 +3,7 @@ import {disclosureAttributes,sourceLinkAttributes} from '../../lib/reading-kit/r
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import universe from '../../../data/universe-catalog.json';
 import sources from '../../../data/universe-source-records.json';
+import official from '../../../data/official-universe-texts.json';
 import clusters from '../../../data/universe-reading-clusters.json';
 import Scene from '../../components/Scene.astro';
 import UniverseRecordIndex from '../../components/UniverseRecordIndex.astro';
@@ -14,13 +15,15 @@ const {m}=Astro.props;
 const originals=m.documents.map(r=>({ref:r,document:doc(r.id)}));
 const research={"swarm-disaster":"swarm-research","gold-and-gears":"rupert-research","unknowable-domain":"unknowable-research"}[m.id];
 const sourceRecords=sources.modes.find(mode=>mode.id===m.id)?.records||[];
+const settingTexts=official.records.filter(record=>record.modeId===m.id);
 const cluster=clusters.clusters.find(c=>c.modeId===m.id);
 ---
 <StarlightPage frontmatter={{title:m.name,editUrl:false,tableOfContents:false}}>
  <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('우주.html')}>우주 콘텐츠·아이템</a><span>/</span><span>{m.name}</span></nav>
  <p class="page-deck">{m.intro}</p><p class="muted">원문에 근거한 요약 · 아래 기록과 발언을 대조한 읽기 묶음</p>
  <details {...disclosureAttributes({className:'source-details'})}><summary>개요의 원문 근거 · {m.introEvidence.status}</summary><blockquote class="rw-quotation">{m.introEvidence.quote}</blockquote><a {...sourceLinkAttributes({reading:true})} href={href(m.introEvidence.url)}>{m.introEvidence.title} · 이 발언의 원문 ↗</a></details>
- <nav class="shelf-nav" aria-label="이 콘텐츠의 원문">{cluster&&<a href="#research">설정과 기록의 연결</a>}{sourceRecords.length>0&&<a href="#source-records">개별 기록 {sourceRecords.length}개</a>}<a href="#core-records">핵심 원문</a>{m.dialogueGroups.length>0&&<a href="#mode-dialogue">대사 원문</a>}<a href="#related-records">관련 용어의 기록</a></nav>
+ <nav class="shelf-nav" aria-label="이 콘텐츠의 원문">{settingTexts.length>0&&<a href="#setting-texts">설정 원문 {settingTexts.length}개</a>}{cluster&&<a href="#research">설정과 기록의 연결</a>}{sourceRecords.length>0&&<a href="#source-records">개별 기록 {sourceRecords.length}개</a>}<a href="#core-records">핵심 원문</a>{m.dialogueGroups.length>0&&<a href="#mode-dialogue">대사 원문</a>}<a href="#related-records">관련 용어의 기록</a></nav>
+ {settingTexts.length>0&&<section id="setting-texts" class="universe-source-shelf"><header class="rw-index-heading"><h2>{m.id==='divergent-universe'?'방정식·기물·수집품의 원문':'이 콘텐츠의 설정 원문'}</h2><p>이야기, 명칭, 게임 효과와 조건을 항목별로 읽는다. 한국어 본문은 4.6 수록 문구다.</p></header><UniverseRecordIndex records={settingTexts} modeName={m.name} queryKey="textQuery" limitKey="textLimit" kindKey="textKind"/></section>}
  {cluster&&<UniverseResearch cluster={cluster}/>}
  {sourceRecords.length>0&&<section id="source-records" class="universe-source-shelf"><header class="rw-index-heading"><h2>{m.id==='divergent-universe'?'방정식의 이야기 원문':'이 콘텐츠의 기록 원문'}</h2><p>각 기록의 대사를 개별 본문으로 읽습니다.</p></header><UniverseRecordIndex records={sourceRecords} modeName={m.name}/></section>}
  {research&&<a class="universe-entry" href={href('맥락/'+research+'.html')} data-reading-link><strong>연구 대상·관측자·다른 기록을 함께 읽기</strong><span>관계와 관점 비교 →</span></a>}
