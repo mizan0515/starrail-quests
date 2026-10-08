@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateTopology, topologyFromRelations} from './topology.mjs';
+import {validateTopology, topologyFromRelations, relationStructureGroups, focusRelationLayout, sourceRelationHubs} from './topology.mjs';
 import {createReadingKit, escapeHtml, safeHref} from './render.mjs';
 
 const base = () => ({
@@ -31,6 +31,8 @@ const byClass = (html, tag, cls) => elements(html, tag, attrs => (attribute(attr
 const visibleText = html => html.replace(/<[^>]+>/g, '').replace(/&(?:amp|lt|gt|quot|#39);/g, entity => ({'&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"', '&#39;': "'"}[entity])).replace(/\s+/g, ' ').trim();
 const models = html => [...html.matchAll(/<script\b[^>]*data-cva-model\b[^>]*>([\s\S]*?)<\/script>/g)].flatMap(m => JSON.parse(m[1]).modules);
 const variants = html => models(html).map(m => m.variant);
+const relationCards = html => elements(html, 'article', attrs =>
+  attribute(attrs, 'data-cva-item-index') !== undefined && (attribute(attrs, 'class') || '').split(/\s+/).includes('cva-item'));
 function endpointIdentity(html) {
   const links = elements(html, 'a', attrs => /\bdata-reading-link\b/.test(attrs));
   const names = links.length ? links : elements(html, 'strong');
@@ -104,19 +106,19 @@ test('split and convergence preserve every edge and shared endpoint', () => {
   assert.equal(t.nodes.length, 4); assert.equal(t.edges.length, 4);
   assert.equal(t.nodes.find(n => n.id === 'd').layer, 2);
   assert.deepEqual(statements(html), expectedStatements(t));
-  assert.deepEqual(variants(html), ['relationship-ledger']);
+  assert.deepEqual(variants(html), ['list']);
   assert.equal(JSON.stringify(relations), before);
 });
 
-test('actual CVA ledger has semantic headers, endpoint links and nearby individual evidence', () => {
+test('actual CVA relation list has named actors, endpoint links and nearby individual evidence', () => {
   const t = base(), html = kit().topology(t), visible = withoutModels(html);
-  assert.deepEqual(variants(html), ['relationship-ledger']);
+  assert.deepEqual(variants(html), ['list']);
   assert.ok(visible.includes('data-cva')); assert.ok(visible.includes('data-cva-profile="forma"'));
-  assert.ok(visible.includes('<th scope="col">주체 · 관계 · 대상</th>'));
-  assert.ok(visible.includes('<th scope="col">원문의 성격</th>'));
-  assert.ok(visible.includes('<th scope="col">맥락과 근거</th>'));
+  assert.ok(visible.includes('rw-edge-subject'));
+  assert.ok(visible.includes('원문에 명시된 관계'));
+  assert.ok(!visible.includes('<table')); assert.ok(!visible.includes('관계·읽는 기준'));
   assert.deepEqual(statements(html), expectedStatements(t));
-  const rows = elements(visible, 'tr', attrs => attribute(attrs, 'data-cva-item-index') !== undefined);
+  const rows = relationCards(visible);
   assert.equal(rows.length, 1); assertProofNear(rows[0].inner, t, t.edges[0]);
   assert.ok(rows[0].inner.includes('data-reading-link href="/a"'));
   assert.ok(rows[0].inner.includes('data-reading-link href="/b"'));
@@ -140,9 +142,9 @@ test('Scar incoming actions preserve Jinhsi and Christoforo as subjects', () => 
 test('split, convergence and return edges preserve all directions without inferring a cycle', () => {
   const t = base(); t.nodes.push({id: 'c', name: 'C', layer: 1});
   t.edges.push(edge('split', 'a', 'c', '나누다'), edge('merge', 'c', 'b', '합류하다'), edge('return', 'b', 'a', '돌아가다', 'return'));
-  const html = kit().topology(t), rows = elements(withoutModels(html), 'tr', attrs => attribute(attrs, 'data-cva-item-index') !== undefined);
+  const html = kit().topology(t), rows = relationCards(withoutModels(html));
   assert.deepEqual(statements(html), expectedStatements(t));
-  assert.deepEqual(variants(html), ['relationship-ledger']);
+  assert.deepEqual(variants(html), ['list']);
   assert.equal(rows.length, t.edges.length);
   rows.forEach((row, i) => assertProofNear(row.inner, t, t.edges[i]));
 });
@@ -152,7 +154,7 @@ test('nominal faction membership is preserved without inventing a verb', () => {
   const html = kit().topology(t);
   assert.deepEqual(statements(html), [{subject: '스카', predicate: '잔성회 간부', object: '잔성회'}]);
   assert.equal(byClass(withoutModels(html), 'span', 'rw-edge-predicate').length, 1);
-  assert.deepEqual(variants(html), ['relationship-ledger']);
+  assert.deepEqual(variants(html), ['list']);
 });
 
 test('ordinary relations retain each attributed speaker and source beside its own statement', () => {
@@ -164,10 +166,12 @@ test('ordinary relations retain each attributed speaker and source beside its ow
   const before = JSON.stringify(input), t = topologyFromRelations(input, {id: 'structure', focusId: 'a'}), html = kit().network(input, {id: 'structure', focusId: 'a'}), visible = withoutModels(html);
   assert.deepEqual(statements(html), expectedStatements(t));
   assert.equal(byClass(visible, 'div', 'rw-relation-band').length, 2);
-  assert.equal(byClass(visible, 'small', 'rw-node-kind').length, 4);
+  assert.equal(byClass(visible, 'small', 'rw-node-kind').length, 7);
   for (const kind of byClass(visible, 'small', 'rw-node-kind')) assert.equal(visibleText(kind.inner), '인물');
   assert.equal(byClass(visible, 'span', 'rw-edge-predicate').filter(p => visibleText(p.inner) === '형체를 제공했다고 말한다').length, 1);
-  const rows = elements(visible, 'tr', attrs => attribute(attrs, 'data-cva-item-index') !== undefined);
+  const rows = byClass(visible, 'article', 'sc-card');
+  assert.deepEqual(variants(html), ['character-orbit']);
+  assert.ok(visible.includes('rw-focus-name')); assert.ok(!visible.includes('중심 인물'));
   rows.forEach((row, i) => {
     assertProofNear(row.inner, t, t.edges[i]);
     assert.ok(row.inner.includes(escapeHtml('발언·기록에 따른 관계 · ' + input[i].speaker)));
@@ -197,7 +201,7 @@ test('branched or incomplete sequence declarations remain a relation ledger', ()
   ];
   for (const t of candidates) {
     const html = kit().topology(t);
-    assert.deepEqual(variants(html), ['relationship-ledger']);
+    assert.deepEqual(variants(html), ['list']);
     assert.deepEqual(statements(html), expectedStatements(t));
   }
 });
@@ -218,7 +222,7 @@ test('explicit cycle layout plus a source return edge chooses feedback-ring and 
 test('return edges and mutually directed relations alone do not declare a cycle', () => {
   const t = {id: 'return-only', title: '귀환 관계', nodes: [node('a'), node('b')], edges: [edge('ab', 'a', 'b', '보낸다'), edge('ba', 'b', 'a', '돌려준다', 'return')]};
   const html = kit().topology(t);
-  assert.deepEqual(variants(html), ['relationship-ledger']);
+  assert.deepEqual(variants(html), ['list']);
   assert.deepEqual(statements(html), expectedStatements(t));
   const relations = [
     {id: 'ab', from: node('a'), to: node('b'), label: '영향을 준다', reasonClaimId: 'ab', reason: 'A의 기록', evidence: [{quote: 'A 원문', url: '/a#source'}]},
@@ -227,7 +231,7 @@ test('return edges and mutually directed relations alone do not declare a cycle'
   const derived = topologyFromRelations(relations, {focusId: 'a'});
   assert.equal(derived.layout, undefined); assert.ok(derived.edges.every(e => e.kind === 'relation'));
   const mutual = kit().topology(derived);
-  assert.deepEqual(variants(mutual), ['relationship-ledger']);
+  assert.deepEqual(variants(mutual), ['character-orbit']);
   assert.deepEqual(statements(mutual), expectedStatements(derived));
 });
 
@@ -240,7 +244,7 @@ test('one explicit cycle with direct incoming sources preserves the core and eac
       edge('bc', 'b', 'c', '이어진다', 'sequence'),
       edge('ca', 'c', 'a', '원래 상태로 돌아간다', 'return')]};
   const before = JSON.stringify(t), html = kit().topology(t), visible = withoutModels(html);
-  assert.deepEqual(variants(html), ['feedback-ring', 'relationship-ledger']);
+  assert.deepEqual(variants(html), ['feedback-ring', 'list']);
   assert.deepEqual(models(html)[0].props.items.map(item => item.title), ['A', 'B', 'C']);
   const core = [t.edges[4], t.edges[1], t.edges[3]], feeders = [t.edges[0], t.edges[2]];
   assert.deepEqual(statements(html), [...core, ...feeders].map(e => ({
@@ -249,7 +253,7 @@ test('one explicit cycle with direct incoming sources preserves the core and eac
   const bands = byClass(visible, 'div', 'rw-structure-edge');
   assert.equal(bands.length, core.length);
   bands.forEach((band, i) => assertProofNear(band.inner, t, core[i]));
-  const rows = elements(visible, 'tr', attrs => attribute(attrs, 'data-cva-item-index') !== undefined);
+  const rows = relationCards(visible);
   assert.equal(rows.length, feeders.length);
   rows.forEach((row, i) => assertProofNear(row.inner, t, feeders[i]));
   const proofs = byClass(visible, 'details', 'rw-relation-proof');
@@ -272,9 +276,9 @@ test('cycle declarations with an outgoing fork, unrelated component or two retur
   for (const mutate of cases) {
     const t = cycle(); mutate(t);
     const before = JSON.stringify(t), html = kit().topology(t), visible = withoutModels(html);
-    assert.deepEqual(variants(html), ['relationship-ledger']);
+    assert.deepEqual(variants(html), ['list']);
     assert.deepEqual(statements(html), expectedStatements(t));
-    const rows = elements(visible, 'tr', attrs => attribute(attrs, 'data-cva-item-index') !== undefined);
+    const rows = relationCards(visible);
     assert.equal(rows.length, t.edges.length);
     rows.forEach((row, i) => assertProofNear(row.inner, t, t.edges[i]));
     assert.equal(byClass(visible, 'details', 'rw-relation-proof').length, t.edges.length);
@@ -285,23 +289,21 @@ test('cycle declarations with an outgoing fork, unrelated component or two retur
 test('a disconnected cycle declaration keeps every relation in a ledger', () => {
   const t = {id: 'disconnected', title: '두 관계', layout: 'cycle', nodes: ['a', 'b', 'c', 'd'].map(node), edges: [edge('ab', 'a', 'b', '이동'), edge('ba', 'b', 'a', '귀환', 'return'), edge('cd', 'c', 'd', '이동'), edge('dc', 'd', 'c', '귀환', 'return')]};
   const html = kit().topology(t);
-  assert.deepEqual(variants(html), ['relationship-ledger']);
+  assert.deepEqual(variants(html), ['list']);
   assert.deepEqual(statements(html), expectedStatements(t));
 });
 
 test('editorial reading connections retain sources without an actor-action diagram or authored speaker', () => {
   const relation = {id: 'reading', from: {id: 'borisin', name: '보리인과 여우족', url: '/borisin'}, to: {id: 'paths', name: '에이언즈·운명의 길·파벌', url: '/paths'}, label: '단륜사의 신앙과 비살생', reasonClaimId: 'reason', claimKind: 'inference', speaker: '군 교재', reason: '두 기록을 함께 읽는 이유', evidence: [{quote: '보존된 인용', url: '/book#row'}]};
   const html = kit().network([relation], {id: 'structure'}), visible = withoutModels(html);
-  assert.ok(visible.includes('함께 읽을 설정')); assert.ok(visible.includes('rw-reading-connection'));
+  assert.ok(visible.includes('함께 읽을 기록')); assert.ok(visible.includes('rw-reading-connection'));
   assert.ok(visible.includes('편집자의 연결 · 보리인과 여우족에서 이어 읽기'));
   assert.ok(!visible.includes('군 교재')); assert.deepEqual(statements(html), []);
-  assert.deepEqual(variants(html), ['list']);
+  assert.deepEqual(variants(html), ['grid']);
   assert.ok(!visible.includes('rw-relation-band')); assert.ok(!visible.includes('rw-relation-direction')); assert.ok(!visible.includes('rw-relation-band-line'));
   assert.ok(visible.includes('data-reading-link href="/paths"'));
   const editorial = byClass(visible, 'div', 'rw-reading-connection')[0], proof = byClass(editorial.inner, 'details', 'rw-relation-proof')[0];
-  const origin = byClass(editorial.inner, 'div', 'rw-connection-origin')[0];
-  assert.ok(origin.inner.includes('data-reading-link href="/borisin"'));
-  assert.equal(endpointIdentity(origin.inner), '보리인과 여우족');
+  assert.ok(!editorial.inner.includes('rw-connection-origin'), 'The reading origin is already in the attribution label');
   assert.equal(attribute(proof.attrs, 'id'), 'structure-edge-reading');
   assert.ok(proof.inner.includes('연결의 원문 근거 1개')); assert.ok(proof.inner.includes('두 기록을 함께 읽는 이유'));
   assert.ok(proof.inner.includes('href="/book#row"')); assert.ok(proof.inner.includes('보존된 인용'));
@@ -310,7 +312,7 @@ test('editorial reading connections retain sources without an actor-action diagr
 test('an editorial edge interrupts an otherwise declared action sequence', () => {
   const t = {id: 'mixed', title: '원문과 연결', nodes: [node('a'), node('b'), node('c')], edges: [edge('ab', 'a', 'b', '이동', 'sequence'), {...edge('bc', 'b', 'c', '함께 읽기', 'sequence'), claimKind: 'inference'}]};
   const html = kit().topology(t), visible = withoutModels(html);
-  assert.deepEqual(variants(html), ['relationship-ledger', 'list']);
+  assert.deepEqual(variants(html), ['list', 'grid']);
   assert.deepEqual(statements(html), [expectedStatements(t)[0]]);
   assert.equal(byClass(visible, 'div', 'rw-relation-band').length, 1);
   assert.equal(byClass(visible, 'div', 'rw-reading-connection').length, 1);
@@ -330,10 +332,10 @@ test('source text and endpoint identity escape safely without changing the input
 test('relation batches preserve all 25 statements and source proofs within the CVA item limit', () => {
   const t = {id: 'many', title: '모든 관계', nodes: [node('a'), node('b')], edges: Array.from({length: 25}, (_, i) => edge('e' + i, i % 2 ? 'b' : 'a', i % 2 ? 'a' : 'b', '관계 ' + i))};
   const html = kit().topology(t), visible = withoutModels(html), modules = models(html);
-  assert.deepEqual(variants(html), ['relationship-ledger', 'relationship-ledger']);
+  assert.deepEqual(variants(html), ['list', 'list']);
   assert.deepEqual(modules.map(m => m.props.items.length), [24, 1]);
   assert.deepEqual(statements(html), expectedStatements(t));
-  const rows = elements(visible, 'tr', attrs => attribute(attrs, 'data-cva-item-index') !== undefined);
+  const rows = relationCards(visible);
   assert.equal(rows.length, 25); rows.forEach((row, i) => assertProofNear(row.inner, t, t.edges[i]));
   assert.equal(new Set(byClass(visible, 'details', 'rw-relation-proof').map(p => attribute(p.attrs, 'id'))).size, 25);
 });
@@ -343,4 +345,76 @@ test('attributed source speakers stay visible in proof and empty networks stay e
   const html = kit().topology(t), proof = byClass(withoutModels(html), 'details', 'rw-relation-proof')[0];
   assert.ok(proof.inner.includes('발언·기록에 따른 관계 · 파수인'));
   assert.equal(topologyFromRelations([]), null); assert.equal(kit().network([]), '');
+});
+
+test('reviewed membership is nested under its actual group and preserves the original direction and proof', () => {
+  const t = {id:'affiliation',title:'소속',nodes:[node('kafka'),node('hunters')],edges:[{...edge('member','kafka','hunters','소속'),structure:'membership'}]};
+  const html=kit().topology(t),visible=withoutModels(html);
+  assert.deepEqual(variants(html),['nested-world']);
+  assert.deepEqual(statements(html),expectedStatements(t));
+  assert.deepEqual(relationStructureGroups(t.edges).map(g=>g.parent),['hunters']);
+  assert.ok(visible.indexOf('HUNTERS')<visible.indexOf('KAFKA'));
+  assert.equal(byClass(visible,'details','rw-relation-proof').length,1);
+  assertProofNear(byClass(visible,'div','rw-relation-band')[0].inner,t,t.edges[0]);
+});
+
+test('containment and membership require reviewed source metadata, and ordinary location or reading links do not acquire it', () => {
+  const t=base();t.edges[0].structure='containment';
+  const html=kit().topology(t);
+  assert.deepEqual(variants(html),['nested-world']);assert.deepEqual(statements(html),expectedStatements(t));
+  assert.equal(relationStructureGroups(t.edges)[0].parent,'a');
+  for(const invalid of ['location','birthplace','invented']){t.edges[0].structure=invalid;assert.throws(()=>validateTopology(t));}
+  t.edges[0].structure='membership';t.edges[0].claimKind='inference';assert.throws(()=>validateTopology(t));
+  t.edges[0].claimKind='explicit';t.edges[0].kind='sequence';assert.throws(()=>validateTopology(t));
+  assert.deepEqual(relationStructureGroups([{...edge('place','a','b','출신 지역')}]),[]);
+});
+
+test('large source scopes keep all members, directions and proofs across the CVA item boundary', () => {
+  for (const structure of ['membership','containment']) {
+    const t={id:'large-'+structure,title:'전체 구성',nodes:[node('group'),...Array.from({length:25},(_,i)=>node('member-'+i))],edges:Array.from({length:25},(_,i)=>({...edge('e'+i,structure==='membership'?'member-'+i:'group',structure==='membership'?'group':'member-'+i,'역할 '+i),structure}))};
+    const before=JSON.stringify(t),html=kit().topology(t),visible=withoutModels(html);
+    assert.deepEqual(variants(html),['nested-world','nested-world']);
+    assert.deepEqual(models(html).map(m=>m.props.items.length),[24,1]);
+    assert.deepEqual(statements(html),expectedStatements(t));
+    const proofs=byClass(visible,'details','rw-relation-proof');
+    assert.equal(proofs.length,25);assert.equal(new Set(proofs.map(p=>attribute(p.attrs,'id'))).size,25);
+    byClass(visible,'div','rw-relation-band').forEach((row,i)=>assertProofNear(row.inner,t,t.edges[i]));
+    assert.equal(JSON.stringify(t),before);
+  }
+});
+
+test('source actions around a declared focus use directional orbit or hub without sequence numbers', () => {
+  const incoming=edge('in','a','b','설명한다'),outgoing=edge('out','b','c','부탁한다');
+  const t={id:'focus-shape',title:'인물의 관계',nodes:[node('a'),{...node('b'),focus:true},node('c')],edges:[incoming,outgoing]};
+  assert.equal(focusRelationLayout(t.nodes,t.edges).variant,'character-orbit');
+  const html=kit().topology(t),visible=withoutModels(html);
+  assert.deepEqual(statements(html),expectedStatements(t));
+  assert.ok(visible.includes('data-relation-direction="incoming"'));assert.ok(visible.includes('data-relation-direction="outgoing"'));
+  assert.ok(!visible.includes('sc-number'));assert.ok(!visible.includes('sc-stage-result'));
+  t.edges=[edge('one','b','a','돕는다'),edge('two','b','c','방문한다')];
+  const hub=kit().topology(t);
+  assert.deepEqual(variants(hub),['hub']);assert.deepEqual(statements(hub),expectedStatements(t));
+  assert.equal(byClass(withoutModels(hub),'details','rw-relation-proof').length,2);
+  t.edges.push(edge('unrelated','a','c','별개 행동'));assert.equal(focusRelationLayout(t.nodes,t.edges),null);
+});
+
+test('source trees use direct hubs without adding a join, containment, cycle or temporal order', () => {
+ const t={id:'formation',title:'기억의 형성',nodes:['material','field','bubble','meme'].map(node),edges:[edge('field','material','field','응집하여 공간을 형성한다'),edge('bubble','material','bubble','집합체를 이룬다'),edge('meme','field','meme','잠재의식 조각이 쌓여 형성한다')]};
+ const before=JSON.stringify(t),html=kit().topology(t),visible=withoutModels(html);
+ assert.deepEqual(variants(html),['hub','hub']);assert.deepEqual(statements(html),expectedStatements(t));
+ assert.ok(visible.includes('data-hub-shape="fan"'));assert.ok(visible.includes('data-hub-shape="pair"'));
+ assert.equal(byClass(visible,'details','rw-relation-proof').length,3);
+ assert.ok(!visible.includes('sc-number'));assert.ok(!visible.includes('sc-common-scope'));assert.equal(JSON.stringify(t),before);
+ assert.deepEqual(sourceRelationHubs(t.nodes,t.edges).map(g=>g.parent),['material','field']);
+ for(const change of [x=>x.edges.push(edge('join','bubble','meme','별도 연결')),x=>x.edges.push(edge('return','meme','material','귀환')),x=>x.edges[0].claimKind='inference',x=>x.edges[0].kind='sequence',x=>x.nodes[0].focus=true]){const x=structuredClone(t);change(x);assert.equal(sourceRelationHubs(x.nodes,x.edges),null);}
+});
+
+test('large direct hubs reserve one item for the actual center and retain every branch proof', () => {
+ const t={id:'large-tree',title:'관계 전체',nodes:[node('root'),...Array.from({length:25},(_,i)=>node('child-'+i)),node('leaf')],edges:[...Array.from({length:25},(_,i)=>edge('direct-'+i,'root','child-'+i,'직접 관계 '+i)),edge('branch','child-0','leaf','별도 직접 관계')]};
+ const before=JSON.stringify(t),html=kit().topology(t),visible=withoutModels(html);
+ assert.deepEqual(models(html).map(m=>m.props.items.length),[24,3,2]);
+ assert.deepEqual(statements(html),expectedStatements(t));
+ assert.equal(byClass(visible,'details','rw-relation-proof').length,26);
+ assert.equal(new Set(byClass(visible,'details','rw-relation-proof').map(p=>attribute(p.attrs,'id'))).size,26);
+ assert.equal(JSON.stringify(t),before);
 });

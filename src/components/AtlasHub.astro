@@ -6,9 +6,9 @@ const groups=[...atlas.axes,{id:'bridge',name:'세력·종족',question:'축 사
 const defaultAxis=Astro.props.axis||'all';
 const entries=axis=>{
  const nodes=atlas.nodes.filter(n=>n.axis===axis.id);
- return renderCvaModule({id:cvaId('atlas-'+axis.id,nodes),type:'cards',variant:'list',props:{title:'',body:''},
+ return renderCvaModule({id:cvaId('atlas-'+axis.id,nodes),type:'cards',variant:'grid',orientation:'horizontal',props:{title:'',body:''},
   items:nodes.map((n,i)=>({id:'atlas-entry-'+i,title:n.name,body:n.question,label:''})),
-  itemTitles:nodes.map(n=>`<a class="rw-index-entry" data-atlas-entry data-search="${E([n.name,n.question,...n.terms].join(' '))}" href="${E(atlasUrl(n.id))}" aria-label="${E(n.name+' · '+n.question)}"><strong>${E(n.name)}</strong><span class="rw-index-arrow" aria-hidden="true">↗</span></a>`)});
+  itemTitles:nodes.map(n=>`<a class="rw-index-entry" data-atlas-entry data-search="${E([n.name,n.question,...n.terms].join(' '))}" href="${E(atlasUrl(n.id))}"><strong>${E(n.name)}</strong><span class="rw-index-arrow" aria-hidden="true">↗</span></a>`)});
 };
 ---
 <section class="atlas-hub rw-index" id="atlas" data-atlas-hub data-default-axis={defaultAxis}>
