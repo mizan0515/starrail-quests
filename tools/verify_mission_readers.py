@@ -1,0 +1,328 @@
+"""Read-only verification of every built mission's primary original-text reader.
+
+Compare DOM text with preserved source rows, not with another generated summary.
+No whitespace or punctuation normalization is applied to dialogue text.
+"""
+import argparse
+import hashlib
+import json
+import re
+from collections import Counter
+from html.parser import HTMLParser
+from pathlib import Path
+from urllib.parse import unquote
+
+BASE = '/starrail-quests'
+VOID = {'area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'}
+
+
+class MissionPage(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.stack = []
+        self.ids = Counter()
+        self.readers = []
+        self.reader_states = []
+        self.references = []
+        self.reference_summaries = []
+        self.summary = None
+        self.rows = []
+        self.sections = []
+        self.progress_positions = []
+        self.count_texts = []
+        self.coverage_texts = []
+        self.reader_links = []
+        self.position = 0
+        self.current_row = self.body = self.count = self.coverage = None
+
+    def handle_starttag(self,tag,attrs):
+        self.position += 1
+        a = dict(attrs)
+        classes = set(a.get('class','').split())
+        flags = set()
+        if a.get('id'): self.ids[a['id']] += 1
+        if 'data-mission-reader' in a:
+            self.readers.append(self.position)
+            self.reader_states.append(a.get('data-reading-state'))
+            flags.add('reader')
+        if 'mission-scenes' in classes:flags.add('primaryScenes')
+        primary_scene = 'primaryScenes' in flags or any('primaryScenes' in x[1] for x in self.stack)
+        if 'data-reference-scenes' in a:
+            flags.add('reference')
+            self.references.append({'tag':tag,'attrs':a,'position':self.position})
+        reference = 'reference' in flags or any('reference' in x[1] for x in self.stack)
+        if tag=='summary' and reference:
+            self.summary=[]
+            self.reference_summaries.append(self.summary)
+            flags.add('summary')
+        inside = 'reader' in flags or any('reader' in x[1] for x in self.stack)
+        if tag=='a' and inside and a.get('href'): self.reader_links.append(unquote(a['href']))
+        if 'mission-progress' in classes: self.progress_positions.append(self.position)
+        if 'source-section' in classes:
+            self.sections.append({'id':a.get('id'),'insideReader':inside,'isReference':reference,'isPrimary':primary_scene})
+        if 'original-row' in classes:
+            self.current_row = {'attrs':a,'insideReader':inside,'isReference':reference,'isPrimary':primary_scene,'bodies':[]}
+            self.rows.append(self.current_row)
+            flags.add('row')
+        if tag=='p' and 'original-body' in classes:
+            self.body = {'id':a.get('id'),'text':[],'paragraphs':0}
+            if self.current_row is not None: self.current_row['bodies'].append(self.body)
+            flags.add('body')
+        if 'original-paragraph' in classes and self.body is not None:
+            self.body['paragraphs'] += 1
+        if 'mission-reader-count' in classes:
+            self.count = []
+            self.count_texts.append(self.count)
+            flags.add('count')
+        if 'coverage-note' in classes and inside:
+            self.coverage = []
+            self.coverage_texts.append(self.coverage)
+            flags.add('coverage')
+        if tag not in VOID: self.stack.append((tag,flags))
+
+    def handle_startendtag(self,tag,attrs):
+        self.handle_starttag(tag,attrs)
+        if tag not in VOID: self.handle_endtag(tag)
+
+    def handle_endtag(self,tag):
+        for n in range(len(self.stack)-1,-1,-1):
+            if self.stack[n][0]==tag:
+                flags=set().union(*(x[1] for x in self.stack[n:]))
+                del self.stack[n:]
+                if 'row' in flags: self.current_row=None
+                if 'body' in flags: self.body=None
+                if 'count' in flags: self.count=None
+                if 'coverage' in flags: self.coverage=None
+                if 'summary' in flags: self.summary=None
+                break
+
+    def handle_data(self,text):
+        if self.body is not None: self.body['text'].append(text)
+        if self.count is not None: self.count.append(text)
+        if self.coverage is not None: self.coverage.append(text)
+        if self.summary is not None: self.summary.append(text)
+
+
+def passage(row):
+    # Judge source availability before choice labels. Preserve the original text;
+    # strip is used only to classify a genuinely empty/whitespace-only body.
+    text=row.get('text')
+    if row.get('label')=='대사 누락' or not isinstance(text,str) or not text.strip():return 'gap'
+    if text=='한국어 본문 미수록' and row.get('hash')=='' and re.fullmatch(r'MessageItemConfig:\d+\.(?:MainText|OptionText)',row.get('source','')):
+        return 'gap'
+    if row.get('displayKind') in ('choice','선택지') or row.get('label')=='선택지':return 'choice'
+    return 'dialogue'
+
+
+def explicitly_owned(chain):
+    # Membership follows an explicit main-mission proof, never an ID prefix,
+    # neighbouring directory, common speaker or matching dialogue number.
+    return isinstance(chain,list) and bool(chain) and isinstance(chain[0],dict) and chain[0].get('kind')=='EXPLICIT_MAIN_MISSION_ID'
+
+
+def difference(actual,expected):
+    offset=next((i for i,(a,b) in enumerate(zip(actual,expected)) if a!=b),min(len(actual),len(expected)))
+    return {'firstDifference':offset,'actualLength':len(actual),'expectedLength':len(expected),
+            'actualContext':actual[max(0,offset-20):offset+35],
+            'expectedContext':expected[max(0,offset-20):offset+35]}
+
+
+def main(dist):
+    root=Path(__file__).resolve().parents[1]
+    read=lambda p:json.loads(p.read_text(encoding='utf-8'))
+    source_catalog=read(root/'data/catalog.json')
+    quests=[d for d in source_catalog if d['category']=='퀘스트']
+    supplements_data=read(root/'data/mission-dialogue-supplements.json')
+    supplement=supplements_data['missions']
+    coverage=supplements_data.get('coverage',{})
+    built_catalog=read(dist/'reading-catalog.json')
+    built_quests={d['id']:d for d in built_catalog if d['category']=='퀘스트'}
+    versions=read(dist/'versions-data.json')
+    evidence=read(root/'editorial/mission-versions.json')
+    aliases=read(root/'data/aliases.json')
+    errors,stats=[],Counter()
+    def require(condition,error,**context):
+        if not condition:errors.append({'error':error,**context})
+    ids={d['id'] for d in quests}
+    require(set(built_quests)==ids,'reading catalogue quest coverage differs')
+    require(len([d for d in built_catalog if d['category']=='퀘스트'])==len(ids),
+            'reading catalogue contains duplicate quest IDs')
+    require(set(versions)==ids,'version metadata quest coverage differs')
+    part_versions={}
+    for id,parent in aliases.items():
+        if id in evidence['missions']:
+            part_versions.setdefault(parent,set()).add(evidence['missions'][id])
+    for item in quests:
+        id=item['id']
+        doc=read(root/'data/documents'/(id+'.json'))
+        related=[]
+        related_sections=[]
+        mission_coverage=coverage.get(id,{})
+        ownership=mission_coverage.get('sourceOwnership',{})
+        require(isinstance(ownership,dict),'mission source ownership map invalid',quest=id)
+        if not isinstance(ownership,dict):ownership={}
+        # Preserve first document position and first fallback proof; any explicit
+        # main-mission reference outranks a folder-only fallback for the same ID.
+        message_refs={}
+        for ref in mission_coverage.get('relatedDocuments',[]):
+            key=ref.get('id') or ref.get('docId')
+            prior=message_refs.get(key)
+            if prior is None or (not explicitly_owned(prior.get('ownership')) and explicitly_owned(ref.get('ownership'))):
+                message_refs[key]=ref
+        canary_messages={'quest-1034108':{'message-1307000','message-1307100'},
+                         'quest-8000177':{'message-1113500'}}.get(id,set())
+        for message_id in canary_messages:
+            ref=message_refs.get(message_id)
+            require(ref is not None and explicitly_owned(ref.get('ownership')),
+                    'explicit message proof lost to fallback deduplication',quest=id,document=message_id)
+        for ref in message_refs.values():
+            related_id=ref.get('id') or ref.get('docId')
+            require(isinstance(related_id,str) and related_id.startswith('message-'),
+                    'related message document ID is invalid',quest=id,reference=ref)
+            if not isinstance(related_id,str) or not related_id.startswith('message-'):continue
+            source_path=root/'data/documents'/(related_id+'.json')
+            require(source_path.is_file(),'related message source document missing',quest=id,document=related_id)
+            if not source_path.is_file():continue
+            source_bytes=source_path.read_bytes()
+            message=json.loads(source_bytes.decode('utf-8'))
+            require(hashlib.sha256(source_bytes).hexdigest()==ref.get('sha256'),
+                    'related message source SHA differs',quest=id,document=related_id)
+            require(message['id']==related_id and message['category']=='메시지',
+                    'related document identity or category differs',quest=id,document=related_id)
+            require(message['title']==ref.get('title'),
+                    'related message title differs',quest=id,document=related_id)
+            require(bool(ref.get('referenceSource')) and bool(ref.get('pointer')) and
+                    bool(re.fullmatch(r'[0-9a-f]{64}',ref.get('referenceSourceSha256',''))),
+                    'related message structure source proof incomplete',quest=id,document=related_id)
+            related.append((ref,message))
+            for section in message['sections']:
+                related_sections.append({**section,'anchor':'mission-message-'+message['id']+'-'+section['anchor'],
+                                         '_messageOwnership':ref.get('ownership',[])})
+        sections=[*doc['sections'],*supplement.get(id,[]),*related_sections]
+        def linked(section):
+            chain=section['_messageOwnership'] if '_messageOwnership' in section else ownership.get(section.get('source'),section.get('ownership',[]))
+            return explicitly_owned(chain)
+        primary=[s for s in sections if s['rows'] and linked(s)]
+        reference=[s for s in sections if s['rows'] and not linked(s)]
+        active=[*primary,*reference]
+        expected=[]
+        for s in active:
+            for i,row in enumerate(s['rows'],1):
+                expected.append((s['anchor']+'-row-'+str(i),row,not linked(s)))
+        anchors=[a for a,_,_ in expected]
+        require(len(set(anchors))==len(anchors),'source row anchors collide',quest=id)
+        source_kinds=Counter(passage(row) for s in primary for row in s['rows'])
+        choices=source_kinds['choice'];dialogues=source_kinds['dialogue'];gaps=source_kinds['gap']
+        require(choices+dialogues+gaps==sum(len(s['rows']) for s in primary),
+                'primary source rows are not partitioned into dialogue/choice/gap',quest=id)
+        state='dialogue-linked' if dialogues else 'choices-only' if choices else 'overview-only'
+        counts={'dialogueCount':dialogues,'choiceCount':choices,'gapCount':gaps,'sceneCount':len(primary),
+                'referenceRows':sum(len(s['rows']) for s in reference),'referenceSceneCount':len(reference),'state':state}
+        counts['count']=item['count']+sum(len(s['rows']) for s in supplement.get(id,[]))+sum(len(s['rows']) for s in related_sections)
+        if id=='quest-1000400':
+            canary=[s for s in active if s.get('source')=='Config/Level/Mission/1000401/Act/Act100040101.json']
+            require(bool(canary),'Kafka cross-mission ownership canary source missing',quest=id)
+            require(all(not linked(s) for s in canary),'Kafka cross-mission dialogue incorrectly owned by mission',quest=id)
+        built=built_quests.get(id,{})
+        for field,value in counts.items():
+            require(built.get(field)==value,'reading catalogue field differs',quest=id,field=field,expected=value,actual=built.get(field))
+        observed={evidence['missions'].get(id,'unknown'),*part_versions.get(id,set())}
+        expected_versions=observed|({'early'} if any(re.fullmatch(r'\d+\.\d+',v) and float(v)<=2.6 for v in observed) else set())
+        require(set(versions.get(id,[]))==expected_versions,'mission versions differ from evidence mapping',quest=id)
+        require(set(built.get('versions',[]))==expected_versions,'reading catalogue versions differ',quest=id)
+        for version in expected_versions:
+            require((dist/'versions'/(version+'.html')).is_file(),'version reader page missing',quest=id,version=version)
+        path=dist/'문서'/(id+'.html')
+        if not path.is_file():
+            errors.append({'error':'mission document missing','quest':id})
+            continue
+        page=MissionPage()
+        page.feed(path.read_text(encoding='utf-8'))
+        for ref,message in related:
+            original_url=BASE+'/'+message['url'].lstrip('/')
+            require(original_url in page.reader_links,'inline message original document link missing',quest=id,
+                    document=message['id'],expected=original_url)
+        require(page.reader_states==[state],'mission reader state differs from primary sources',quest=id,expected=state,actual=page.reader_states)
+        require(len(page.references)==(1 if reference else 0),'reference dialogue container count differs',quest=id)
+        for container in page.references:
+            require(container['tag']=='details' and 'open' not in container['attrs'],
+                    'reference dialogue is not initially collapsed',quest=id)
+        if reference:
+            require(bool(page.reference_summaries) and ''.join(page.reference_summaries[0]).startswith('임무 자료의 추가 대화'),
+                    'reference dialogue label missing',quest=id)
+        require(len(page.readers)==1,'primary mission reader count differs',quest=id,actual=len(page.readers))
+        for anchor in ('original','linked-dialogue'):
+            require(page.ids[anchor]==1,'primary reader legacy anchor missing or duplicated',quest=id,anchor=anchor)
+        for anchor,count in page.ids.items():
+            require(count==1,'duplicate DOM anchor',quest=id,anchor=anchor,count=count)
+        if doc['stages']:
+            require(len(page.progress_positions)==1,'mission progress section missing or duplicated',quest=id)
+            if page.readers and page.progress_positions:
+                require(page.readers[0]<page.progress_positions[0],'progress appears before original reader',quest=id)
+            for step in doc['stages']:
+                anchor='stage-'+str(step['id'])
+                require(page.ids[anchor]==1,'legacy stage anchor missing or duplicated',quest=id,anchor=anchor)
+                stats['stageAnchors']+=1
+        actual_sections=[s['id'] for s in page.sections if s['insideReader']]
+        expected_location={s['anchor']:not linked(s) for s in active}
+        for section in page.sections:
+            if section['insideReader'] and section['id'] in expected_location:
+                require(section['isPrimary']==(not expected_location[section['id']]),
+                        'scene primary reader container placement differs',quest=id,anchor=section['id'])
+                require(section['isReference']==expected_location[section['id']],
+                        'scene mission ownership placement differs',quest=id,anchor=section['id'])
+        require(Counter(actual_sections)==Counter(s['anchor'] for s in active),
+                'primary reader section coverage differs',quest=id)
+        actual=[]
+        for row in page.rows:
+            require(row['insideReader'],'original row rendered outside primary reader',quest=id)
+            require(len(row['bodies'])==1,'original row body count differs',quest=id,actual=len(row['bodies']))
+            for body in row['bodies']: actual.append((body['id'],row,body))
+        require([a for a,_,_ in actual]==anchors,'original row order, coverage or duplication differs',quest=id,
+                actualRows=len(actual),expectedRows=len(expected))
+        actual_by_anchor={a:(r,b) for a,r,b in actual}
+        for anchor,source,is_reference in expected:
+            if anchor not in actual_by_anchor:continue
+            rendered,body=actual_by_anchor[anchor]
+            require(rendered['isPrimary']==(not is_reference),'row primary reader container placement differs',quest=id,anchor=anchor)
+            require(rendered['isReference']==is_reference,'row mission ownership placement differs',quest=id,anchor=anchor)
+            text=''.join(body['text'])
+            require(text==source['text'],'primary reader original text differs',quest=id,anchor=anchor,
+                    **(difference(text,source['text']) if text!=source['text'] else {}))
+            require(body['paragraphs']>0,'original paragraph spans missing',quest=id,anchor=anchor)
+            require(rendered['attrs'].get('data-speaker')==(source.get('speaker') or '화자 미지정'),
+                    'reader speaker filter attribution differs',quest=id,anchor=anchor)
+            require(rendered['attrs'].get('data-passage')==passage(source),
+                    'reader dialogue/choice/gap filter semantics differ',quest=id,anchor=anchor)
+            stats['originalRows']+=1
+            stats['originalParagraphSpans']+=body['paragraphs']
+        count_texts=[''.join(x) for x in page.count_texts]
+        expected_header=f'대사 {dialogues:,}행 · 선택지 {choices:,}개 · 장면 {len(primary):,}개'
+        require(len(count_texts)==1 and count_texts[0].startswith(expected_header),'visible reader count differs',quest=id,expectedPrefix=expected_header,actual=count_texts)
+        if gaps:
+            require(bool(count_texts) and bool(re.search(r'(?:본문 연결 확인|미연결|누락)\s*'+re.escape(f'{gaps:,}')+r'(?:행|개)',count_texts[0])),
+                    'visible source gap count missing or differs',quest=id,gapCount=gaps,actual=count_texts)
+        if state=='overview-only':
+            require(bool(page.coverage_texts),'zero dialogue mission lacks coverage disclosure',quest=id)
+            text=''.join(''.join(x) for x in page.coverage_texts)
+            require('임무 개요' in text and '연결' in text,'zero dialogue disclosure does not describe coverage boundary',quest=id)
+        stats[state]+=1
+        stats['quests']+=1
+        stats['scenes']+=len(primary)
+        stats['referenceScenes']+=len(reference)
+        stats['referenceRows']+=counts['referenceRows']
+        stats['choices']+=choices
+        stats['dialogueRows']+=dialogues
+        stats['gapRows']+=gaps
+        stats['inlineMessageDocuments']+=len(related)
+        stats['inlineMessageRows']+=sum(len(s['rows']) for s in related_sections)
+    print(json.dumps({'status':'PASS' if not errors else 'FAIL','scope':'all-mission-primary-and-reference-original-preservation',
+                      **dict(stats),'errorsTotal':len(errors),'errorsByKind':dict(Counter(e['error'] for e in errors)),
+                      'errors':errors[:25]},ensure_ascii=False))
+    return bool(errors)
+
+
+if __name__=='__main__':
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--dist',type=Path,default=Path(__file__).resolve().parents[1]/'dist')
+    raise SystemExit(main(parser.parse_args().dist.resolve()))

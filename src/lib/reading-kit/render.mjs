@@ -15,6 +15,6 @@ export function createReadingKit({inline=escapeHtml,evidence=()=>''}={}){
  const source=blocks=>`<div class="rw-original">${blocks.map(block=>`<section id="${E(block.id)}">${block.title?`<h2>${E(block.title)}</h2>`:''}${paragraphRuns(block.text).map(p=>`<p>${E(p.text)}</p>`).join('')}</section>`).join('')}</div>`;
  const topology=t=>renderTopology(t,{escape:E,href:safeHref,inline,evidence});
  const network=(items,options)=>{const t=topologyFromRelations(items,options);return t?topology(t):'';};
- const directory=items=>`<section class="rw-directory" aria-label="세력별 본문">${items.map((n,i)=>`<a data-reading-link href="${safeHref(n.url)}"><span class="rw-directory-number" aria-hidden="true">${String(i+1).padStart(2,'0')}</span><div><strong>${E(n.name)}</strong><p>${E(n.summary)}</p></div><span aria-hidden="true">↗</span></a>`).join('')}</section>`;
+ const directory=items=>`<section class="rw-directory" aria-label="관련 본문">${items.map((n,i)=>`<a data-reading-link href="${safeHref(n.url)}"><span class="rw-directory-number" aria-hidden="true">${String(i+1).padStart(2,'0')}</span><div><strong>${E(n.name)}</strong><p>${E(n.summary)}</p></div><span aria-hidden="true">↗</span></a>`).join('')}</section>`;
  return {section,relations,timeline,comparison,containment,process,source,topology,network,directory};
 }
