@@ -10,7 +10,7 @@ import re
 from collections import Counter
 from html.parser import HTMLParser
 from pathlib import Path
-from urllib.parse import unquote
+from urllib.parse import unquote, urlsplit, parse_qs
 
 BASE = '/starrail-quests'
 VOID = {'area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'}
@@ -103,6 +103,16 @@ class MissionPage(HTMLParser):
         if self.summary is not None: self.summary.append(text)
 
 
+class BrowseBindings(HTMLParser):
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.catalogues=[]
+    def handle_starttag(self,tag,attrs):
+        attributes=dict(attrs)
+        if 'browse' in attributes.get('class','').split():
+            self.catalogues.append(attributes.get('data-catalog',''))
+
+
 def passage(row):
     # Judge source availability before choice labels. Preserve the original text;
     # strip is used only to classify a genuinely empty/whitespace-only body.
@@ -148,6 +158,25 @@ def main(dist):
     require(len([d for d in built_catalog if d['category']=='퀘스트'])==len(ids),
             'reading catalogue contains duplicate quest IDs')
     require(set(versions)==ids,'version metadata quest coverage differs')
+    catalogue_bytes=(dist/'reading-catalog.json').read_bytes()
+    expected_catalogue_version=hashlib.sha256(catalogue_bytes).hexdigest()[:12]
+    browse_candidates={dist/name for name in ('index.html','시작.html','설정집.html')}
+    for folder in ('versions','quests'):
+        browse_candidates.update((dist/folder).glob('*.html'))
+    required_browse={dist/'index.html',dist/'versions/1.0.html'}
+    for page_path in sorted(browse_candidates):
+        require(page_path.exists(),'browse wrapper page missing',page=str(page_path.relative_to(dist)))
+        if not page_path.exists():continue
+        bindings=BrowseBindings();bindings.feed(page_path.read_text(encoding='utf8'))
+        if page_path in required_browse:
+            require(bool(bindings.catalogues),'required page lacks Browse catalogue binding',page=str(page_path.relative_to(dist)))
+        for endpoint in bindings.catalogues:
+            parsed=urlsplit(endpoint)
+            require(not parsed.scheme and not parsed.netloc and parsed.path==BASE+'/reading-catalog.json'
+                    and parse_qs(parsed.query).get('v')==[expected_catalogue_version] and not parsed.fragment,
+                    'Browse catalogue cache version differs from actual API bytes',
+                    page=str(page_path.relative_to(dist)),endpoint=endpoint,expectedVersion=expected_catalogue_version)
+            stats['browseCatalogueBindings']+=1
     part_versions={}
     for id,parent in aliases.items():
         if id in evidence['missions']:

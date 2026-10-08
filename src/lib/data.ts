@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import {createHash} from 'node:crypto';
 import originalCatalog from '../../data/catalog.json';
 import versionEvidence from '../../editorial/mission-versions.json';
 import aliases from '../../data/aliases.json';
@@ -39,6 +40,7 @@ const topics=resolvedTopics.map(topic=>{
 const partVersions=new Map<string,Set<string>>();
 for(const [id,parent] of Object.entries(aliases)){if(versionMap[id]){if(!partVersions.has(parent))partVersions.set(parent,new Set());partVersions.get(parent)!.add(versionMap[id]);}}
 export const catalog=originalCatalog.map(d=>{const observed=d.category==='퀘스트'?[...new Set([versionMap[d.id]||'unknown',...(partVersions.get(d.id)||[])])]:[];const addedDialogue=(missionDialogue[d.id]||[]).reduce((count,s)=>count+s.rows.length,0);return {...d,count:d.count+addedDialogue+(missionReading[d.id]?.messageRows||0),addedDialogue,...missionReading[d.id],versions:[...observed,...(observed.some(v=>/^\d+\.\d+$/.test(v)&&Number(v)<=2.6)?['early']:[])]};});
+export const readingCatalogVersion=createHash('sha256').update(JSON.stringify(catalog)).digest('hex').slice(0,12);
 export {topics,stats,versionEvidence};
 export const versionLabel=(v:string)=>v==='early'?'1.0~2.6':v==='unknown'?'버전 미확인':v;
 export const versions=[...new Set(catalog.flatMap(d=>d.versions))].sort((a,b)=>a==='early'?1:b==='early'?-1:a==='unknown'?1:b==='unknown'?-1:b.localeCompare(a,undefined,{numeric:true}));
