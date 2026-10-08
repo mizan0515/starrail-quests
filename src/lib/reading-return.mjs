@@ -21,7 +21,7 @@ export function safeReadingReturn(value, {origin, base}) {
   const nested=reading.url.searchParams.get('from');
   reading.url.searchParams.delete('from');
   const catalogue=parse(nested);
-  if (catalogue && /^(?:index\.html|versions\/[^/]+\.html|quests\/[^/]+\.html|설정집\.html|우주\.html|우주\/[a-z][a-z0-9-]*\.html)$/.test(catalogue.relative)) {
+  if (catalogue && /^(?:index\.html|versions\/[^/]+\.html|quests\/[^/]+\.html|설정집\.html|우주\.html|우주\/[a-z][a-z0-9-]*\.html|대사\/official-4\.6\.html)$/.test(catalogue.relative)) {
     catalogue.url.searchParams.delete('from');
     reading.url.searchParams.set('from',catalogue.url.pathname+catalogue.url.search+catalogue.url.hash);
   }

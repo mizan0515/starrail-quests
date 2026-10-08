@@ -1,6 +1,7 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
-import './tools/build_reading_graph.mjs';
+import {buildReadingGraph} from './tools/build_reading_graph.mjs';
+await buildReadingGraph();
 
 const base=process.env.SITE_BASE || '/starrail-quests';
 // Starlight adds the configured base to sidebar links itself.
@@ -12,7 +13,7 @@ export default defineConfig({
   integrations:[starlight({
     title:'스타레일 · 별의 기록',description:'스타레일 한국어 임무와 설정을 맥락으로 연결한 자료집',
     defaultLocale:'root',locales:{root:{label:'한국어',lang:'ko'}},
-    customCss:['./src/styles/library.css','./src/styles/context.css','./src/styles/complete-library.css','./src/styles/reading-system.css','./src/lib/reading-kit/reading.css','./src/styles/universe.css','./src/styles/mission-reader.css','./src/lib/reading-kit/reader.css','./src/lib/reading-kit/search-dialog.css'],
+    customCss:['./src/styles/library.css','./src/styles/context.css','./src/styles/complete-library.css','./src/styles/reading-system.css','./src/lib/reading-kit/reading.css','./src/styles/universe.css','./src/styles/mission-reader.css','./src/lib/reading-kit/reader.css','./src/lib/reading-kit/search-dialog.css','./src/lib/reading-kit/cva.css'],
     tableOfContents:{minHeadingLevel:2,maxHeadingLevel:2},
     sidebar:[
       {label:'자료집',items:[{label:'이야기 찾아보기',link:link('index.html')},{label:'설정집 · 연결해서 읽기',link:link('설정집.html')}]},

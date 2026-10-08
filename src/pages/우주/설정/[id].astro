@@ -7,6 +7,7 @@ import SourceParagraphs from '../../../components/SourceParagraphs.astro';
 import CatalogReturn from '../../../components/CatalogReturn.astro';
 import {href} from '../../../lib/data';
 import {readerAttributes,rowAttributes,disclosureAttributes,sourceLinkAttributes} from '../../../lib/reading-kit/reader.mjs';
+import {renderCvaModule} from '../../../lib/reading-kit/cva.mjs';
 export function getStaticPaths(){return official.records.map(record=>({params:{id:record.id},props:{record}}));}
 const {record}=Astro.props;
 const mode=universe.modes.find(item=>item.id===record.modeId);
@@ -23,7 +24,7 @@ const fieldAnchor=field=>record.id+'-'+field.fieldKey;
  {record.names?.length>0&&<details {...disclosureAttributes({className:'source-details'})} data-pagefind-ignore data-official-title-proof><summary>명칭의 원문 근거</summary>{record.names.map(name=><div><p><strong>{name.text}</strong></p><dl><dt>명칭 원문</dt><dd><a href={metaUrl(name.sourceTable)} {...sourceLinkAttributes({variant:'inline'})}>{name.sourceTable} ↗</a> · {name.sourcePointer}</dd><dt>한국어 문자열</dt><dd>4.6 · {name.textmapHash} · TextMap {name.offset}–{name.end}</dd><dt>이 항목과 명칭의 연결</dt><dd><ol>{name.proof.map(step=><li><a href={metaUrl(step.sourceTable)} {...sourceLinkAttributes({variant:'inline'})}>{step.sourceTable} ↗</a> · {step.pointer} · {step.value}</li>)}</ol></dd></dl><pre class="official-source-raw"><code>{name.raw}</code></pre></div>)}</details>}
  <nav class="shelf-nav" aria-label="이 자료의 원문 항목">{fields.map(field=><a href={'#'+fieldAnchor(field)}>{field.label}</a>)}{linked.length>0&&<a href="#linked-records">연결된 대사·연출</a>}</nav>
  <div class="universe-record-original" id="original">{fields.map(field=><section {...readerAttributes({variant:'scene',className:'source-section',id:fieldAnchor(field)})} data-official-text-field={field.fieldKey}>
-   <h2>{field.label}</h2>
+   <Fragment set:html={renderCvaModule({id:'cva-'+fieldAnchor(field).replace(/[^A-Za-z0-9_-]/g,'-').slice(0,59),type:'text',variant:'prose',props:{title:field.label,body:'',eyebrow:record.kindLabel+' · 원문'}})}/>
    <div {...rowAttributes('dialogue')} class="rw-source-row original-row"><SourceParagraphs text={field.text} anchor={fieldAnchor(field)+'-body'}/></div>
    <details {...disclosureAttributes({className:'source-details'})} data-pagefind-ignore><summary>이 항목의 원문과 출처</summary><dl>
     <dt>명칭·설명의 참조</dt><dd><a href={metaUrl(field.sourceTable||record.sourceTable)} {...sourceLinkAttributes({variant:'inline'})}>{field.sourceTable||record.sourceTable} ↗</a> · {field.sourcePointer}</dd>

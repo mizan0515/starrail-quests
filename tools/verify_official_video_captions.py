@@ -25,7 +25,8 @@ SITE = Path(__file__).resolve().parents[1]
 COMMIT = '8b178dd48698e5e7b12f0cc319ddab149f2ffc5c'
 REPO = 'DimbreathBot/TurnBasedGameData'
 TEXTMAP_KEY = 15229857389724683600
-EXPECTED = {'missions': 58, 'scenes': 81, 'rows': 424}
+EXPECTED = {'missions': 92, 'scenes': 133, 'rows': 727}
+RUNTIME_BASELINE_SHA = 'a072f5a610357f3f78dfac8f4ee0378cce5c6df77ed0fb5294384f5ddbfe9208'
 PRIMARY = {'A': ('A',), 'C': ('C',), 'D': ('D', 'DS'),
            'DS': ('DS',), 'E': ('E',), 'CG': ('CG',)}
 VARIANT = {'C': ('CLD',), 'D': ('DLD', 'DSLD'), 'DS': ('DSLD',)}
@@ -202,11 +203,22 @@ def artifact_check(data, site):
             check(not any(k.lower().startswith('speaker') for k in scene if k != 'speakerStatus'), 'Invented scene speaker')
             ownership = scene['ownership']
             owner, seed = ownership['missionId'], ownership['ownershipSeed']
-            check(type(owner) is int and mission == 'quest-' + str(owner) and seed['missionId'] == owner and
-                  seed['kind'] == 'EXPLICIT_RUNTIME_OWNERMAINMISSIONID' and seed['pointer'] == '/OwnerMainMissionID',
-                  'Explicit runtime owner proof')
-            check(seed['source'].startswith(('Config/LevelOutput/RuntimeGroup/', 'Config/LevelOutput/SharedRuntimeGroup/')),
-                  'Directory inference used as ownership')
+            check(type(owner) is int and mission == 'quest-' + str(owner) and seed['missionId'] == owner,
+                  'Explicit owner proof')
+            if seed['kind'] == 'EXPLICIT_RUNTIME_OWNERMAINMISSIONID':
+                check(seed['pointer'] == '/OwnerMainMissionID' and seed['source'].startswith(
+                    ('Config/LevelOutput/RuntimeGroup/', 'Config/LevelOutput/SharedRuntimeGroup/')),
+                    'Explicit runtime owner proof')
+            else:
+                check(seed['kind'] == 'EXPLICIT_MAIN_MISSION_ID' and seed['source'].startswith('Config/Level/Mission/') and
+                    Path(seed['source']).name.startswith('MissionInfo_'), 'Explicit MissionInfo owner proof')
+                check(re.fullmatch(r'/SubMissionList/[0-9]+/MissionJsonPath', seed['missionJsonPathPointer']) and
+                    seed['pointer'] in ('/MainMissionID', seed['missionJsonPathPointer'].rsplit('/', 1)[0] + '/MainMissionID'),
+                    'MainMission seed row scope')
+                first = ownership['chain'][0] if ownership['chain'] else {}
+                check(first.get('kind') == 'EXPLICIT_JSON_PATH' and first.get('source') == seed['source'] and
+                    first.get('pointer') == seed['missionJsonPathPointer'] and first.get('target') == seed['missionJsonPath'],
+                    'MainMission typed path scope')
             source_proof(seed['source'], seed['sourceSha256'])
             current = seed['source']
             scope_pointers = defaultdict(list)
@@ -337,6 +349,7 @@ def artifact_check(data, site):
             captions[scene['captionPath']] = caption_identity
     actual = {'missions': len(data['missions']), 'scenes': total_scenes, 'rows': total_rows}
     check(actual == EXPECTED and all(data['counts'][k] == v for k, v in actual.items()), 'Caption cohort/counts')
+    verify_runtime_preservation(data)
     check(data['counts']['catalogEntriesScanned'] == sum(p['entries'] for p in packs.values()) and
           data['counts']['missingNonLanguagePacks'] == 0 and data['missingOfficialPacks'] == [], 'Caption pack coverage')
     for name, values in [('unsupportedCaptionFixtures', data['unsupportedCaptionFixtures']),
@@ -516,6 +529,26 @@ class Originals:
                 self.seeds[source].append({'kind': 'EXPLICIT_RUNTIME_OWNERMAINMISSIONID', 'source': source,
                                           'sourceSha256': self.hashes[source], 'pointer': '/OwnerMainMissionID',
                                           'missionId': owner})
+        self.main_seeds = defaultdict(list)
+        self.registered = {r['id'] for r in json.loads((args.site / 'data/catalog.json').read_text('utf8')) if r['id'].startswith('quest-')}
+        for ident in list(self.registered):
+            doc = json.loads((args.site / 'data/documents' / (ident + '.json')).read_text('utf8'))
+            self.registered.update(a for a in doc.get('aliases', []) if a in doc.get('missionParts', []))
+        for source, obj in self.metadata.items():
+            if not source.startswith('Config/Level/Mission/') or not Path(source).name.startswith('MissionInfo_') or not isinstance(obj, dict):
+                continue
+            for i, row in enumerate(obj.get('SubMissionList', [])):
+                if not isinstance(row, dict):
+                    continue
+                owner = row.get('MainMissionID', obj.get('MainMissionID'))
+                target = row.get('MissionJsonPath')
+                if type(owner) is not int or owner <= 0 or not isinstance(target, str) or target not in self.metadata:
+                    continue
+                self.main_seeds[source].append({'kind': 'EXPLICIT_MAIN_MISSION_ID', 'source': source,
+                    'sourceSha256': self.hashes[source], 'pointer': f'/SubMissionList/{i}/MainMissionID' if 'MainMissionID' in row else '/MainMissionID',
+                    'missionId': owner, 'missionJsonPathPointer': f'/SubMissionList/{i}/MissionJsonPath', 'missionJsonPath': target})
+        self.unregistered_owners = []
+        self.conflicting_sources = {r['source'] for r in self.conflicts}
         self.owner_cache = {}
         self.videos = defaultdict(list)
         for i, video in enumerate(self.metadata['ExcelOutput/VideoConfig.json']):
@@ -539,7 +572,7 @@ class Originals:
                 elif caption not in self.unique:
                     reason = 'CAPTION_WHOLE_RECORD_NOT_UNIQUE_OR_UNMATCHED'
                 elif not self.owners(source):
-                    reason = 'NO_EXPLICIT_NONCONFLICTING_RUNTIME_OWNER'
+                    reason = 'NO_EXPLICIT_NONCONFLICTING_REGISTERED_OWNER'
                 elif any(str(r['hash']) not in self.textmap or not self.textmap[str(r['hash'])]['raw']
                          for r in self.unique[caption]['rows']):
                     reason = 'KOREAN_CAPTION_HASH_UNAVAILABLE'
@@ -561,17 +594,39 @@ class Originals:
             found, queue = [], deque([(source, [], {source})])
             while queue:
                 target, chain, seen = queue.popleft()
+                if target in self.conflicting_sources:
+                    continue
                 if target in self.seeds:
                     found.extend({'missionId': seed['missionId'], 'ownershipSeed': seed,
                                   'chain': list(reversed(chain))} for seed in self.seeds[target])
+                    continue
+                if target in self.main_seeds and chain:
+                    first = chain[-1]
+                    for seed in self.main_seeds[target]:
+                        if first['kind'] != 'EXPLICIT_JSON_PATH' or first['pointer'] != seed['missionJsonPathPointer'] or first['target'] != seed['missionJsonPath']:
+                            continue
+                        proof = {'missionId': seed['missionId'], 'ownershipSeed': seed, 'chain': list(reversed(chain))}
+                        if 'quest-' + str(seed['missionId']) not in self.registered:
+                            if proof not in self.unregistered_owners:
+                                self.unregistered_owners.append(proof)
+                        else:
+                            found.append(proof)
                     continue
                 if len(chain) >= 12:
                     continue
                 for edge in self.reverse.get(target, []):
                     if edge['source'] not in seen:
                         queue.append((edge['source'], chain + [edge], seen | {edge['source']}))
-            self.owner_cache[source] = found
+            self.owner_cache[source] = sorted(found, key=lambda r: r['ownershipSeed']['kind'] != 'EXPLICIT_RUNTIME_OWNERMAINMISSIONID')
         return self.owner_cache[source]
+
+
+def verify_runtime_preservation(data):
+    scenes = [s for ss in data['missions'].values() for s in ss if
+        s['ownership']['ownershipSeed']['kind'] == 'EXPLICIT_RUNTIME_OWNERMAINMISSIONID']
+    raw = json.dumps(sorted(scenes, key=lambda s: s['anchor']), sort_keys=True, ensure_ascii=False, separators=(',', ':')).encode()
+    check(len(scenes) == 81 and sum(len(s['rows']) for s in scenes) == 424 and sha(raw) == RUNTIME_BASELINE_SHA,
+          'Existing 81 Runtime scenes/raw/anchors/proofs changed')
 
 
 def verify_scene(mission, scene, original):
@@ -652,8 +707,10 @@ def verify_payload(data, original):
             scenes += 1
             rows += len(scene['rows'])
     check(actual == set(original.expected_scenes), 'Complete raw-source adoption differs')
+    check(data['unregisteredExplicitMainMissionOwners'] == original.unregistered_owners, 'Unregistered explicit owners differ')
     counts = {'missions': len(data['missions']), 'scenes': scenes, 'rows': rows}
     check(counts == EXPECTED, 'Verified 4.6 caption cohort changed')
+    verify_runtime_preservation(data)
     unresolved = [{'captionPath': path, 'captionRowIndex': row['index'], 'hash': str(row['hash']),
                    'startTime': row['startTime'], 'endTime': row['endTime'], 'entryKey': caption['entryKey']}
                   for path, caption in original.unique.items() for row in caption['rows']
@@ -694,6 +751,13 @@ def self_test(data, original):
         rejected(label, lambda: verify_scene(owner, edited, original))
     changed('WRONG_RUNTIME_OWNER', lambda s: s['ownership'].update(missionId=s['ownership']['missionId'] + 1))
     changed('DIRECTORY_ONLY_OWNER', lambda s: s['ownership'].update(ownershipSeed={'kind': 'MISSION_DIRECTORY'}))
+    main_owner, main_scene = next((m, s) for m, ss in data['missions'].items() for s in ss
+        if s['ownership']['ownershipSeed']['kind'] == 'EXPLICIT_MAIN_MISSION_ID')
+    changed('MAINMISSION_WRONG_SEED_ID', lambda s: s['ownership']['ownershipSeed'].update(missionId=1), main_scene, main_owner)
+    changed('MAINMISSION_FOREIGN_ROW_OWNER', lambda s: s['ownership']['ownershipSeed'].update(pointer='/SubMissionList/999/MainMissionID'), main_scene, main_owner)
+    changed('MAINMISSION_REMOVED_PATH_EDGE', lambda s: s['ownership']['chain'].pop(0), main_scene, main_owner)
+    changed('MAINMISSION_FOREIGN_MISSION_PATH', lambda s: s['ownership']['ownershipSeed'].update(missionJsonPath='Story/foreign.json'), main_scene, main_owner)
+    changed('MAINMISSION_WRONG_VIDEO_TYPE', lambda s: next(e for e in s['ownership']['chain'] if e['kind'] == 'EXPLICIT_PERFORMANCE_LOOKUP').update(performanceType='D'), main_scene, main_owner)
     changed('CAPTION_HASH', lambda s: s['rows'][0].update(hash='1'))
     changed('KOREAN_RAW', lambda s: s['rows'][0].update(raw=s['rows'][0]['raw'] + 'x'))
     changed('FLOAT32_TIME', lambda s: s['rows'][0].update(startTime=s['rows'][0]['startTime'] + 0.000001))
@@ -757,6 +821,15 @@ def artifact_self_test(data, site):
     contamination('ARTIFACT_TIME_TYPE', lambda d: first(d)['rows'][0].update(startTime='1'))
     contamination('ARTIFACT_PACK_SHA', lambda d: first(d)['rows'][0]['officialCaptionSource'].update(packSha256='0' * 64))
     contamination('ARTIFACT_DIRECTORY_OWNER', lambda d: first(d)['ownership']['ownershipSeed'].update(kind='MISSION_DIRECTORY'))
+    main_owner, main_index = next((m, i) for m, ss in data['missions'].items() for i, s in enumerate(ss)
+        if s['ownership']['ownershipSeed']['kind'] == 'EXPLICIT_MAIN_MISSION_ID')
+    def main_scene(d):
+        return d['missions'][main_owner][main_index]
+    contamination('ARTIFACT_MAINMISSION_FOREIGN_ROW', lambda d: main_scene(d)['ownership']['ownershipSeed'].update(pointer='/SubMissionList/999/MainMissionID'))
+    contamination('ARTIFACT_MAINMISSION_REMOVED_PATH', lambda d: main_scene(d)['ownership']['chain'].pop(0))
+    contamination('ARTIFACT_MAINMISSION_WRONG_SEED', lambda d: main_scene(d)['ownership']['ownershipSeed'].update(missionId=1))
+    contamination('ARTIFACT_MAINMISSION_FOREIGN_PATH', lambda d: main_scene(d)['ownership']['ownershipSeed'].update(missionJsonPath='Story/foreign.json'))
+    contamination('ARTIFACT_MAINMISSION_WRONG_VIDEO_TYPE', lambda d: next(e for e in main_scene(d)['ownership']['chain'] if e['kind'] == 'EXPLICIT_PERFORMANCE_LOOKUP').update(performanceType='D'))
     contamination('ARTIFACT_SPEAKER', lambda d: first(d)['rows'][0].update(speaker='invented'))
     contamination('ARTIFACT_DUPLICATE_ANCHOR', lambda d: d['missions'][mission].append(deepcopy(first(d))))
     def duplicate_time(d):

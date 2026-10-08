@@ -1,8 +1,5 @@
 ---
-import {annotate,atlasUrl} from '../lib/atlas';
-import {paragraphRuns} from '../lib/reading-kit/render.mjs';
+import {sourceParagraphs} from '../lib/source-paragraphs';
 const {text,anchor}=Astro.props;
-const paragraphs:any[][]=[[]];
-annotate(text).forEach((part,termIndex)=>paragraphRuns(part.text).forEach((run,index)=>{if(index)paragraphs.push([]);paragraphs[paragraphs.length-1].push({...part,text:run.text+run.separator,termIndex});}));
 ---
-<p class="original-body rw-source-body" id={anchor} data-pagefind-weight="1">{paragraphs.map(parts=><span class="original-paragraph">{parts.map(part=>part.id?<a class="context-term" id={`${anchor}-term-${part.termIndex}`} href={atlasUrl(part.id)} data-context-key={part.id} data-context-excerpt={text.slice(0,220)} aria-label={`${part.text} · 배경과 연결 보기`}>{part.text}</a>:part.text)}</span>)}</p>
+<Fragment set:html={sourceParagraphs(text,anchor)}/>

@@ -1,6 +1,8 @@
 export function validateTopology(t,hasClaim=()=>true){
  if(!t.nodes?.length||!t.edges?.length)throw Error('Topology needs nodes and edges');
  if(t.presentation!==undefined&&t.presentation!=='relations')throw Error('Unknown topology presentation');
+ if(t.layout!==undefined&&!['relations','cycle'].includes(t.layout))throw Error('Unknown source topology layout');
+ if(t.layout==='cycle'&&!t.edges.some(e=>e.kind==='return'))throw Error('Cycle layout requires a source return relation');
  const ids=new Set();for(const n of t.nodes){if(ids.has(n.id))throw Error('Duplicate topology node');ids.add(n.id);if(!n.name||!Number.isInteger(n.layer)||n.layer<0||n.layer>3)throw Error('Invalid topology node');if(n.scale&&!t.scaleNote)throw Error('Relative scale needs a scope note');}
  const edgeIds=new Set();for(const e of t.edges){if(!e.id||edgeIds.has(e.id))throw Error('Duplicate or missing topology edge');edgeIds.add(e.id);if(!ids.has(e.from)||!ids.has(e.to)||!e.label||!e.claimId||!hasClaim(e.claimId))throw Error('Invalid topology edge or evidence');if(!['relation','sequence','return'].includes(e.kind||'relation'))throw Error('Invalid topology edge kind');}
  return t;
@@ -14,33 +16,49 @@ export function topologyFromRelations(relations,{id='relationships',title='관�
  if(visited!==nodes.size)for(const n of nodes.values())n.layer=n.id===focusId?0:1;
  return {id,title,presentation:'relations',nodes:[...nodes.values()].map(n=>({...n,focus:n.id===focusId})),edges:relations.map(r=>({id:r.id,from:r.from.id,to:r.to.id,label:r.label,claimId:r.reasonClaimId,reason:r.reason,evidence:r.evidence,kind:'relation',claimKind:r.claimKind||r.kind,speaker:r.speaker||''}))};
 }
-function renderRelationBands(t,{escape:E,href,inline,evidence}){
- const nodes=new Map(t.nodes.map(n=>[n.id,n]));
- const endpoint=n=>`<div class="rw-relation-endpoint${n.focus?' rw-relation-focus':''}"><small>${E(n.kind||'')}</small>${n.url?`<a data-reading-link href="${href(n.url)}">${E(n.name)}</a>`:`<strong>${E(n.name)}</strong>`}</div>`;
- const rows=t.edges.filter(e=>e.claimKind!=='inference').map(e=>{
-  const a=nodes.get(e.from),b=nodes.get(e.to),id=t.id+'-edge-'+e.id;
-  const attribution=e.claimKind==='inference'?'편집자의 연결':e.claimKind==='attributed'?'발언·기록에 따른 관계':'원문에 명시된 관계';
-  const proof=`<p>${inline(e.reason||e.text||e.label)}</p>${evidence(e.evidence||[])}`;
-  return `<article class="rw-relation-band" aria-label="${E(a.name+' → '+e.label+' → '+b.name)}"><div class="rw-relation-band-line">${endpoint(a)}<div class="rw-relation-predicate"><span class="rw-attribution">${attribution}${e.speaker?' · '+E(e.speaker):''}</span><strong>${E(e.label)}</strong><span class="rw-relation-direction" aria-hidden="true">→</span></div>${endpoint(b)}</div>${readerDisclosure(`원문 근거 ${e.evidence?.length||0}개`,proof,{id,className:'rw-relation-proof'})}</article>`;
- }).join('');
- const connections=t.edges.filter(e=>e.claimKind==='inference').map(e=>{const a=nodes.get(e.from),b=nodes.get(e.to),id=t.id+'-edge-'+e.id;return `<article class="rw-reading-connection"><span class="rw-attribution">편집자의 연결 · ${E(a.name)}에서 이어 읽기</span>${b.url?`<a data-reading-link href="${href(b.url)}">${E(b.name)} <span aria-hidden="true">↗</span></a>`:`<strong>${E(b.name)}</strong>`}<p>${E(e.label)}</p>${readerDisclosure(`연결의 원문 근거 ${e.evidence?.length||0}개`,`<p>${inline(e.reason||e.text||e.label)}</p>${evidence(e.evidence||[])}`,{id,className:'rw-relation-proof'})}</article>`;}).join('');
- const title=t.title==='관계 한눈에'&&!rows?'함께 읽을 설정':t.title;
- return `<section class="rw-map rw-relation-atlas rw-app not-content" id="${E(t.id)}"><header><span class="rw-attribution">관계 표현 · 원문에 근거해 편집</span><h2>${E(title)}</h2>${t.note?`<p class="rw-deck">${E(t.note)}</p>`:''}</header>${rows?`<div class="rw-relation-bands">${rows}</div>`:''}${connections?`<div class="rw-reading-connections">${connections}</div>`:''}${t.scaleNote?`<p class="rw-scale-note">${E(t.scaleNote)}</p>`:''}</section>`;
-}
-export function renderTopology(t,{escape,href,inline,evidence}){
- validateTopology(t);if(t.presentation==='relations')return renderRelationBands(t,{escape,href,inline,evidence});const E=escape,layers=Math.max(...t.nodes.map(n=>n.layer))+1;
- const group=Array.from({length:layers},(_,i)=>t.nodes.filter(n=>n.layer===i));const nodeSpace=n=>160+t.edges.filter(e=>e.to===n.id).reduce((space,e)=>space+48+Math.ceil((t.nodes.find(x=>x.id===e.from).name.length+e.label.length+n.name.length)/24)*22,0);const height=Math.max(260,...group.map(g=>g.reduce((sum,n)=>sum+nodeSpace(n),40)));
- const positions=new Map();for(const [i,g]of group.entries()){const total=g.reduce((sum,n)=>sum+nodeSpace(n),0);let offset=0;for(const n of g){const space=nodeSpace(n);positions.set(n.id,{x:(i+.5)/layers*1000,y:(offset+space/2)/total*height});offset+=space;}}
- const marker='arrow-'+String(t.id).replace(/[^a-zA-Z0-9_-]/g,'-');
- const paths=t.edges.map(e=>{const a=positions.get(e.from),b=positions.get(e.to),half=500/layers-17,back=e.kind==='return',skip=Math.abs(t.nodes.find(n=>n.id===e.from).layer-t.nodes.find(n=>n.id===e.to).layer)>1;let d;
- if(back||skip)d=`M ${a.x} ${a.y+65} C ${a.x} ${height-5}, ${b.x} ${height-5}, ${b.x} ${b.y+75}`;
- else {const x=a.x+half,y=b.x-half,mid=(x+y)/2;d=`M ${x} ${a.y} C ${mid} ${a.y}, ${mid} ${b.y}, ${y} ${b.y}`;}
- return `<path d="${d}" class="${back?'rw-back-edge':''}" marker-end="url(#${marker})"/>`;}).join('');
- const name=id=>t.nodes.find(n=>n.id===id).name;
- const relationLabel=e=>`주체: ${name(e.from)}. 관계: ${e.label}. 상대: ${name(e.to)}.`;
- const relationText=e=>`<span class="rw-edge-statement"><span class="rw-edge-subject">${E(name(e.from))}</span> <span class="rw-edge-predicate"><span class="rw-edge-arrow" aria-hidden="true">→ </span>${E(e.label)}</span> <span class="rw-edge-object"><span class="rw-edge-arrow" aria-hidden="true">→ </span>${E(name(e.to))}</span></span>`;
- const nodes=t.nodes.map(n=>{const p=positions.get(n.id),incoming=t.edges.filter(e=>e.to===n.id);return `<div class="rw-map-node${n.focus?' rw-map-focus':''}${n.scale?' rw-map-'+E(n.scale):''}${n.form==='plural'?' rw-map-plural':''}" style="--x:${p.x/10}%;--y:${p.y/height*100}%;--node-width:${100/layers}%" data-node="${E(n.id)}"><small>${E(n.kind||'')}</small>${n.url?`<a data-reading-link href="${href(n.url)}">${E(n.name)}</a>`:`<strong>${E(n.name)}</strong>`}${incoming.map(e=>`<a class="rw-map-incoming" href="#${E(t.id)}-edge-${E(e.id)}" data-reading-link aria-label="${E(relationLabel(e)+' 원문 근거 보기')}">${relationText(e)} <span class="rw-edge-proof-icon" aria-hidden="true">↗</span></a>`).join('')}${n.detail?`<p>${E(n.detail)}</p>`:''}</div>`;}).join('');
- const edges=t.edges.map(e=>`<details class="rw-map-evidence rw-disclosure not-content" data-reading-template="disclosure" id="${E(t.id)}-edge-${E(e.id)}"><summary aria-label="${E(relationLabel(e)+' 원문 근거')}">${relationText(e)}</summary><span class="rw-attribution">${e.claimKind==='inference'?'편집자의 연결':e.claimKind==='attributed'?'발언·기록에 따른 관계':'원문에 명시된 관계'}${e.claimKind!=='inference'&&e.speaker?' · '+E(e.speaker):''}</span><p>${inline(e.reason||e.text||e.label)}</p>${evidence(e.evidence||[])}</details>`).join('');
- return `<section class="rw-map rw-app not-content" id="${E(t.id)}"><header><span class="rw-attribution">관계 표현 · 원문에 근거해 편집</span><h2>${E(t.title)}</h2>${t.note?`<p class="rw-deck">${E(t.note)}</p>`:''}</header><div class="rw-map-canvas" style="--map-height:${height}px"><svg viewBox="0 0 1000 ${height}" preserveAspectRatio="none" aria-hidden="true" focusable="false"><defs><marker id="${marker}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z"/></marker></defs>${paths}</svg>${nodes}</div>${t.scaleNote?`<p class="rw-scale-note">${E(t.scaleNote)}</p>`:''}<div class="rw-map-sources">${edges}</div></section>`;
-}
 import {readerDisclosure} from './reader.mjs';
+import {renderCvaModule} from './cva.mjs';
+import {createHash} from 'node:crypto';
+const moduleId=(id,value)=>'cva-'+String(id).replace(/[^a-zA-Z0-9_-]/g,'-').slice(0,28)+'-'+createHash('sha256').update(JSON.stringify(value)).digest('hex').slice(0,12);
+function verifiedPath(t){
+ if(!t.edges.every(e=>e.kind==='sequence')||t.edges.length!==t.nodes.length-1)return null;
+ const start=t.nodes.filter(n=>!t.edges.some(e=>e.to===n.id));if(start.length!==1)return null;
+ const order=[start[0]];while(order.length<t.nodes.length){const outgoing=t.edges.filter(e=>e.from===order.at(-1).id);if(outgoing.length!==1||order.some(n=>n.id===outgoing[0].to))return null;order.push(t.nodes.find(n=>n.id===outgoing[0].to));}
+ return order;
+}
+function verifiedCycle(t){
+ const returns=t.edges.filter(e=>e.kind==='return');
+ if(t.layout!=='cycle'||returns.length!==1)return null;
+ const ordered=[t.nodes.find(n=>n.id===returns[0].to)],edges=[];
+ while(ordered.length<=t.nodes.length){const next=t.edges.filter(e=>e.from===ordered.at(-1).id);if(next.length!==1)return null;const edge=next[0];edges.push(edge);if(edge.to===ordered[0].id)break;if(ordered.some(n=>n.id===edge.to))return null;ordered.push(t.nodes.find(n=>n.id===edge.to));}
+ if(ordered.length<2||edges.length!==ordered.length||edges.at(-1).to!==ordered[0].id||!edges.includes(returns[0]))return null;
+ const cycleIds=new Set(ordered.map(n=>n.id)),external=t.edges.filter(e=>!edges.includes(e));
+ // An explicit cycle may have direct incoming sources. Outgoing forks and
+ // unrelated components retain the complete relationship ledger.
+ if(external.some(e=>cycleIds.has(e.from)||!cycleIds.has(e.to))||t.nodes.some(n=>!cycleIds.has(n.id)&&!external.some(e=>e.from===n.id)))return null;
+ return {nodes:ordered,edges,external};
+}
+export function renderTopology(t,{escape:E,href,inline,evidence}){
+ validateTopology(t);
+ const nodes=new Map(t.nodes.map(n=>[n.id,n]));
+ const name=id=>nodes.get(id).name;
+ const endpoint=n=>`${n.kind?`<small class="rw-node-kind">${E(n.kind)}</small>`:''}${n.url?`<a data-reading-link href="${href(n.url)}">${E(n.name)}</a>`:`<strong>${E(n.name)}</strong>`}`;
+ const statement=e=>`<span class="rw-edge-statement"><span class="rw-edge-subject">${endpoint(nodes.get(e.from))}</span><span class="rw-edge-arrow" aria-hidden="true"> → </span><span class="rw-edge-predicate">${E(e.label)}</span><span class="rw-edge-arrow" aria-hidden="true"> → </span><span class="rw-edge-object">${endpoint(nodes.get(e.to))}</span></span>`;
+ const attribution=e=>(e.claimKind==='inference'?'편집자의 연결':e.claimKind==='attributed'?'발언·기록에 따른 관계':'원문에 명시된 관계')+(e.claimKind!=='inference'&&e.speaker?' · '+e.speaker:'');
+ const proof=e=>readerDisclosure(`${e.claimKind==='inference'?'연결의 원문 근거':'원문 근거'} ${e.evidence?.length||0}개`,`<span class="rw-attribution">${E(attribution(e))}</span><p>${inline(e.reason||e.text||e.label)}</p>${evidence(e.evidence||[])}`,{id:t.id+'-edge-'+e.id,className:'rw-relation-proof'});
+ const explicit=t.edges.filter(e=>e.claimKind!=='inference'),connections=t.edges.filter(e=>e.claimKind==='inference');
+ const relationModules=edges=>Array.from({length:Math.ceil(edges.length/24)},(_,i)=>{
+ const batch=edges.slice(i*24,(i+1)*24);
+ const html=renderCvaModule({id:moduleId(t.id,batch),type:'scene-composition',variant:'relationship-ledger',props:{title:'',body:'',relationLabel:'주체 → 관계 → 대상',caption:''},items:batch.map((e,j)=>({id:'relation-'+j,title:name(e.from)+' → '+name(e.to),body:e.reason||e.text||e.label,label:attribution(e)})),itemTitles:batch.map(statement),itemExtras:batch.map(e=>`<div class="rw-relation-band" aria-label="${E(name(e.from)+' → '+e.label+' → '+name(e.to))}" data-relation-from="${E(e.from)}" data-relation-to="${E(e.to)}">${proof(e)}</div>`)});
+ return html.replace('<caption>입력한 항목과 관계의 기록</caption>','<caption>각 관계의 주체와 대상 · 출처에서 확인하기</caption>').replace('<th scope="col">대상</th>','<th scope="col">주체 · 관계 · 대상</th>').replace('<th scope="col">명시한 라벨·값</th>','<th scope="col">원문의 성격</th>').replace('<th scope="col">설명</th>','<th scope="col">맥락과 근거</th>');
+ }).join('');
+ const path=verifiedPath(t),cycle=verifiedCycle(t),ordered=path||cycle?.nodes;
+ let diagram='';
+ if(ordered&&ordered.length<=24&&!connections.length){
+ const incoming=n=>(cycle?.edges||t.edges).filter(e=>e.to===n.id);
+ diagram=renderCvaModule({id:moduleId(t.id+'-structure',ordered),type:'scene-composition',variant:cycle?'feedback-ring':'quest-route',props:{title:'',body:t.note||'',relationLabel:cycle?'원문에 설명된 순환 · 각 연결의 발언 주체와 근거':'원문에 명시된 과정의 순서',caption:t.scaleNote||''},items:ordered.map((n,i)=>({id:'node-'+i,title:n.name,body:n.detail||'',label:n.kind||''})),itemTitles:ordered.map(endpoint),itemExtras:ordered.map(n=>incoming(n).map(e=>`<div class="rw-structure-edge">${statement(e)}${proof(e)}</div>`).join(''))});
+ if(cycle?.external.length)diagram+=relationModules(cycle.external);
+ } else diagram=relationModules(explicit);
+ const editorial=connections.length?`<div class="rw-reading-connections">${Array.from({length:Math.ceil(connections.length/24)},(_,i)=>{const batch=connections.slice(i*24,(i+1)*24);return renderCvaModule({id:moduleId(t.id+'-reading',batch),type:'cards',variant:'list',props:{title:'',body:''},items:batch.map((e,j)=>({id:'connection-'+j,title:name(e.to),body:e.reason||e.text||e.label,label:'편집자의 연결 · '+name(e.from)+'에서 이어 읽기'})),itemTitles:batch.map(e=>endpoint(nodes.get(e.to))),itemExtras:batch.map(e=>`<div class="rw-reading-connection"><div class="rw-connection-origin">${endpoint(nodes.get(e.from))}</div><p>${E(e.label)}</p>${proof(e)}</div>`)});}).join('')}</div>`:'';
+ return `<section class="rw-map rw-cva-atlas rw-app not-content" id="${E(t.id)}"><header><span class="rw-attribution">관계 표현 · 원문에 근거해 편집</span><h2>${E(t.title==='관계 한눈에'&&!explicit.length?'함께 읽을 설정':t.title)}</h2>${!ordered&&t.note?`<p class="rw-deck">${E(t.note)}</p>`:''}</header>${diagram}${editorial}</section>`;
+}

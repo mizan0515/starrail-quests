@@ -11,6 +11,25 @@ test('video captions use the exact declared runtime owner and remain separate fr
  assert.equal(missionRowLinked(section,section.rows[0],{...coverage,missionIds:['1043701','1043710']}),true);
  for(const ownership of [{...section.ownership,missionId:1043711},{...section.ownership,chain:[]},{...section.ownership,ownershipSeed:{kind:'MISSION_DIRECTORY_CONVENTION',missionId:1043710}}])assert.equal(missionRowLinked({...section,ownership},section.rows[0],coverage),false);
 });
+test('mission video captions require the same explicit MainMission row and its first source path',()=>{
+ const seed={kind:'EXPLICIT_MAIN_MISSION_ID',missionId:1000101,source:'MissionInfo/MainMissionInfo_1000101.json',pointer:'/SubMissionList/1/MainMissionID',missionJsonPathPointer:'/SubMissionList/1/MissionJsonPath',missionJsonPath:'Config/Level/Mission/Mission_100010102.json'};
+ const first={kind:'EXPLICIT_JSON_PATH',source:seed.source,pointer:seed.missionJsonPathPointer,target:seed.missionJsonPath};
+ const section={recordType:'CUTSCENE_CAPTION',source:'Act.json',anchor:'video-main',ownership:{missionId:1000101,ownershipSeed:seed,chain:[first,{kind:'EXPLICIT_PERFORMANCE_LOOKUP'}]},rows:[{text:'원문'}]};
+ const coverage={missionIds:['1000101']};
+ assert.equal(missionRowLinked(section,section.rows[0],coverage),true);
+ for(const corrupt of [
+  {...seed,missionId:1000102},{...seed,kind:'MISSION_DIRECTORY_CONVENTION'},
+  {...seed,missionJsonPath:undefined},{...seed,missionJsonPathPointer:''},
+  {...seed,missionJsonPathPointer:'/SubMissionList/2/MissionJsonPath'},
+  {...seed,missionJsonPath:'Config/Level/Mission/foreign.json'},
+  {...seed,source:'MissionInfo/foreign.json'}
+ ])assert.equal(missionRowLinked({...section,ownership:{...section.ownership,ownershipSeed:corrupt}},section.rows[0],coverage),false);
+ for(const chain of [[],[{...first,kind:'MISSION_DIRECTORY_CONVENTION'}],[{...first,pointer:'/wrong'}],[{...first,target:'foreign'}],section.ownership.chain.slice(1)])
+  assert.equal(missionRowLinked({...section,ownership:{...section.ownership,chain}},section.rows[0],coverage),false);
+ assert.equal(missionRowLinked(section,section.rows[0],{missionIds:['1000102']}),false);
+ const divided=partitionMissionSections([section],coverage);
+ assert.equal(divided.primary[0].rows.length,1);assert.equal(divided.reference.length,0);
+});
 test('a shared task scope preserves excluded original rows and their original deep links',()=>{
  const rows=[{talk_id:1,text:'인사말'},{talk_id:2,text:'임무 대사'},{talk_id:3,text:'다른 분기의 대사'}];
  const sections=[{source:'NPC.json',anchor:'scene-1',rows}],before=JSON.stringify(sections);

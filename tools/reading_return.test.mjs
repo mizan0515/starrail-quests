@@ -60,6 +60,17 @@ test('catalogue allowlist and one-level chain limit',()=>{
  }
 });
 
+test('official Talk originals retain their observed-version list, filters and exact row',()=>{
+ const catalogue=base+'/대사/official-4.6.html?talkQuery='+encodeURIComponent('아이스구리')+'&talkKind=new&talkLimit=24#universe-source-official-4.6-412470001';
+ const source=base+'/대사/official-4.6-412470001.html?from='+encodeURIComponent(catalogue)+'#talk-412470001';
+ const out=resolved(safe(source));
+ assert.equal(out.searchParams.get('from'),resolved(catalogue).pathname+resolved(catalogue).search+resolved(catalogue).hash);
+ assert.equal(out.hash,'#talk-412470001');
+ assert.equal(safe(out.pathname+out.search+out.hash),out.pathname+out.search+out.hash);
+ for(const foreign of ['대사/official-4.5.html','대사/foreign.html','대사/official-4.6.html/../foreign.html'])
+  assert.equal(resolved(safe(make(reading,base+'/'+foreign))).searchParams.has('from'),false);
+});
+
 test('unsafe reading origins and malformed/encoded paths are rejected',()=>{
  for(const bad of [null,'','https://evil.example'+reading,'//evil.example'+reading,
   '/wuwa-quests/문서/q.html',base+'/index.html',base+'/문서/%ZZ.html',

@@ -1,15 +1,15 @@
 ---
 import {href} from '../lib/data';
-const {records,modeName,queryKey='recordQuery',limitKey='recordLimit',kindKey='recordKind'}=Astro.props;
+const {records,modeName,queryKey='recordQuery',limitKey='recordLimit',kindKey='recordKind',searchLabel='이야기 속 이름과 구절 찾기',searchPlaceholder='인물·사건·원문 구절'}=Astro.props;
 const body=r=>r.fields?r.fields.map(field=>field.text):r.scenes.flatMap(scene=>scene.rows.map(row=>row.text));
 const excerpt=r=>r.fields?(r.fields.find(field=>field.role==='story')||r.fields.find(field=>field.role!=='name'))?.text||'':body(r).find(Boolean)||'';
 const count=r=>r.fields?r.fields.length:r.scenes.reduce((n,scene)=>n+scene.rows.length,0);
 const categories=[...new Map(records.filter(record=>record.kind).map(record=>[record.kind,record.kindLabel||record.kind])).entries()];
 ---
 <div class="universe-source-index not-content" data-universe-records data-query-key={queryKey} data-limit-key={limitKey} data-kind-key={kindKey}>
-  <div class="universe-source-controls"><label class="universe-source-search"><span>이야기 속 이름과 구절 찾기</span><input type="search" data-source-query placeholder="인물·사건·원문 구절" /></label>{categories.length>1&&<label class="universe-source-search"><span>자료 종류</span><select data-source-kind><option value="">모든 자료</option>{categories.map(([kind,label])=><option value={kind}>{label}</option>)}</select></label>}</div>
+  <div class="universe-source-controls"><label class="universe-source-search"><span>{searchLabel}</span><input type="search" data-source-query placeholder={searchPlaceholder} /></label>{categories.length>1&&<label class="universe-source-search"><span>자료 종류</span><select data-source-kind><option value="">모든 자료</option>{categories.map(([kind,label])=><option value={kind}>{label}</option>)}</select></label>}</div>
   <p role="status" aria-live="polite" data-source-count>{records.length}개 기록</p>
-  <div class="universe-source-list">{records.map((r,i)=><a id={'universe-source-'+r.id} class="universe-source-entry" href={href('우주/'+(r.fields?'설정/':'기록/')+r.id+'.html')} data-reading-link data-source-record={r.id} data-source-kind-value={r.kind||''} data-search={body(r).join(' ')} hidden={i>=12}>
+  <div class="universe-source-list">{records.map((r,i)=><a id={'universe-source-'+r.id} class="universe-source-entry" href={r.url||href('우주/'+(r.fields?'설정/':'기록/')+r.id+'.html')} data-reading-link data-source-record={r.id} data-source-kind-value={r.kind||''} data-search={body(r).join(' ')} hidden={i>=12}>
     <span class="universe-source-number" aria-hidden="true">{String(i+1).padStart(2,'0')}</span>
     <span class="universe-source-content"><small>{r.kindLabel||modeName} · {count(r)}개 원문 {r.fields?'항목':'행'}</small><strong>{r.title}</strong><span class="universe-source-excerpt">{excerpt(r)}</span></span>
     <span aria-hidden="true">→</span>

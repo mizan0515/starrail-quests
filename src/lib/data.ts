@@ -46,7 +46,8 @@ const versionMap=versionEvidence.missions as Record<string,string>;
 const topics=resolvedTopics.map(topic=>{
  const edited=editedTopics.find(item=>item.id===topic.id);
  if(!edited||edited.sections.length!==topic.sections.length)throw new Error(`Topic structure mismatch: ${topic.id}`);
- return {...topic,title:edited.title,deck:edited.deck,caution:edited.caution,sections:topic.sections.map((section,index)=>({...section,title:edited.sections[index].title,text:edited.sections[index].text}))};
+ if(edited.relations.length!==edited.relationEvidence.length)throw new Error(`Topic relation evidence mismatch: ${topic.id}`);
+ return {...topic,title:edited.title,deck:edited.deck,caution:edited.caution,relations:edited.relations,relationEvidence:edited.relationEvidence,sections:topic.sections.map((section,index)=>({...section,title:edited.sections[index].title,text:edited.sections[index].text}))};
 });
 const partVersions=new Map<string,Set<string>>();
 for(const [id,parent] of Object.entries(aliases)){if(versionMap[id]){if(!partVersions.has(parent))partVersions.set(parent,new Set());partVersions.get(parent)!.add(versionMap[id]);}}

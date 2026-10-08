@@ -1,8 +1,8 @@
 ---
 import {disclosureAttributes} from '../lib/reading-kit/reader.mjs';
 import original from '../../data/official-mission-talks.json';
-const {row}=Astro.props;
-const source=row.officialSource, evidence=original.evidence;
+const {row,evidence=original.evidence}=Astro.props;
+const source=row.officialSource;
 ---
 <details {...disclosureAttributes({className:'source-details'})} data-official-talk-proof={row.talk_id} data-pagefind-ignore>
   <summary>공식 한국어 원문 · {source.clientVersion.replace('OSPRODWin','')}</summary>

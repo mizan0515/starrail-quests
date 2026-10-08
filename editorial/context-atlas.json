@@ -61,7 +61,8 @@
             "hash": "16095768736942305198",
             "status": "공식 연대기의 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "bronya",
@@ -75,7 +76,8 @@
             "hash": "8367126977817507415",
             "status": "인물 이야기의 서술"
           },
-          "status": "편집자의 연결"
+          "status": "편집자의 연결",
+          "direction": "outgoing"
         },
         {
           "target": "natasha",
@@ -89,7 +91,8 @@
             "hash": "3417078885649002691",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [
@@ -179,7 +182,8 @@
             "hash": "8367126977817507415",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "preservation",
@@ -193,7 +197,8 @@
             "hash": "4658150746628402834",
             "status": "인물의 발언"
           },
-          "status": "편집자의 연결"
+          "status": "편집자의 연결",
+          "direction": "outgoing"
         },
         {
           "target": "seele",
@@ -207,7 +212,8 @@
             "hash": "6926109722082947637",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [
@@ -299,7 +305,8 @@
             "hash": "16095768736942305198",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "xianzhou",
@@ -313,7 +320,8 @@
             "hash": "17683701999888280905",
             "status": "역사 글의 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "paths",
@@ -327,7 +335,8 @@
             "hash": "17401192561097598536",
             "status": "아카이브가 소개한 소문"
           },
-          "status": "편집자의 연결"
+          "status": "편집자의 연결",
+          "direction": "outgoing"
         }
       ],
       "timeline": []
@@ -374,7 +383,8 @@
             "hash": "10728947525415033373",
             "status": "단정사 논문의 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "jingliu",
@@ -388,7 +398,8 @@
             "hash": "14603950855321098425",
             "status": "인물의 발언"
           },
-          "status": "편집자의 연결"
+          "status": "편집자의 연결",
+          "direction": "outgoing"
         },
         {
           "target": "borisin",
@@ -402,7 +413,8 @@
             "hash": "13420042442615867324",
             "status": "군 교재의 목적"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [
@@ -495,7 +507,8 @@
             "hash": "10728947525415033373",
             "status": "단정사 논문의 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "jingliu",
@@ -509,7 +522,8 @@
             "hash": "2745799331496504604",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": []
@@ -555,7 +569,8 @@
             "hash": "2745799331496504604",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "immortality",
@@ -569,7 +584,8 @@
             "hash": "828993795621583279",
             "status": "원문 서술"
           },
-          "status": "편집자의 연결"
+          "status": "편집자의 연결",
+          "direction": "outgoing"
         }
       ],
       "timeline": [
@@ -676,7 +692,8 @@
             "hash": "13420042442615867324",
             "status": "군 교재의 지침"
           },
-          "status": "편집자의 연결"
+          "status": "편집자의 연결",
+          "direction": "outgoing"
         },
         {
           "target": "paths",
@@ -690,7 +707,8 @@
             "hash": "13420042442615867324",
             "status": "군 교재의 평가"
           },
-          "status": "편집자의 연결"
+          "status": "편집자의 연결",
+          "direction": "outgoing"
         }
       ],
       "timeline": []
@@ -737,7 +755,8 @@
             "hash": "2366099796471264462",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "watchmaker",
@@ -751,7 +770,8 @@
             "hash": "12012903660950391493",
             "status": "가족 조사자의 주장"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [
@@ -851,7 +871,8 @@
             "hash": "5517363381629793449",
             "status": "가족의 사건 보고"
           },
-          "status": "편집자의 연결"
+          "status": "편집자의 연결",
+          "direction": "outgoing"
         },
         {
           "target": "paths",
@@ -865,7 +886,8 @@
             "hash": "2646362726786455856",
             "status": "파벌 아카이브의 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [],
@@ -1045,7 +1067,8 @@
             "hash": "12012903660950391493",
             "status": "가족 조사자의 평가"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "paths",
@@ -1059,7 +1082,8 @@
             "hash": "8657535671862231095",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": []
@@ -1106,7 +1130,8 @@
             "hash": "13944314157378326592",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "life",
@@ -1120,7 +1145,8 @@
             "hash": "11067129434671863640",
             "status": "연구자의 실험 결과"
           },
-          "status": "편집자의 연결"
+          "status": "편집자의 연결",
+          "direction": "outgoing"
         }
       ],
       "timeline": []
@@ -1168,7 +1194,8 @@
             "hash": "13944314157378326592",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "life",
@@ -1182,7 +1209,8 @@
             "hash": "2072771735258196431",
             "status": "완·매의 메모"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [
@@ -1287,7 +1315,8 @@
             "hash": "16197458428814367309",
             "status": "인물의 발언"
           },
-          "status": "편집자의 연결"
+          "status": "편집자의 연결",
+          "direction": "outgoing"
         },
         {
           "target": "amphoreus",
@@ -1301,7 +1330,8 @@
             "hash": "3073576624125494708",
             "status": "역사 교재의 서술"
           },
-          "status": "편집자의 비교"
+          "status": "편집자의 비교",
+          "direction": "outgoing"
         },
         {
           "target": "natasha",
@@ -1315,7 +1345,8 @@
             "hash": "3345332104010860256",
             "status": "인물의 발언"
           },
-          "status": "편집자의 비교"
+          "status": "편집자의 비교",
+          "direction": "outgoing"
         }
       ],
       "timeline": []
@@ -1362,7 +1393,8 @@
             "hash": "7653588916768300738",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "life",
@@ -1376,7 +1408,8 @@
             "hash": "3073576624125494708",
             "status": "역사 교재의 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": []
@@ -1423,7 +1456,8 @@
             "hash": "7653588916768300738",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "paths",
@@ -1437,7 +1471,8 @@
             "hash": "3073576624125494708",
             "status": "역사 교재의 서술"
           },
-          "status": "편집자의 비교"
+          "status": "편집자의 비교",
+          "direction": "outgoing"
         }
       ],
       "timeline": []
@@ -1486,7 +1521,8 @@
             "hash": "8929133551343006502",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "memory",
@@ -1500,7 +1536,8 @@
             "hash": "2646362726786455856",
             "status": "파벌 아카이브의 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": []
@@ -1546,7 +1583,8 @@
             "hash": "8935250820293206006",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "bronya",
@@ -1560,7 +1598,8 @@
             "hash": "6926109722082947637",
             "status": "행사 진행자의 발언"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [
@@ -1636,7 +1675,8 @@
             "hash": "8830088479094805907",
             "status": "편지에서 전한 소식"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "life",
@@ -1650,7 +1690,8 @@
             "hash": "8830088479094805907",
             "status": "나타샤의 편지"
           },
-          "status": "편집자의 비교"
+          "status": "편집자의 비교",
+          "direction": "outgoing"
         }
       ],
       "timeline": [
@@ -1726,7 +1767,8 @@
             "hash": "8495028051282438388",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "lore-10003",
@@ -1740,7 +1782,8 @@
             "hash": "2005288414134999374",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [],
@@ -1825,12 +1868,13 @@
             "hash": "3063805096104555438",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "lore-10054",
-          "verb": "풍요의 축복을 받은 사람들",
-          "why": "풍요의 백성 도움말은 풍요의 축복과 죽지 않는 육체를 소개한다.",
+          "verb": "풍요의 백성의 정의와 함께 읽는다",
+          "why": "풍요의 백성 도움말에 수록된 축복과 육체의 설명을 관련 용어로 연결한다.",
           "evidence": {
             "id": "lore-10054",
             "title": "풍요의 백성",
@@ -1839,7 +1883,8 @@
             "hash": "1961144944895094302",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "편집자의 연결",
+          "direction": "outgoing"
         }
       ],
       "timeline": [],
@@ -1932,7 +1977,8 @@
             "hash": "2740529667333874916",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "xianzhou",
@@ -1946,7 +1992,8 @@
             "hash": "384739018012884089",
             "status": "카프카의 발언"
           },
-          "status": "카프카의 발언"
+          "status": "카프카의 발언",
+          "direction": "outgoing"
         },
         {
           "target": "antimatter-legion",
@@ -1960,7 +2007,8 @@
             "hash": "6688069154457338655",
             "status": "카프카의 발언"
           },
-          "status": "카프카의 발언"
+          "status": "카프카의 발언",
+          "direction": "outgoing"
         }
       ],
       "timeline": [],
@@ -2113,7 +2161,8 @@
             "hash": "6236183595337019031",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "stellaron-hunters",
@@ -2127,7 +2176,8 @@
             "hash": "14638152722799032746",
             "status": "퀘스트의 서술"
           },
-          "status": "퀘스트의 서술"
+          "status": "퀘스트의 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [],
@@ -2196,7 +2246,8 @@
             "hash": "14285079186456101545",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [],
@@ -2241,7 +2292,8 @@
             "hash": "6028631878199284233",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [],
@@ -2286,7 +2338,8 @@
             "hash": "8398531447757381198",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [],
@@ -2356,7 +2409,8 @@
             "hash": "17563108862006103552",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [],
@@ -2401,7 +2455,8 @@
             "hash": "8398531447757381198",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         },
         {
           "target": "aeon-aeon-9",
@@ -2415,7 +2470,8 @@
             "hash": "12337224216518713541",
             "status": "원문 서술"
           },
-          "status": "원문 서술"
+          "status": "원문 서술",
+          "direction": "outgoing"
         }
       ],
       "timeline": [],
@@ -2492,7 +2548,8 @@
             "hash": "12232344479880999215",
             "status": "헤르타의 발언"
           },
-          "status": "헤르타의 발언"
+          "status": "헤르타의 발언",
+          "direction": "outgoing"
         },
         {
           "target": "ruan-mei",
@@ -2506,7 +2563,8 @@
             "hash": "12232344479880999215",
             "status": "헤르타의 발언"
           },
-          "status": "헤르타의 발언"
+          "status": "헤르타의 발언",
+          "direction": "incoming"
         },
         {
           "target": "person-1013",
@@ -2520,7 +2578,8 @@
             "hash": "8291824226004438061",
             "status": "헤르타의 발언"
           },
-          "status": "헤르타의 발언"
+          "status": "헤르타의 발언",
+          "direction": "incoming"
         }
       ],
       "timeline": [],
@@ -2638,7 +2697,8 @@
             "hash": "4238074951411000176",
             "status": "헤르타의 발언"
           },
-          "status": "헤르타의 발언"
+          "status": "헤르타의 발언",
+          "direction": "outgoing"
         },
         {
           "target": "ipc",
@@ -2652,7 +2712,8 @@
             "hash": "15989178394086030410",
             "status": "헤르타의 발언"
           },
-          "status": "헤르타의 발언"
+          "status": "헤르타의 발언",
+          "direction": "outgoing"
         },
         {
           "target": "life",
@@ -2666,7 +2727,8 @@
             "hash": "2778218200351748760",
             "status": "원문 서술"
           },
-          "status": "편집자의 연결"
+          "status": "편집자의 연결",
+          "direction": "outgoing"
         }
       ],
       "timeline": [],
@@ -2796,11 +2858,12 @@
             "hash": "9840357644859498196",
             "status": "스크루룸의 발언"
           },
-          "status": "스크루룸의 발언"
+          "status": "스크루룸의 발언",
+          "direction": "outgoing"
         },
         {
           "target": "person-1013",
-          "verb": "셉터의 외장 사고 유닛을 재현하려 한다",
+          "verb": "셉터 재현을 연구 목적으로 설명한다",
           "why": "헤르타는 시뮬레이션 우주에서 셉터 시스템을 모조하려는 목적을 설명한다.",
           "evidence": {
             "id": "quest-8026401",
@@ -2810,7 +2873,8 @@
             "hash": "3692877991745043502",
             "status": "헤르타의 발언"
           },
-          "status": "헤르타의 발언"
+          "status": "헤르타의 발언",
+          "direction": "incoming"
         },
         {
           "target": "life",
@@ -2824,7 +2888,8 @@
             "hash": "17281126481387455919",
             "status": "스크루룸의 발언"
           },
-          "status": "편집자의 연결"
+          "status": "편집자의 연결",
+          "direction": "outgoing"
         }
       ],
       "timeline": [],
