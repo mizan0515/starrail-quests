@@ -94,8 +94,9 @@ def main(archive=None):
             assert first['membershipPointer']=='/id' or re.fullmatch(r'/(missionParts|aliases)/\d+',first['membershipPointer'])
             assert at(doc,first['membershipPointer'])=='quest-'+str(first['missionId'])
             if first['kind']=='EXPLICIT_MAIN_MISSION_ID':
-                assert Path(first['source']).name.startswith('MissionInfo_') and first['source'].startswith('Config/Level/Mission/')
-                assert first['pointer']=='/MainMissionID' or re.fullmatch(r'/SubMissionList/\d+/MainMissionID',first['pointer'])
+                mission_info=Path(first['source']).name.startswith('MissionInfo_') and first['source'].startswith('Config/Level/Mission/')
+                runtime_group=first['source'].startswith(('Config/LevelOutput/RuntimeGroup/','Config/LevelOutput/SharedRuntimeGroup/'))
+                assert mission_info and (first['pointer']=='/MainMissionID' or re.fullmatch(r'/SubMissionList/\d+/MainMissionID',first['pointer'])) or runtime_group and first['pointer']=='/OwnerMainMissionID'
             else:
                 match=re.match(r'(?:Story/(?:Discussion/)?Mission|Config/Level/Mission)/(\d+)(?:/|\.)',first['source'])
                 assert match and int(match[1])==first['missionId']
@@ -112,7 +113,26 @@ def main(archive=None):
         assert c['supplementChoices']==sum(r['displayKind']=='선택지' for s in out['missions'].get(mid,[]) for r in s['rows'])
         assert c['originalRows']==c['originalDialogue']+c['originalChoices']
         assert c['supplementRows']==c['supplementDialogue']+c['supplementChoices']
+        if 'primaryRows' in c:
+            primary_added=sum(len(s['rows']) for s in out['missions'].get(mid,[]) if s['ownership'][0]['kind']=='EXPLICIT_MAIN_MISSION_ID')
+            primary_old=sum(bool(r.get('talk_id') and r.get('hash') and r.get('text')) for s in doc['sections'] if c['sourceOwnership'].get(s.get('source'),[{}])[0].get('kind')=='EXPLICIT_MAIN_MISSION_ID' for r in s['rows'])
+            assert c['primarySupplementRows']==primary_added and c['primaryOriginalRows']==primary_old
+            assert c['primaryRows']==primary_added+primary_old
+            assert c['referenceRows']==c['originalRows']+c['supplementRows']-c['primaryRows']
+            assert c['primaryReason']==('LINKED' if c['primaryRows'] else 'NO_CONFIRMED_PRIMARY_ROWS')
         assert c['reason'] in ('LINKED','STRUCTURE_UNAVAILABLE','NO_LOCAL_KOREAN_FOR_EXACT_REFERENCES','TIMELINE_IDS_NOT_EXPOSED','NO_EXACT_DIALOGUE_REFERENCE')
+        if 'unavailablePathReferences' in c:
+            assert len(c['unavailablePathReferences'])==c.get('unavailableReferencedPaths',0)
+            for ref in c['unavailablePathReferences']:
+                assert ref['sourceSha256']==evidence['structureFiles'][ref['source']]
+                assert ref['ownershipSeed']=={k:v for k,v in c['sourceOwnership'][ref['source']][0].items() if k not in ('sourceSha256','tableSha256')}
+                if ref.get('tableSource'):assert ref['tableSha256']==evidence['structureFiles'][ref['tableSource']]
+            if 'primaryCompleteness' in c:
+                primary_missing=[ref for ref in c['unavailablePathReferences'] if ref['target'].startswith('Story/') and ref['ownershipSeed']['kind']=='EXPLICIT_MAIN_MISSION_ID']
+                reference_missing=[ref for ref in c['unavailablePathReferences'] if ref['target'].startswith('Story/') and ref['ownershipSeed']['kind']=='MISSION_DIRECTORY_CONVENTION']
+                assert c['missingPrimaryStoryReferences']==primary_missing
+                assert c['missingReferenceStoryReferences']==reference_missing
+                assert c['primaryCompleteness']==('PARTIAL_MISSING_REFERENCED_STRUCTURE' if primary_missing else 'NO_MISSING_REFERENCED_STORY_STRUCTURE')
         for ref in c['relatedDocuments']:
             document_path=SITE/'data/documents'/(ref['id']+'.json');document=read(document_path)
             assert sha(document_path.read_bytes())==ref['sha256']
@@ -132,7 +152,7 @@ def main(archive=None):
         for m in tf:
             name=m.name.split('/',1)[-1]
             included=name in evidence['structureFiles']
-            structure=name.endswith('.json') and name.startswith(('Config/Level/','Story/'))
+            structure=name.endswith('.json') and name.startswith(('Config/Level/','Story/','Config/LevelOutput/RuntimeGroup/','Config/LevelOutput/SharedRuntimeGroup/'))
             if not included and not structure:continue
             raw=tf.extractfile(m).read()
             if included:
@@ -143,11 +163,36 @@ def main(archive=None):
       assert set(metadata)==set(evidence['structureFiles'])
       from build_mission_dialogue_supplements import event_refs
       producers,consumers=event_refs(event_objects)
+      for conflict in out.get('runtimeGroupOwnershipConflicts',[]):
+          origin=metadata[conflict['source']];graph=metadata[conflict['target']]
+          assert origin['$type']=='RPG.GameCore.RtLevelGroupInfo'
+          assert at(origin,conflict['ownerPointer'])==conflict['missionId']
+          assert at(origin,conflict['graphPointer'])==conflict['target']
+          assert conflict['sourceSha256']==evidence['structureFiles'][conflict['source']]
+          assert conflict['targetSha256']==evidence['structureFiles'][conflict['target']]
+          for finish in conflict['conflictingFinishReferences']:
+              assert at(graph,finish['pointer'])==finish['submissionId'] and conflict['missionId'] not in finish['mainMissionIds']
+              assert finish['mainMissionIds']==sorted({proof['missionId'] for proof in finish['ownerProofs']})
+              for proof in finish['ownerProofs']:
+                  assert proof['sourceSha256']==evidence['structureFiles'][proof['source']]
+                  assert at(metadata[proof['source']],proof['idPointer'])==finish['submissionId']
+                  assert at(metadata[proof['source']],proof['ownerPointer'])==proof['missionId']
       for mid,c in out['coverage'].items():
+          for ref in c.get('unavailablePathReferences',[]):
+              origin=metadata[ref['source']]
+              if ref['kind']=='EXPLICIT_JSON_PATH':assert at(origin,ref['pointer'])==ref['target']
+              elif ref['kind']=='EXPLICIT_PERFORMANCE_LOOKUP':
+                  assert at(origin,ref['pointer'])==ref['performanceId']
+                  assert at(origin,ref['pointer'].rsplit('/',1)[0])['PerformanceType']==ref['performanceType']
+                  assert at(metadata[ref['tableSource']],ref['idPointer'])==ref['performanceId']
+                  assert at(metadata[ref['tableSource']],ref['pathPointer'])==ref['target']
+              elif ref['kind']=='EXACT_UNIQUE_EVENT_CHANNEL':raise AssertionError('event producer must exist in metadata')
           for source,chain in c['sourceOwnership'].items():
               for edge in chain:
                   origin=metadata[edge['source']]
-                  if edge['kind']=='EXPLICIT_MAIN_MISSION_ID':assert at(origin,edge['pointer'])==edge['missionId']
+                  if edge['kind']=='EXPLICIT_MAIN_MISSION_ID':
+                      assert at(origin,edge['pointer'])==edge['missionId']
+                      if edge['pointer']=='/OwnerMainMissionID':assert origin['$type']=='RPG.GameCore.RtLevelGroupInfo' and origin.get('LevelGraph')
                   elif edge['kind']=='EXPLICIT_JSON_PATH':assert at(origin,edge['pointer'])==edge['target']
                   elif edge['kind']=='EXPLICIT_PERFORMANCE_LOOKUP':
                       assert at(origin,edge['pointer'])==edge['performanceId']
@@ -212,6 +257,18 @@ def main(archive=None):
     assert any(r['talk_id']==803130057 for s in out['missions']['quest-8031301'] for r in s['rows'])
     assert any(r['talk_id']==845000106 for s in out['missions']['quest-8041500'] for r in s['rows'])
     assert any(r['talk_id']==101011305 for s in out['missions']['quest-1010203'] for r in s['rows'])
+    runtime_canary=out['coverage']['quest-1054411']
+    group='Config/LevelOutput/SharedRuntimeGroup/Groups_P20541_F20541001/LevelGroup_P20541_F20541001_G72.json'
+    graph='Config/Level/GroupGraph/F20541001/Group_F20541001_G72.json'
+    chain=runtime_canary['sourceOwnership'][graph]
+    assert chain[0]['source']==group and chain[0]['pointer']=='/OwnerMainMissionID' and chain[0]['missionId']==1054411
+    assert chain[0]['kind']=='EXPLICIT_MAIN_MISSION_ID' and chain[1]['pointer']=='/LevelGraph' and chain[1]['target']==graph
+    runtime_rows={r['talk_id'] for s in out['missions']['quest-1054411'] if s['source']==graph for r in s['rows']}
+    assert {154112240,154112241,154112242}<=runtime_rows
+    if 'primaryCompleteness' in runtime_canary:
+        assert runtime_canary['primaryCompleteness']=='PARTIAL_MISSING_REFERENCED_STRUCTURE'
+        assert any(ref['target']=='Story/Mission/1054411/Story105441100.json' for ref in runtime_canary['missingPrimaryStoryReferences'])
+        assert any(ref['target']=='Story/Discussion/Mission/1054411/DS105441108.json' for ref in runtime_canary['missingPrimaryStoryReferences'])
     print(json.dumps({'status':'PASS','scope':'local-original-preservation-and-provenance-plus-archive-pointers' if archive else 'local-original-preservation-and-provenance','archivePointersVerified':bool(archive),'archiveSourcesVerified':len(verified),'missions':len(out['missions']),'scenes':scene_count,'supplementRows':row_count,'uniqueTalkIds':len(unique),'unchangedLocalKoreanRows':len(local),'coverageMissions':len(quest_ids),'sourceOwnershipChains':sum(len(c['sourceOwnership']) for c in out['coverage'].values()),'requiredExamples':[803130057,845000106]}))
 if __name__=='__main__':
     p=argparse.ArgumentParser();p.add_argument('--archive',type=Path);main(p.parse_args().archive)

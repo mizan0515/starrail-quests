@@ -49,7 +49,7 @@ def load_metadata(archive):
         for m in tf:
             n=m.name.split('/',1)[-1]
             table=bool(re.fullmatch(r'ExcelOutput/Performance(?:A|C|D|E|DS|CG|CLD|DLD|DSLD|Video|VideoLD)\.json',n))
-            if not n.endswith('.json') or not (n.startswith(('Config/Level/','Story/')) or table):continue
+            if not n.endswith('.json') or not (n.startswith(('Config/Level/','Story/','Config/LevelOutput/RuntimeGroup/','Config/LevelOutput/SharedRuntimeGroup/')) or table):continue
             raw=tf.extractfile(m).read();obj=json.loads(raw);metadata[n]=obj;hashes[n]=sha(raw)
             if table:
                 for i,row in enumerate(obj):
@@ -92,6 +92,36 @@ def performance_matches(performances,pid,performance_type):
     alternate=[r for r in performances.get(pid,[]) if Path(r['source']).stem in {'Performance'+kind for kind in variant}]
     return alternate,'TYPED_VARIANT_TABLE'
 
+def runtime_group_ownership_index(metadata):
+    """Use the runtime group's declared owner, never its name or numeric IDs.
+
+    A group that explicitly finishes another main mission is retained as a
+    conflict diagnostic, rather than assigning its whole graph to either one.
+    Shared groups without an owner are not assigned through GroupIDList.
+    """
+    subowners=defaultdict(set);subproofs=defaultdict(list)
+    for path,obj in metadata.items():
+        if not path.startswith('Config/Level/Mission/') or not Path(path).name.startswith('MissionInfo_') or not isinstance(obj,dict):continue
+        for i,row in enumerate(obj.get('SubMissionList',[])):
+            if isinstance(row.get('ID'),int) and isinstance(row.get('MainMissionID'),int):
+                subowners[row['ID']].add(row['MainMissionID'])
+                subproofs[row['ID']].append({'source':path,'idPointer':f'/SubMissionList/{i}/ID','ownerPointer':f'/SubMissionList/{i}/MainMissionID','missionId':row['MainMissionID']})
+    result=defaultdict(list);conflicts=[]
+    for path,obj in metadata.items():
+        if not path.startswith(('Config/LevelOutput/RuntimeGroup/','Config/LevelOutput/SharedRuntimeGroup/')) or not isinstance(obj,dict):continue
+        if obj.get('$type')!='RPG.GameCore.RtLevelGroupInfo':continue
+        owner=obj.get('OwnerMainMissionID');target=obj.get('LevelGraph')
+        if not isinstance(owner,int) or owner<=0 or not isinstance(target,str) or not target:continue
+        foreign=[]
+        for task,ptr in objects(metadata.get(target,{})):
+            sid=task.get('SubmissionID')
+            if task.get('$type','').endswith('.ClientFinishMission') and isinstance(sid,int) and subowners[sid] and owner not in subowners[sid]:
+                foreign.append({'pointer':ptr+'/SubmissionID','submissionId':sid,'mainMissionIds':sorted(subowners[sid]),'ownerProofs':subproofs[sid]})
+        if foreign:
+            conflicts.append({'source':path,'ownerPointer':'/OwnerMainMissionID','missionId':owner,'graphPointer':'/LevelGraph','target':target,'conflictingFinishReferences':foreign})
+        else:result[owner].append((path,'/OwnerMainMissionID'))
+    return result,conflicts
+
 def build(archive):
     quests={d['id']:d for p in (SITE/'data/documents').glob('quest-*.json') if (d:=read(p))}
     messages={d['id']:d for p in (SITE/'data/documents').glob('message-*.json') if (d:=read(p))}
@@ -104,12 +134,14 @@ def build(archive):
     metadata,hashes,performances=load_metadata(archive)
     producers,consumers=event_refs(metadata)
     ownership_index=mission_ownership_index(metadata)
+    group_index,group_conflicts=runtime_group_ownership_index(metadata)
+    for owner,entries in group_index.items():ownership_index[owner].extend(entries)
     folder_sources=defaultdict(list)
     for path in metadata:
         match=re.match(r'(?:Story/(?:Discussion/)?Mission|Config/Level/Mission)/(\d+)(?:/|\.)',path)
         if match:folder_sources['quest-'+match[1]].append(path)
     for mid,quest in quests.items():
-        owners={};queue=deque();main_id=int(mid.split('-')[1]);diagnostics=defaultdict(int)
+        owners={};queue=deque();main_id=int(mid.split('-')[1]);diagnostics=defaultdict(int);unavailable_paths=[]
         membership={main_id:'/id'}
         for key in ('missionParts','aliases'):
             for i,value in enumerate(quest.get(key,[])):
@@ -157,6 +189,8 @@ def build(archive):
                                 links.append((producer['source'],{'kind':'EXACT_UNIQUE_EVENT_CHANNEL','source':path,'pointer':event_pointer,'event':event,'producerPointer':producer['pointer'],'target':producer['source'],'producerCount':1,'consumerCount':1}))
                 for target,edge in links:
                     if target not in metadata:
+                        unavailable_paths.append({**edge,'sourceSha256':hashes[path],**({'tableSha256':hashes[edge['tableSource']]} if edge.get('tableSource') else {}),'ownershipSeed':chain[0]})
+                        if edge.get('tableSource'):files[edge['tableSource']]=hashes[edge['tableSource']]
                         diagnostics['unavailableReferencedPaths']+=1;continue
                     if target not in owners or owners[target][0]['kind']=='MISSION_DIRECTORY_CONVENTION' and chain[0]['kind']!='MISSION_DIRECTORY_CONVENTION':
                         owners[target]=chain+[edge];queue.append(target)
@@ -190,9 +224,21 @@ def build(archive):
         old_count=sum(bool(r.get('talk_id') and r.get('hash') and r.get('text')) for s in quest['sections'] for r in s['rows']);added_count=sum(len(s['rows']) for s in missions.get(mid,[]));local_count=sum(t in local for path in seen for t,_,_ in refs(metadata[path]))
         reason='LINKED' if old_count+added_count else 'STRUCTURE_UNAVAILABLE' if not seen else 'NO_LOCAL_KOREAN_FOR_EXACT_REFERENCES' if diagnostics['exactTalkReferences'] else 'TIMELINE_IDS_NOT_EXPOSED' if diagnostics['timelineReferences'] else 'NO_EXACT_DIALOGUE_REFERENCE'
         original_choices=sum(r.get('label')=='선택지' and bool(r.get('talk_id') and r.get('hash') and r.get('text')) for s in quest['sections'] for r in s['rows']);supplement_choices=sum(r['displayKind']=='선택지' for s in missions.get(mid,[]) for r in s['rows'])
-        coverage[mid]={'originalRows':old_count,'originalChoices':original_choices,'originalDialogue':old_count-original_choices,'supplementRows':added_count,'supplementChoices':supplement_choices,'supplementDialogue':added_count-supplement_choices,'relatedDocuments':related_documents,'sourceOwnership':{path:[{**edge,'sourceSha256':hashes[edge['source']],**({'tableSha256':hashes[edge['tableSource']]} if edge.get('tableSource') else {})} for edge in owners[path]] for path in sorted(seen)},'structureFilesReached':len(seen),'localReferences':local_count,'reason':reason,**diagnostics}
+        missing_primary_story=[ref for ref in unavailable_paths if ref['target'].startswith('Story/') and ref['ownershipSeed']['kind']=='EXPLICIT_MAIN_MISSION_ID']
+        missing_reference_story=[ref for ref in unavailable_paths if ref['target'].startswith('Story/') and ref['ownershipSeed']['kind']=='MISSION_DIRECTORY_CONVENTION']
+        primary_supplement=sum(len(s['rows']) for s in missions.get(mid,[]) if s['ownership'][0]['kind']=='EXPLICIT_MAIN_MISSION_ID')
+        primary_original=sum(bool(r.get('talk_id') and r.get('hash') and r.get('text')) for s in quest['sections'] if owners.get(s.get('source'),[{}])[0].get('kind')=='EXPLICIT_MAIN_MISSION_ID' for r in s['rows'])
+        coverage[mid]={'originalRows':old_count,'originalChoices':original_choices,'originalDialogue':old_count-original_choices,'supplementRows':added_count,'supplementChoices':supplement_choices,'supplementDialogue':added_count-supplement_choices,'primaryOriginalRows':primary_original,'primarySupplementRows':primary_supplement,'primaryRows':primary_original+primary_supplement,'referenceRows':old_count+added_count-primary_original-primary_supplement,'primaryReason':'LINKED' if primary_original+primary_supplement else 'NO_CONFIRMED_PRIMARY_ROWS','primaryCompleteness':'PARTIAL_MISSING_REFERENCED_STRUCTURE' if missing_primary_story else 'NO_MISSING_REFERENCED_STORY_STRUCTURE','missingPrimaryStoryReferences':missing_primary_story,'missingReferenceStoryReferences':missing_reference_story,'unavailablePathReferences':unavailable_paths,'relatedDocuments':related_documents,'sourceOwnership':{path:[{**edge,'sourceSha256':hashes[edge['source']],**({'tableSha256':hashes[edge['tableSource']]} if edge.get('tableSource') else {})} for edge in owners[path]] for path in sorted(seen)},'structureFilesReached':len(seen),'localReferences':local_count,'reason':reason,**diagnostics}
+    for conflict in group_conflicts:
+        conflict['sourceSha256']=hashes[conflict['source']]
+        conflict['targetSha256']=hashes.get(conflict['target'])
+        files[conflict['source']]=hashes[conflict['source']]
+        if conflict['target'] in hashes:files[conflict['target']]=hashes[conflict['target']]
+        for finish in conflict['conflictingFinishReferences']:
+            for proof in finish['ownerProofs']:
+                proof['sourceSha256']=hashes[proof['source']];files[proof['source']]=hashes[proof['source']]
     missing=sorted(expected-set(files))
-    out={'schema':'starrail-mission-dialogue-supplements.v1','evidence':{'repository':REPO,'commit':COMMIT,'archiveSha256':sha(archive.read_bytes()),'dialogueIndexSha256':sha((SITE/'data/dialogue-index.json').read_bytes()),'preservedLocalSources':read(SITE/'data/dialogue-index.json')['evidence']['sources'],'currentInstallationReparse':'UNVERIFIED_FULL_KOREAN_PACK_UNAVAILABLE','structureFiles':files,'method':'Exact MissionInfo MainMissionID, JSON paths and unique PerformanceID-to-PerformancePath joins, with separately recorded mission-directory fallback. Exact TalkSentence IDs joined to unchanged local Korean rows.'},'missions':dict(missions),'coverage':coverage,'ambiguousPerformanceReferences':ambiguous,'unresolvedReferences':unresolved,'missingExistingStructurePaths':missing,'counts':{'localKoreanRows':len(local),'missions':len(missions),'scenes':sum(map(len,missions.values())),'rows':sum(len(s['rows']) for scenes in missions.values() for s in scenes),'structureFiles':len(files),'metadataFilesScanned':len(metadata),'missingStructurePaths':len(missing),'unresolvedReferences':len(unresolved),'coverageMissions':len(coverage)},'limitations':['공개 구조의 참조는 해당 장면에서 사용하는 식별자를 보여준다. 실제 실행 조건과 재생 순서는 별도 자료가 필요하다.','타임라인 내부 자막 중 구조 JSON에 식별자가 없는 대사는 이 연결 범위에 포함되지 않는다.','임무 폴더 관례에 따른 기존 연결과 MainMissionID·명시 경로에 따른 연결은 소유권 근거에서 구분한다.']}
+    out={'schema':'starrail-mission-dialogue-supplements.v1','evidence':{'repository':REPO,'commit':COMMIT,'archiveSha256':sha(archive.read_bytes()),'dialogueIndexSha256':sha((SITE/'data/dialogue-index.json').read_bytes()),'preservedLocalSources':read(SITE/'data/dialogue-index.json')['evidence']['sources'],'currentInstallationReparse':'UNVERIFIED_FULL_KOREAN_PACK_UNAVAILABLE','structureFiles':files,'method':'Exact MissionInfo MainMissionID and RtLevelGroupInfo OwnerMainMissionID (excluding conflicting finish ownership), JSON paths and unique PerformanceID-to-PerformancePath joins, with separately recorded mission-directory fallback. Exact TalkSentence IDs joined to unchanged local Korean rows.'},'missions':dict(missions),'coverage':coverage,'runtimeGroupOwnershipConflicts':group_conflicts,'ambiguousPerformanceReferences':ambiguous,'unresolvedReferences':unresolved,'missingExistingStructurePaths':missing,'counts':{'localKoreanRows':len(local),'missions':len(missions),'scenes':sum(map(len,missions.values())),'rows':sum(len(s['rows']) for scenes in missions.values() for s in scenes),'structureFiles':len(files),'metadataFilesScanned':len(metadata),'missingStructurePaths':len(missing),'unresolvedReferences':len(unresolved),'coverageMissions':len(coverage)},'limitations':['공개 구조의 참조는 해당 장면에서 사용하는 식별자를 보여준다. 실제 실행 조건과 재생 순서는 별도 자료가 필요하다.','타임라인 내부 자막 중 구조 JSON에 식별자가 없는 대사는 이 연결 범위에 포함되지 않는다.','임무 폴더 관례에 따른 기존 연결과 MainMissionID·명시 경로에 따른 연결은 소유권 근거에서 구분한다.']}
     for p in [SITE/'data/mission-dialogue-supplements.json',SITE/'public/mission-dialogue-supplements.json']:
         p.write_text(json.dumps(out,ensure_ascii=False,separators=(',',':')),'utf8')
     print(json.dumps(out['counts']))

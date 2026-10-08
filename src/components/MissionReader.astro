@@ -16,7 +16,7 @@ const name=(s:any,i:number)=>{const names=[...new Set(s.rows.filter(r=>r.label!=
  <p class="mission-reader-count">대사 <strong>{reading.dialogueCount.toLocaleString()}행</strong><span aria-hidden="true"> · </span>선택지 <strong>{reading.choiceCount.toLocaleString()}개</strong><span aria-hidden="true"> · </span>장면 <strong>{scenes.length.toLocaleString()}개</strong>{reading.gapCount>0&&<><span aria-hidden="true"> · </span>본문 연결 확인 <strong>{reading.gapCount.toLocaleString()}개</strong></>}</p>
  {scenes.length>0?<>
   <p class="muted">임무 설정의 명시 참조로 연결한 한국어 원문입니다. 장면은 자료의 참조 배열로 모았으며, 실제 재생 순서와 분기 조건은 확인한 범위로 표시합니다.</p>
-  {coverage?.timelineReferences>0&&<p class="mission-coverage">일부 연출 구간의 전체 대사는 연결 확인 중입니다. 대사·선택지와 메시지의 원문이 확인된 장면을 수록했습니다.</p>}
+  {(coverage?.timelineReferences>0||coverage?.missingPrimaryStoryReferences?.length>0)&&<p class="mission-coverage">일부 연출 장면의 대사는 원문 연결을 확인하고 있습니다. 현재 수록된 대사와 선택지는 임무 소속과 한국어 본문을 대조한 범위입니다.</p>}
   <form class="mission-reader-controls rw-reader-controls not-content" aria-label="이 임무의 원문 필터">
    <label>화자<select name="speaker"><option value="">모든 화자</option>{speakers.map(s=><option value={s}>{s}</option>)}</select></label>
    <label>읽을 항목<select name="passage"><option value="">대사와 선택지</option><option value="dialogue">대사</option><option value="choice">선택지</option></select></label>
