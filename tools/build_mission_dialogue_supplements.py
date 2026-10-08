@@ -35,6 +35,23 @@ def objects(obj, pointer=''):
     elif isinstance(obj,list):
         for i,v in enumerate(obj):yield from objects(v,pointer+'/'+str(i))
 
+def string_case_conditions(obj,references):
+    """Preserve typed case predicates; file ownership is not a playback claim."""
+    result=[]
+    for task,pointer in objects(obj):
+        if task.get('$type')!='RPG.GameCore.GenericSwitchCase':continue
+        switch=task.get('SwitchRef',{})
+        if switch.get('$type')!='RPG.GameCore.SwitchRefGraphDynamicString' or not isinstance(switch.get('Name'),str):continue
+        for i,case in enumerate(task.get('Cases',[])):
+            if case.get('$type')!='RPG.GameCore.StringCaseContainer' or not isinstance(case.get('Case',{}).get('Value'),str):continue
+            branch=pointer+f'/Cases/{i}'
+            for ref in references:
+                if ref['pointer'].startswith(branch+'/OnSuccess/'):
+                    result.append({'kind':'GRAPH_DYNAMIC_STRING_CASE','referencePointer':ref['pointer'],'switchPointer':pointer,
+                                   'casePointer':branch,'namePointer':pointer+'/SwitchRef/Name','valuePointer':branch+'/Case/Value',
+                                   'name':switch['Name'],'value':case['Case']['Value']})
+    return result
+
 def path_refs(obj,pointer=''):
     if isinstance(obj,dict):
         for k,v in obj.items():yield from path_refs(v,pointer+'/'+k)
@@ -300,6 +317,10 @@ def build(archive):
     for p in (SITE/'data/dialogues').glob('*.json'):
         for row in read(p)['section']['rows']:
             local[row['talk_id']]={**row,'pageId':p.stem,'url':'대사/'+p.stem+'.html#talk-'+str(row['talk_id'])}
+    official_path=SITE/'data/official-mission-talks.json'
+    official_input=read(official_path) if official_path.exists() else None
+    official={row['talk_id']:{k:v for k,v in row.items() if k!='references'} for row in official_input['rows']} if official_input else {}
+    assert not set(official).intersection(local),'An official addition must preserve existing Korean rows'
     expected={s['source'] for q in quests.values() for s in q['sections'] if s.get('source')}
     missions=defaultdict(list); files={}; unresolved=[];coverage={};ambiguous=[]
     metadata,hashes,performances=load_metadata(archive)
@@ -418,10 +439,11 @@ def build(archive):
             rows=[]
             for tid,pointers in grouped.items():
                 if tid in existing: continue
-                if tid not in local:
+                if tid not in local and tid not in official:
                     unresolved.append({'missionId':mid,'source':path,'talkId':tid,'references':pointers}); continue
-                row=local[tid]
-                rows.append({**row,'references':pointers,'anchor':'talk-'+str(tid),'displayKind':'선택지' if tid in option_ids else '대사','classification':'EXPLICIT_OPTION_TASK' if tid in option_ids else 'PRESERVED_TALK_ROW'})
+                row=local.get(tid) or official[tid]
+                conditions=string_case_conditions(obj,pointers) if tid in official else []
+                rows.append({**row,'references':pointers,'anchor':'talk-'+str(tid),'displayKind':'선택지' if tid in option_ids else '대사','classification':'EXPLICIT_OPTION_TASK' if tid in option_ids else 'OFFICIAL_KOREAN_TALK_ROW' if tid in official else 'PRESERVED_TALK_ROW',**({'sourceConditions':conditions} if conditions else {})})
             if rows:
                 missions[mid].append({'anchor':'supplement-'+sha(path.encode())[:12], 'title':'추가 대사 원문', 'source':path,'sourceSha256':hashes[path],'sourceUrl':f'https://github.com/{REPO}/blob/{COMMIT}/{path}', 'mapping':'EXACT_PUBLIC_STRUCTURE_REFERENCE_TO_PRESERVED_LOCAL_TALK','ownership':[{**edge,'sourceSha256':hashes[edge['source']],**({'tableSha256':hashes[edge['tableSource']]} if edge.get('tableSource') else {})} for edge in owners[path]], 'order':'구조 파일의 참조 순서', 'rows':rows})
         related_documents=[]
@@ -447,6 +469,11 @@ def build(archive):
         primary_supplement=sum(len(s['rows']) for s in missions.get(mid,[]) if s['ownership'][0]['kind']=='EXPLICIT_MAIN_MISSION_ID')
         primary_original=sum(bool(r.get('talk_id') and r.get('hash') and r.get('text')) for s in quest['sections'] if owners.get(s.get('source'),[{}])[0].get('kind')=='EXPLICIT_MAIN_MISSION_ID' for r in s['rows'] if s.get('source') not in source_talk_scopes or r.get('talk_id') in source_talk_scopes[s['source']]['talkIds'])
         coverage[mid]={'originalRows':old_count,'originalChoices':original_choices,'originalDialogue':old_count-original_choices,'supplementRows':added_count,'supplementChoices':supplement_choices,'supplementDialogue':added_count-supplement_choices,'primaryOriginalRows':primary_original,'primarySupplementRows':primary_supplement,'primaryRows':primary_original+primary_supplement,'referenceRows':old_count+added_count-primary_original-primary_supplement,'primaryReason':'LINKED' if primary_original+primary_supplement else 'NO_CONFIRMED_PRIMARY_ROWS','primaryCompleteness':'PARTIAL_MISSING_REFERENCED_STRUCTURE' if missing_primary_story else 'NO_MISSING_REFERENCED_STORY_STRUCTURE','missingPrimaryStoryReferences':missing_primary_story,'missingReferenceStoryReferences':missing_reference_story,'unavailablePathReferences':unavailable_paths,'relatedDocuments':related_documents,'sourceTalkScopes':source_talk_scopes,'sourceOwnership':{path:[{**edge,'sourceSha256':hashes[edge['source']],**({'tableSha256':hashes[edge['tableSource']]} if edge.get('tableSource') else {})} for edge in owners[path]] for path in sorted(seen)},'structureFilesReached':len(seen),'localReferences':local_count,'reason':reason,**diagnostics}
+    for scenes in missions.values():
+        for scene in scenes:
+            official_rows=sum(bool(r.get('officialSource')) for r in scene['rows'])
+            if official_rows:
+                scene['mapping']='EXACT_PUBLIC_STRUCTURE_REFERENCE_TO_OFFICIAL_KOREAN_TALK' if official_rows==len(scene['rows']) else 'EXACT_PUBLIC_STRUCTURE_REFERENCE_TO_MIXED_KOREAN_TALK'
     for conflict in group_conflicts:
         conflict['sourceSha256']=hashes[conflict['source']]
         conflict['targetSha256']=hashes.get(conflict['target'])
@@ -457,6 +484,10 @@ def build(archive):
                 proof['sourceSha256']=hashes[proof['source']];files[proof['source']]=hashes[proof['source']]
     missing=sorted(expected-set(files))
     out={'schema':'starrail-mission-dialogue-supplements.v1','evidence':{'repository':REPO,'commit':COMMIT,'archiveSha256':sha(archive.read_bytes()),'dialogueIndexSha256':sha((SITE/'data/dialogue-index.json').read_bytes()),'preservedLocalSources':read(SITE/'data/dialogue-index.json')['evidence']['sources'],'currentInstallationReparse':'UNVERIFIED_FULL_KOREAN_PACK_UNAVAILABLE','structureFiles':files,'method':'Exact MissionInfo MainMissionID and RtLevelGroupInfo OwnerMainMissionID (excluding conflicting finish ownership), JSON paths and unique PerformanceID-to-PerformancePath joins, with separately recorded mission-directory fallback. Exact TalkSentence IDs joined to unchanged local Korean rows.'},'missions':dict(missions),'coverage':coverage,'runtimeGroupOwnershipConflicts':group_conflicts,'ambiguousPerformanceReferences':ambiguous,'unresolvedReferences':unresolved,'missingExistingStructurePaths':missing,'counts':{'localKoreanRows':len(local),'missions':len(missions),'scenes':sum(map(len,missions.values())),'rows':sum(len(s['rows']) for scenes in missions.values() for s in scenes),'structureFiles':len(files),'metadataFilesScanned':len(metadata),'missingStructurePaths':len(missing),'unresolvedReferences':len(unresolved),'coverageMissions':len(coverage)},'limitations':['공개 구조의 참조는 해당 장면에서 사용하는 식별자를 보여준다. 실제 실행 조건과 재생 순서는 별도 자료가 필요하다.','타임라인 내부 자막 중 구조 JSON에 식별자가 없는 대사는 이 연결 범위에 포함되지 않는다.','임무 폴더 관례에 따른 기존 연결과 MainMissionID·명시 경로에 따른 연결은 소유권 근거에서 구분한다.']}
+    if official_input:
+        out['evidence']['officialTalkAdditions']={'path':'data/official-mission-talks.json','sha256':sha(official_path.read_bytes()),'clientVersion':official_input['evidence']['clientVersion']}
+        out['evidence']['method']+=' Newly readable official Korean additions retain their separate client version, original TalkSentenceConfig/TextMap rows and byte spans; existing local rows remain unchanged.'
+        out['counts']['officialKoreanRows']=len(official)
     for p in [SITE/'data/mission-dialogue-supplements.json',SITE/'public/mission-dialogue-supplements.json']:
         p.write_text(json.dumps(out,ensure_ascii=False,separators=(',',':')),'utf8')
     print(json.dumps(out['counts']))

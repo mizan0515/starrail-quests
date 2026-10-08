@@ -27,6 +27,14 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Official Korean universe source HTML QA failed'}
   & python tools/verify_mission_dialogue_supplements.py
   if($LASTEXITCODE -ne 0){throw 'Mission dialogue source QA failed'}
+  & python -B -X utf8 tools/verify_official_mission_talks.py
+  if($LASTEXITCODE -ne 0){throw 'Official mission Korean source QA failed'}
+  & python -B -X utf8 tools/verify_official_mission_site.py
+  if($LASTEXITCODE -ne 0){throw 'Official mission source disclosure HTML QA failed'}
+  & python -B -X utf8 tools/verify_official_video_captions.py --artifact-only --self-test
+  if($LASTEXITCODE -ne 0){throw 'Official video caption artifact and ownership QA failed'}
+  & python -B -X utf8 tools/verify_official_caption_site.py
+  if($LASTEXITCODE -ne 0){throw 'Official video caption original HTML QA failed'}
   & python -B tools/test_started_event_branches.py
   if($LASTEXITCODE -ne 0){throw 'Mission conditional ownership regression QA failed'}
   & python tools/verify_mission_readers.py

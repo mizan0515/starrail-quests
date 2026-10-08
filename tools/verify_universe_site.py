@@ -1,10 +1,47 @@
 """Check that the content reader preserves selected dialogue and source rows."""
 import json
+import sys
+from collections import Counter
 from pathlib import Path
+
+sys.dont_write_bytecode=True
 from verify_site import Page
+from verify_mission_readers import explicitly_owned, passage
+from verify_official_caption_site import canonical_scenes
 
 ROOT=Path(__file__).resolve().parents[1]
 def read(p):return json.loads(p.read_text(encoding='utf8'))
+
+
+def reading_counts(document,scenes,coverage,message_sections):
+    """Partition original, dialogue, caption and message rows by explicit scope."""
+    counts=Counter();primary_scenes=reference_scenes=reference_rows=0
+    owners=coverage.get('sourceOwnership',{});scopes=coverage.get('sourceTalkScopes',{})
+    for section in [*document['sections'],*scenes,*message_sections]:
+        rows=section['rows']
+        if not rows:continue
+        if section.get('recordType')=='CUTSCENE_CAPTION':
+            owner=section.get('ownership',{});seed=owner.get('ownershipSeed',{})
+            linked=(seed.get('kind')=='EXPLICIT_RUNTIME_OWNERMAINMISSIONID'
+                    and 'quest-'+str(seed.get('missionId')) in document.get('missionParts',[document['id']])
+                    and seed.get('missionId')==owner.get('missionId') and bool(owner.get('chain')))
+            scope=None
+        else:
+            chain=section.get('_messageOwnership',owners.get(section.get('source'),section.get('ownership',[])))
+            linked=explicitly_owned(chain)
+            scope=scopes.get(section.get('source')) if '_messageOwnership' not in section else None
+            if linked and any(edge.get('kind')=='EXPLICIT_SUBMISSION_FINISH_SCOPE' and edge.get('target')==section.get('source') for edge in chain):
+                assert scope and isinstance(scope.get('talkIds'),list),(document['id'],'missing explicit talk scope',section['source'])
+            if scope:assert isinstance(scope.get('talkIds'),list),(document['id'],'invalid explicit talk scope')
+        selected=[row for row in rows if linked and (not scope or str(row.get('talk_id')) in {str(id) for id in scope['talkIds']})]
+        counts.update(passage(row) for row in selected)
+        primary_scenes+=bool(selected)
+        remaining=len(rows)-len(selected)
+        reference_rows+=remaining;reference_scenes+=bool(remaining)
+    return {'dialogueCount':counts['dialogue'],'choiceCount':counts['choice'],'gapCount':counts['gap'],
+            'captionCount':counts['caption'],'sceneCount':primary_scenes,'referenceRows':reference_rows,
+            'referenceSceneCount':reference_scenes,
+            'state':'dialogue-linked' if counts['dialogue'] else 'captions-linked' if counts['caption'] else 'choices-only' if counts['choice'] else 'overview-only'}
 
 def main():
     catalogue=read(ROOT/'data/universe-catalog.json');count=0;originals=0
@@ -23,26 +60,55 @@ def main():
                     assert page.original[f"{ref['id']}-{s['anchor']}-row-{i}"]==row['text']
                     originals+=1
     assert count==catalogue['counts']['reviewedDialogueRows']
-    supplements=read(ROOT/'data/mission-dialogue-supplements.json');mission_rows=0
+    supplements=read(ROOT/'data/mission-dialogue-supplements.json');mission_rows=caption_rows=message_rows_checked=0
+    caption_source=read(ROOT/'data/official-video-captions.json');aliases=read(ROOT/'data/aliases.json')
+    targets={aliases.get(owner,owner) for owner in caption_source['missions']}
+    originals_by_id={target:read(ROOT/'data/documents'/(target+'.json')) for target in targets}
+    captions=canonical_scenes(caption_source,aliases,originals_by_id)
     published_catalogue={d['id']:d for d in read(ROOT/'dist/reading-catalog.json')}
     versions=read(ROOT/'dist/versions-data.json')
-    for mid,scenes in supplements['missions'].items():
+    checked_missions=set(supplements['missions'])|set(captions)
+    for mid in sorted(checked_missions):
+        dialogue_scenes=supplements['missions'].get(mid,[]);caption_scenes=captions.get(mid,[])
+        scenes=[*dialogue_scenes,*caption_scenes]
         page=Page();page.feed((ROOT/'dist/문서'/(mid+'.html')).read_text('utf8'))
         assert not page.duplicates,(mid,page.duplicates)
         assert 'linked-dialogue' in page.ids,mid
         source=read(ROOT/'data/documents'/(mid+'.json'))
         rows=sum(len(s['rows']) for s in scenes)
-        messages={r['id']:r for r in supplements['coverage'][mid].get('relatedDocuments',[])}
-        message_rows=sum(sum(len(s['rows']) for s in read(ROOT/'data/documents'/(id+'.json'))['sections']) for id in messages)
+        coverage=supplements['coverage'].get(mid,{})
+        messages={}
+        for ref in coverage.get('relatedDocuments',[]):
+            previous=messages.get(ref['id'])
+            if not previous or (not explicitly_owned(previous.get('ownership')) and explicitly_owned(ref.get('ownership'))):messages[ref['id']]=ref
+        message_sections=[]
+        for id,ref in messages.items():
+            message=read(ROOT/'data/documents'/(id+'.json'))
+            assert message['id']==id and message['category']=='메시지',(mid,id,'message identity changed')
+            message_sections.extend({**s,'_messageOwnership':ref.get('ownership',[])} for s in message['sections'])
+        message_rows=sum(len(s['rows']) for s in message_sections)
+        assert source['count']==sum(len(s['rows']) for s in source['sections']),(mid,'original count changed')
         assert published_catalogue[mid]['count']==source['count']+rows+message_rows,mid
+        assert published_catalogue[mid]['addedDialogue']==rows,(mid,'added source rows differ')
+        assert published_catalogue[mid]['messageRows']==message_rows,(mid,'message rows differ')
+        expected=reading_counts(source,scenes,coverage,message_sections)
+        for field,value in expected.items():assert published_catalogue[mid][field]==value,(mid,field,value,published_catalogue[mid][field])
+        assert expected['captionCount']==sum(len(s['rows']) for s in caption_scenes),(mid,'caption rows counted as dialogue or reference')
+        assert sum(expected[field] for field in ('dialogueCount','choiceCount','gapCount','captionCount','referenceRows'))==source['count']+rows+message_rows,(mid,'original/dialogue/message partition differs')
+        message_rows_checked+=message_rows
         assert versions[mid],mid
         for version in versions[mid]:
             assert (ROOT/'dist/versions'/(version+'.html')).exists(),(mid,version)
-        for s in scenes:
+        for s in dialogue_scenes:
             for i,row in enumerate(s['rows'],1):
                 assert page.original[f"{s['anchor']}-row-{i}"]==row['text'],(mid,row['talk_id'])
                 mission_rows+=1
+        for s in caption_scenes:
+            for i,row in enumerate(s['rows'],1):
+                assert page.original[f"{s['anchor']}-row-{i}"]==row['text'],(mid,row['hash'])
+                caption_rows+=1
     assert mission_rows==supplements['counts']['rows']
-    print(json.dumps({'status':'PASS','modePages':len(catalogue['modes']),'originalDialogueRows':count,'documentRows':originals,'missionsWithDialogue':len(supplements['missions']),'missionDialogueRowsPreserved':mission_rows}))
+    assert caption_rows==caption_source['counts']['rows']
+    print(json.dumps({'status':'PASS','modePages':len(catalogue['modes']),'originalDialogueRows':count,'documentRows':originals,'missionsWithDialogue':len(supplements['missions']),'missionDialogueRowsPreserved':mission_rows,'missionPagesChecked':len(checked_missions),'captionSourceMissionIds':len(caption_source['missions']),'canonicalCaptionMissionPages':len(captions),'captionScenes':caption_source['counts']['scenes'],'captionRowsPreserved':caption_rows,'messageRowsChecked':message_rows_checked}))
 
 if __name__=='__main__':main()

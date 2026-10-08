@@ -1,6 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {partitionMissionSections,missionRowLinked} from '../src/lib/mission-scope.mjs';
+test('video captions use the exact declared runtime owner and remain separate from Talk ID scopes',()=>{
+ const section={recordType:'CUTSCENE_CAPTION',source:'Act.json',anchor:'video-1',ownership:{missionId:1043710,ownershipSeed:{kind:'EXPLICIT_RUNTIME_OWNERMAINMISSIONID',missionId:1043710},chain:[{kind:'EXPLICIT_JSON_PATH'}]},rows:[{text:'빛',officialCaptionSource:{}}]};
+ const coverage={missionIds:['1043710'],sourceOwnership:{'Act.json':[{kind:'MISSION_DIRECTORY_CONVENTION'}]},sourceTalkScopes:{'Act.json':{talkIds:[1]}}};
+ const {primary,reference}=partitionMissionSections([section],coverage);
+ assert.equal(primary[0].rows.length,1);assert.equal(primary[0].talkScope,undefined);assert.equal(reference.length,0);
+ assert.equal(primary[0].rows[0].readerRowAnchor,'video-1-row-1');assert.equal(section.rows[0].readerRowAnchor,undefined);
+ for(const corrupt of [{...coverage,missionIds:[1043711]},{...coverage,missionIds:undefined}])assert.equal(missionRowLinked(section,section.rows[0],corrupt),false);
+ assert.equal(missionRowLinked(section,section.rows[0],{...coverage,missionIds:['1043701','1043710']}),true);
+ for(const ownership of [{...section.ownership,missionId:1043711},{...section.ownership,chain:[]},{...section.ownership,ownershipSeed:{kind:'MISSION_DIRECTORY_CONVENTION',missionId:1043710}}])assert.equal(missionRowLinked({...section,ownership},section.rows[0],coverage),false);
+});
 test('a shared task scope preserves excluded original rows and their original deep links',()=>{
  const rows=[{talk_id:1,text:'인사말'},{talk_id:2,text:'임무 대사'},{talk_id:3,text:'다른 분기의 대사'}];
  const sections=[{source:'NPC.json',anchor:'scene-1',rows}],before=JSON.stringify(sections);

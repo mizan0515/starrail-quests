@@ -185,6 +185,7 @@ def passage(row):
     if row.get('label')=='대사 누락' or not isinstance(text,str) or not text.strip():return 'gap'
     if text=='한국어 본문 미수록' and row.get('hash')=='' and re.fullmatch(r'MessageItemConfig:\d+\.(?:MainText|OptionText)',row.get('source','')):
         return 'gap'
+    if row.get('officialCaptionSource'):return 'caption'
     if row.get('displayKind') in ('choice','선택지') or row.get('label')=='선택지':return 'choice'
     return 'dialogue'
 
@@ -208,7 +209,15 @@ def main(dist):
     source_catalog=read(root/'data/catalog.json')
     quests=[d for d in source_catalog if d['category']=='퀘스트']
     supplements_data=read(root/'data/mission-dialogue-supplements.json')
-    supplement=supplements_data['missions']
+    original_captions=read(root/'data/official-video-captions.json')['missions']
+    source_aliases=read(root/'data/aliases.json')
+    captions={}
+    for owner,scenes in original_captions.items():
+        target=source_aliases.get(owner,owner)
+        original=read(root/'data/documents'/(target+'.json'))
+        assert owner in original.get('missionParts',[target]),'Caption owner missing from preserved mission parts: '+owner
+        captions.setdefault(target,[]).extend(scenes)
+    supplement={mid:[*supplements_data['missions'].get(mid,[]),*captions.get(mid,[])] for mid in set(supplements_data['missions'])|set(captions)}
     coverage=supplements_data.get('coverage',{})
     built_catalog=read(dist/'reading-catalog.json')
     built_quests={d['id']:d for d in built_catalog if d['category']=='퀘스트'}
@@ -294,6 +303,9 @@ def main(dist):
                                          '_messageOwnership':ref.get('ownership',[])})
         sections=[*doc['sections'],*supplement.get(id,[]),*related_sections]
         def linked(section):
+            if section.get('recordType')=='CUTSCENE_CAPTION':
+                owner=section.get('ownership',{});seed=owner.get('ownershipSeed',{})
+                return seed.get('kind')=='EXPLICIT_RUNTIME_OWNERMAINMISSIONID' and 'quest-'+str(seed.get('missionId')) in doc.get('missionParts',[id]) and owner.get('missionId')==seed.get('missionId') and bool(owner.get('chain'))
             chain=section['_messageOwnership'] if '_messageOwnership' in section else ownership.get(section.get('source'),section.get('ownership',[]))
             return explicitly_owned(chain)
         scopes=mission_coverage.get('sourceTalkScopes',{})
@@ -303,7 +315,7 @@ def main(dist):
                         'shared source ownership lacks exact dialogue scope',quest=id,source=source)
         primary,reference=[],[]
         for section in sections:
-            scope=scopes.get(section.get('source')) if '_messageOwnership' not in section else None
+            scope=scopes.get(section.get('source')) if '_messageOwnership' not in section and section.get('recordType')!='CUTSCENE_CAPTION' else None
             selected,remaining=[],[]
             for i,row in enumerate(section['rows'],1):
                 located={**row,'readerRowAnchor':section['anchor']+'-row-'+str(i)}
@@ -319,11 +331,11 @@ def main(dist):
         anchors=[a for a,_,_ in expected]
         require(len(set(anchors))==len(anchors),'source row anchors collide',quest=id)
         source_kinds=Counter(passage(row) for s in primary for row in s['rows'])
-        choices=source_kinds['choice'];dialogues=source_kinds['dialogue'];gaps=source_kinds['gap']
-        require(choices+dialogues+gaps==sum(len(s['rows']) for s in primary),
+        choices=source_kinds['choice'];dialogues=source_kinds['dialogue'];gaps=source_kinds['gap'];caption_count=source_kinds['caption']
+        require(choices+dialogues+gaps+caption_count==sum(len(s['rows']) for s in primary),
                 'primary source rows are not partitioned into dialogue/choice/gap',quest=id)
-        state='dialogue-linked' if dialogues else 'choices-only' if choices else 'overview-only'
-        counts={'dialogueCount':dialogues,'choiceCount':choices,'gapCount':gaps,'sceneCount':len(primary),
+        state='dialogue-linked' if dialogues else 'captions-linked' if caption_count else 'choices-only' if choices else 'overview-only'
+        counts={'dialogueCount':dialogues,'captionCount':caption_count,'choiceCount':choices,'gapCount':gaps,'sceneCount':len(primary),
                 'referenceRows':sum(len(s['rows']) for s in reference),'referenceSceneCount':len(reference),'state':state}
         counts['count']=item['count']+sum(len(s['rows']) for s in supplement.get(id,[]))+sum(len(s['rows']) for s in related_sections)
         if id=='quest-1000400':
@@ -421,6 +433,7 @@ def main(dist):
             stats['originalParagraphSpans']+=body['paragraphs']
         count_texts=[''.join(x) for x in page.count_texts]
         expected_header=f'대사 {dialogues:,}행 · 선택지 {choices:,}개 · 장면 {len(primary):,}개'
+        if caption_count:expected_header+=f' · 영상 자막 {caption_count:,}행'
         require(len(count_texts)==1 and count_texts[0].startswith(expected_header),'visible reader count differs',quest=id,expectedPrefix=expected_header,actual=count_texts)
         if gaps:
             require(bool(count_texts) and bool(re.search(r'(?:본문 연결 확인|미연결|누락)\s*'+re.escape(f'{gaps:,}')+r'(?:행|개)',count_texts[0])),
@@ -436,6 +449,7 @@ def main(dist):
         stats['referenceRows']+=counts['referenceRows']
         stats['choices']+=choices
         stats['dialogueRows']+=dialogues
+        stats['captionRows']+=caption_count
         stats['gapRows']+=gaps
         stats['inlineMessageDocuments']+=len(related)
         stats['inlineMessageRows']+=sum(len(s['rows']) for s in related_sections)

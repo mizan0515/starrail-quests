@@ -1,5 +1,12 @@
 // Partition shared source files by their proved task scope, retaining every row.
 export function missionRowLinked(section,row,coverage={}){
+ if(section.recordType==='CUTSCENE_CAPTION'){
+  const owner=section.ownership;
+  return owner?.ownershipSeed?.kind==='EXPLICIT_RUNTIME_OWNERMAINMISSIONID'
+   &&Array.isArray(coverage.missionIds)&&coverage.missionIds.some(id=>String(id)===String(owner.missionId))
+   &&String(owner.ownershipSeed.missionId)===String(owner.missionId)
+   &&Array.isArray(owner.chain)&&owner.chain.length>0;
+ }
  const chain=section.relatedDocument?.ownership||coverage.sourceOwnership?.[section.source]||section.ownership;
  if(chain?.[0]?.kind!=='EXPLICIT_MAIN_MISSION_ID')return false;
  const scope=section.relatedDocument?undefined:coverage.sourceTalkScopes?.[section.source];
@@ -16,8 +23,9 @@ export function partitionMissionSections(sections,coverage={}){
    const located={...row,readerRowAnchor:row.readerRowAnchor||`${section.anchor}-row-${index+1}`};
    (missionRowLinked(section,row,coverage)?selected:remaining).push(located);
   });
-  if(selected.length)primary.push({...section,rows:selected,talkScope:coverage.sourceTalkScopes?.[section.source]});
-  if(remaining.length)reference.push({...section,anchor: selected.length?section.anchor+'-reference':section.anchor,rows:remaining,talkScope:coverage.sourceTalkScopes?.[section.source]});
+  const talkScope=section.recordType==='CUTSCENE_CAPTION'?undefined:coverage.sourceTalkScopes?.[section.source];
+  if(selected.length)primary.push({...section,rows:selected,talkScope});
+  if(remaining.length)reference.push({...section,anchor: selected.length?section.anchor+'-reference':section.anchor,rows:remaining,talkScope});
  }
  return {primary,reference};
 }

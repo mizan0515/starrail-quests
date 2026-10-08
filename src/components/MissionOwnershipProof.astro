@@ -4,10 +4,11 @@ import {disclosureAttributes,sourceLinkAttributes} from '../lib/reading-kit/read
 const {edge}=Astro.props;
 const labels={EXPLICIT_CONTENT_PATH:'콘텐츠 기록의 명시 경로',EXPLICIT_MAIN_MISSION_ID:'임무 소속의 명시 참조',EXPLICIT_JSON_PATH:'JSON 파일의 명시 경로',EXPLICIT_PERFORMANCE_LOOKUP:'연출 식별자와 파일 경로',EXACT_UNIQUE_EVENT_CHANNEL:'동일 이벤트의 유일한 송신·수신',MISSION_DIRECTORY_CONVENTION:'임무 폴더 번호',EXPLICIT_SUBMISSION_PERFORMANCE_BRANCH:'진행 조건·완료 ID와 연출의 명시 연결',EXPLICIT_SUBMISSION_FINISH_SCOPE:'완료 ID가 기록된 대화 범위',EXPLICIT_MISSION_FINISH_PERFORMANCE:'임무의 첫 대화 연출 식별자와 명시 경로',EXPLICIT_STARTED_SUBMISSION_MENU:'진행 중인 하위 임무의 대화 메뉴와 명시 경로',EXPLICIT_STARTED_PERFORMANCE_EVENT_BRANCH:'하위 임무의 시작 조건·대화 연출·완료 이벤트 연결'};
 const startedEvent=edge.kind==='EXPLICIT_STARTED_PERFORMANCE_EVENT_BRANCH';
+const label=edge.kind==='EXPLICIT_RUNTIME_OWNERMAINMISSIONID'?'실행 그룹의 임무 소유 참조':labels[edge.kind]||edge.kind;
 const source=(path:string)=>missionStructureUrl(path);
 ---
 <li>
-  {labels[edge.kind]||edge.kind} · <a href={source(edge.source)} {...sourceLinkAttributes({variant:'inline'})}>{edge.source} ↗</a>{edge.pointer&&<> · {edge.pointer}</>}{edge.missionId&&<> · 임무 {edge.missionId}</>}{edge.event&&<> · {edge.event}</>}{edge.performanceId&&<> · 연출 {edge.performanceId}</>}
+  {label} · <a href={source(edge.source)} {...sourceLinkAttributes({variant:'inline'})}>{edge.source} ↗</a>{edge.pointer&&<> · {edge.pointer}</>}{edge.missionId&&<> · 임무 {edge.missionId}</>}{edge.event&&<> · {edge.event}</>}{edge.performanceId&&<> · 연출 {edge.performanceId}</>}
   {startedEvent&&<details {...disclosureAttributes({className:'source-details'})}>
     <summary>진행 조건과 대화의 연결 확인</summary>
     <dl>
