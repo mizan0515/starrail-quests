@@ -5,7 +5,12 @@ import os from 'node:os';
 import path from 'node:path';
 import {createReadingGraph} from './graph.mjs';
 import {writeReadingGraph} from './write.mjs';
-import {verifyGraphDirectory} from './qa.mjs';
+import {verifyGraphDirectory,verifyRelationClaims} from './qa.mjs';
+test('a speaker-attributed relation cannot be published as an explicit fact',()=>{
+ const claims=[{id:'claim',kind:'attributed',speaker:'크리스토포로'}];
+ assert.equal(verifyRelationClaims([{id:'form',reasonClaimId:'claim',kind:'attributed'}],claims),true);
+ assert.throws(()=>verifyRelationClaims([{id:'form',reasonClaimId:'claim',kind:'explicit'}],claims),/classification differs/);
+});
 test('sharded sources retain evidence hashes and QA rejects a broken source index',async()=>{
  const directory=await fs.mkdtemp(path.join(os.tmpdir(),'reading-qa-'));
  try {

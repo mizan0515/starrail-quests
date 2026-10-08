@@ -49,7 +49,7 @@ def load_metadata(archive):
         for m in tf:
             n=m.name.split('/',1)[-1]
             table=bool(re.fullmatch(r'ExcelOutput/Performance(?:A|C|D|E|DS|CG|CLD|DLD|DSLD|Video|VideoLD)\.json',n))
-            if not n.endswith('.json') or not (n.startswith(('Config/Level/','Story/','Config/LevelOutput/RuntimeGroup/','Config/LevelOutput/SharedRuntimeGroup/')) or table):continue
+            if not n.endswith('.json') or not (n.startswith(('Config/Level/','Story/','Config/LevelOutput/RuntimeGroup/','Config/LevelOutput/SharedRuntimeGroup/')) or table or n=='ExcelOutput/MessageSectionConfig.json'):continue
             raw=tf.extractfile(m).read();obj=json.loads(raw);metadata[n]=obj;hashes[n]=sha(raw)
             if table:
                 for i,row in enumerate(obj):
@@ -63,7 +63,7 @@ def event_refs(metadata):
         if not source.startswith(('Config/','Story/')):continue
         for task,ptr in objects(obj):
             kind=task.get('$type','').split('.')[-1]
-            if kind not in ('WaitCustomString','TriggerCustomString'):continue
+            if kind not in ('WaitCustomString','TriggerCustomString','TriggerCustomStringOnDialogEnd'):continue
             value=task.get('CustomString');pointer=ptr+'/CustomString'
             if isinstance(value,dict):value=value.get('Value');pointer+='/Value'
             # Match the entire event name; never derive mission or talk IDs.
@@ -122,6 +122,102 @@ def runtime_group_ownership_index(metadata):
         else:result[owner].append((path,'/OwnerMainMissionID'))
     return result,conflicts
 
+def submission_performance_branches(metadata, hashes, performances):
+    """Read only performances in an exact Started -> finish-success branch.
+
+    The surrounding group may serve several missions. Its other dialogue and
+    event handlers never become owned through this relation.
+    """
+    submissions=defaultdict(list); result=defaultdict(list)
+    for path,obj in metadata.items():
+        if not path.startswith('Config/Level/Mission/') or not Path(path).name.startswith('MissionInfo_') or not isinstance(obj,dict):continue
+        for i,row in enumerate(obj.get('SubMissionList',[])):
+            if isinstance(row.get('ID'),int) and isinstance(row.get('MainMissionID'),int):
+                submissions[row['ID']].append((path,i,row['MainMissionID']))
+    for graph,obj in metadata.items():
+        if not graph.startswith('Config/Level/GroupGraph/'):continue
+        for branch,ptr in objects(obj):
+            predicate=branch.get('Predicate',{})
+            if not branch.get('$type','').endswith('.PredicateTaskList') or not predicate.get('$type','').endswith('.ByCompareSubMissionState') or predicate.get('SubMissionState')!='Started':continue
+            sid=predicate.get('SubMissionID');tasks=branch.get('SuccessTaskList',[])
+            finishes=[i for i,t in enumerate(tasks) if isinstance(t,dict) and t.get('$type','').endswith('.ClientFinishMission') and t.get('SubmissionID')==sid]
+            if len(finishes)!=1:continue
+            # Nested or foreign finish branches are not promoted wholesale.
+            if any(t.get('$type','').endswith('.ClientFinishMission') and t.get('SubmissionID')!=sid for t,_ in objects(tasks)):continue
+            for i,task in enumerate(tasks[:finishes[0]]):
+                if not isinstance(task,dict) or not task.get('$type','').endswith('.TriggerPerformance') or not isinstance(task.get('PerformanceID'),int):continue
+                matches,scope=performance_matches(performances,task['PerformanceID'],task.get('PerformanceType',''))
+                if len({r['target'] for r in matches})!=1:continue
+                record=matches[0]
+                for source,row_index,owner in submissions.get(sid,[]):
+                    edge={'kind':'EXPLICIT_SUBMISSION_PERFORMANCE_BRANCH','source':source,'pointer':f'/SubMissionList/{row_index}/ID','submissionId':sid,'missionId':owner,'ownerPointer':f'/SubMissionList/{row_index}/MainMissionID','graphSource':graph,'graphSha256':hashes[graph],'predicatePointer':ptr+'/Predicate','scopePointer':ptr+'/SuccessTaskList','finishPointer':ptr+f'/SuccessTaskList/{finishes[0]}/SubmissionID','performancePointer':ptr+f'/SuccessTaskList/{i}/PerformanceID','performanceId':task['PerformanceID'],'performanceType':task.get('PerformanceType',''),'lookupScope':scope,'tableSource':record['source'],'idPointer':record['idPointer'],'pathPointer':record['pathPointer'],'target':record['target']}
+                    result[source].append((record['target'],edge))
+    return result
+
+def submission_started_menu_links(metadata, hashes):
+    """Follow an explicitly owned mission menu, without assigning its NPC file.
+
+    Both the Started predicate and the direct menu item name the same exact
+    sub-mission. Only that item's DialoguePath is traversed. Integer state
+    values in unrelated condition tables are not interpreted here.
+    """
+    submissions=defaultdict(list);result=defaultdict(list)
+    for source,obj in metadata.items():
+        if not source.startswith('Config/Level/Mission/') or not Path(source).name.startswith('MissionInfo_') or not isinstance(obj,dict):continue
+        for i,row in enumerate(obj.get('SubMissionList',[])):
+            if isinstance(row.get('ID'),int) and isinstance(row.get('MainMissionID'),int):submissions[row['ID']].append((source,i,row['MainMissionID']))
+    for graph,obj in metadata.items():
+        if not graph.startswith(('Config/Level/NPCDialogue/','Config/Level/PropDialogue/')):continue
+        for branch,ptr in objects(obj):
+            predicate=branch.get('Predicate',{})
+            if branch.get('$type')!='RPG.GameCore.PredicateTaskList' or predicate.get('$type')!='RPG.GameCore.ByCompareSubMissionState' or predicate.get('SubMissionState')!='Started':continue
+            sid=predicate.get('SubMissionID');proofs=submissions.get(sid,[])
+            if len({p[2] for p in proofs})!=1:continue
+            for j,menu in enumerate(branch.get('SuccessTaskList',[])):
+                if not isinstance(menu,dict) or menu.get('$type')!='RPG.GameCore.AddMenuItem' or menu.get('MissionID')!=sid:continue
+                target=menu.get('DialoguePath')
+                if not isinstance(target,str) or not target.startswith('Config/Level/') or not target.endswith('.json'):continue
+                for source,i,owner in proofs:
+                    edge={'kind':'EXPLICIT_STARTED_SUBMISSION_MENU','source':source,'pointer':f'/SubMissionList/{i}/ID','ownerPointer':f'/SubMissionList/{i}/MainMissionID','missionId':owner,'submissionId':sid,'graphSource':graph,'graphSha256':hashes[graph],'predicatePointer':ptr+'/Predicate','menuPointer':ptr+f'/SuccessTaskList/{j}','dialoguePathPointer':ptr+f'/SuccessTaskList/{j}/DialoguePath','target':target}
+                    result[source].append((target,edge))
+    return result
+
+def submission_dialogue_scopes(metadata, hashes):
+    """Limit a dialogue source to exact TaskLists containing a matching finish.
+
+    Completion belongs to an exact MissionInfo sub-mission. Other branches of
+    a shared NPC or group file are excluded, even if they have Korean rows.
+    """
+    submissions=defaultdict(list);result=defaultdict(list)
+    for source,obj in metadata.items():
+        if not source.startswith('Config/Level/Mission/') or not Path(source).name.startswith('MissionInfo_') or not isinstance(obj,dict):continue
+        for i,row in enumerate(obj.get('SubMissionList',[])):
+            if isinstance(row.get('ID'),int) and isinstance(row.get('MainMissionID'),int):submissions[row['ID']].append((source,i,row['MainMissionID']))
+    for target,obj in metadata.items():
+        if not target.startswith(('Config/Level/NPCDialogue/','Config/Level/PropDialogue/')):continue
+        talk_refs=list(refs(obj))
+        for task,ptr in objects(obj):
+            if not task.get('$type','').endswith('.ClientFinishMission'):continue
+            sid=task.get('SubmissionID');parts=ptr.split('/')
+            indexes=[i for i,x in enumerate(parts) if x in ('TaskList','SuccessTaskList','OnSuccess','OnEvent','OnPressedCallback')]
+            if not indexes:continue
+            scope='/'.join(parts[:indexes[-1]+1])
+            scoped=obj
+            for component in scope.split('/')[1:]:scoped=scoped[int(component)] if isinstance(scoped,list) else scoped[component]
+            scope_ids=sorted({tid for tid,_,_ in refs(scoped)})
+            if not scope_ids and not list(path_refs(scoped)) and not any(t.get('$type','').endswith('.TriggerPerformance') and isinstance(t.get('PerformanceID'),int) for t,_ in objects(scoped)):continue
+            for source,i,owner in submissions.get(sid,[]):
+                finish_proofs=[];valid=True
+                for finish,finish_ptr in objects(scoped,scope):
+                    if not finish.get('$type','').endswith('.ClientFinishMission'):continue
+                    finish_sid=finish.get('SubmissionID');proofs=submissions.get(finish_sid,[])
+                    if {p[2] for p in proofs}!={owner}:valid=False;break
+                    proof_source,proof_row,_=proofs[0]
+                    finish_proofs.append({'finishPointer':finish_ptr+'/SubmissionID','submissionId':finish_sid,'source':proof_source,'sourceSha256':hashes[proof_source],'idPointer':f'/SubMissionList/{proof_row}/ID','ownerPointer':f'/SubMissionList/{proof_row}/MainMissionID','missionId':owner})
+                if not valid:continue
+                result[source].append((target,{'kind':'EXPLICIT_SUBMISSION_FINISH_SCOPE','source':source,'pointer':f'/SubMissionList/{i}/ID','submissionId':sid,'missionId':owner,'ownerPointer':f'/SubMissionList/{i}/MainMissionID','target':target,'scopePointer':scope,'scopeTalkIds':scope_ids,'finishPointer':ptr+'/SubmissionID','finishOwnershipProofs':finish_proofs,'scopeSourceSha256':hashes[target],'allTalkReferencesInsideScope':all(pointer.startswith(scope+'/') for _,pointer,_ in talk_refs)}))
+    return result
+
 def build(archive):
     quests={d['id']:d for p in (SITE/'data/documents').glob('quest-*.json') if (d:=read(p))}
     messages={d['id']:d for p in (SITE/'data/documents').glob('message-*.json') if (d:=read(p))}
@@ -135,13 +231,18 @@ def build(archive):
     producers,consumers=event_refs(metadata)
     ownership_index=mission_ownership_index(metadata)
     group_index,group_conflicts=runtime_group_ownership_index(metadata)
+    branch_links=submission_performance_branches(metadata,hashes,performances)
+    menu_links=submission_started_menu_links(metadata,hashes)
+    dialogue_links=submission_dialogue_scopes(metadata,hashes)
+    message_table='ExcelOutput/MessageSectionConfig.json'
+    perform_messages={row['ID']:i for i,row in enumerate(metadata.get(message_table,[])) if isinstance(row.get('ID'),int) and row.get('IsPerformMessage') is True}
     for owner,entries in group_index.items():ownership_index[owner].extend(entries)
     folder_sources=defaultdict(list)
     for path in metadata:
         match=re.match(r'(?:Story/(?:Discussion/)?Mission|Config/Level/Mission)/(\d+)(?:/|\.)',path)
         if match:folder_sources['quest-'+match[1]].append(path)
     for mid,quest in quests.items():
-        owners={};queue=deque();main_id=int(mid.split('-')[1]);diagnostics=defaultdict(int);unavailable_paths=[]
+        owners={};queue=deque();scope_proofs=defaultdict(list);main_id=int(mid.split('-')[1]);diagnostics=defaultdict(int);unavailable_paths=[]
         membership={main_id:'/id'}
         for key in ('missionParts','aliases'):
             for i,value in enumerate(quest.get(key,[])):
@@ -159,7 +260,12 @@ def build(archive):
         for owner in membership:
             for path,pointer in ownership_index.get(owner,[]):
                 if path not in owners:seed('EXPLICIT_MAIN_MISSION_ID',path,owner,pointer)
-        seen=set()
+        seen=set();processed_scopes={}
+        def scope_pointers(path):
+            return sorted({edge['scopePointer'] for edge in scope_proofs[path]}) if owners[path][-1]['kind']=='EXPLICIT_SUBMISSION_FINISH_SCOPE' else []
+        def allowed_pointer(path,pointer):
+            scopes=scope_pointers(path)
+            return not scopes or any(pointer.startswith(scope+'/') for scope in scopes)
         for phase in ('explicit','directory'):
             if phase=='directory':
                 for owner in membership:
@@ -167,10 +273,28 @@ def build(archive):
                         if path not in owners:seed('MISSION_DIRECTORY_CONVENTION',path,owner)
             while queue:
                 path=queue.popleft()
-                if path in seen:continue
+                signature=tuple(scope_pointers(path))
+                if path in seen and processed_scopes.get(path)==signature:continue
+                processed_scopes[path]=signature
                 seen.add(path);obj=metadata[path];chain=owners[path]
-                links=[(target,{'kind':'EXPLICIT_JSON_PATH','source':path,'pointer':ptr,'target':target}) for target,ptr in path_refs(obj)]
+                links=[(target,{'kind':'EXPLICIT_JSON_PATH','source':path,'pointer':ptr,'target':target}) for target,ptr in path_refs(obj) if allowed_pointer(path,ptr)]
+                if chain[0]['kind']=='EXPLICIT_MAIN_MISSION_ID':
+                    links.extend((target,edge) for target,edge in branch_links.get(path,[]) if edge['missionId'] in membership)
+                    links.extend((target,edge) for target,edge in menu_links.get(path,[]) if edge['missionId'] in membership)
+                    links.extend((target,edge) for target,edge in dialogue_links.get(path,[]) if edge['missionId'] in membership)
                 for task,ptr in objects(obj):
+                    if not allowed_pointer(path,ptr):continue
+                    if path.startswith('Config/Level/Mission/') and Path(path).name.startswith('MissionInfo_') and task.get('MainMissionID') in membership and task.get('FinishType')=='FinishFirstTalkPerformance':
+                        for i,pid in enumerate(task.get('ParamIntList',[])):
+                            if not isinstance(pid,int):continue
+                            records=performances.get(pid,[])
+                            if len({r['target'] for r in records})!=1:continue
+                            record=records[0]
+                            # No type is invented: all eligible table matches
+                            # must agree on the exact target path.
+                            tables=sorted(n for n in metadata if re.fullmatch(r'ExcelOutput/Performance(?:A|C|D|E|DS|CG|CLD|DLD|DSLD|Video|VideoLD)\.json',n))
+                            for table in tables:files[table]=hashes[table]
+                            links.append((record['target'],{'kind':'EXPLICIT_MISSION_FINISH_PERFORMANCE','source':path,'pointer':ptr+f'/ParamIntList/{i}','ownerPointer':ptr+'/MainMissionID','missionId':task['MainMissionID'],'finishTypePointer':ptr+'/FinishType','performanceId':pid,'lookupScope':'UNIQUE_CROSS_TYPED_TABLE_TARGET','lookupTables':tables,'tableSource':record['source'],'idPointer':record['idPointer'],'pathPointer':record['pathPointer'],'target':record['target']}))
                     pid=task.get('PerformanceID')
                     if task.get('$type','').endswith('.TriggerPerformance') and isinstance(pid,int):
                         matches,lookup_scope=performance_matches(performances,pid,task.get('PerformanceType','')); targets={r['target'] for r in matches}
@@ -188,20 +312,28 @@ def build(archive):
                                 producer=ps[0]
                                 links.append((producer['source'],{'kind':'EXACT_UNIQUE_EVENT_CHANNEL','source':path,'pointer':event_pointer,'event':event,'producerPointer':producer['pointer'],'target':producer['source'],'producerCount':1,'consumerCount':1}))
                 for target,edge in links:
+                    if edge.get('graphSource'):files[edge['graphSource']]=hashes[edge['graphSource']]
                     if target not in metadata:
                         unavailable_paths.append({**edge,'sourceSha256':hashes[path],**({'tableSha256':hashes[edge['tableSource']]} if edge.get('tableSource') else {}),'ownershipSeed':chain[0]})
                         if edge.get('tableSource'):files[edge['tableSource']]=hashes[edge['tableSource']]
                         diagnostics['unavailableReferencedPaths']+=1;continue
-                    if target not in owners or owners[target][0]['kind']=='MISSION_DIRECTORY_CONVENTION' and chain[0]['kind']!='MISSION_DIRECTORY_CONVENTION':
+                    if edge['kind']=='EXPLICIT_SUBMISSION_FINISH_SCOPE' and edge not in scope_proofs[target]:
+                        scope_proofs[target].append(edge)
+                        if target in owners and owners[target][-1]['kind']=='EXPLICIT_SUBMISSION_FINISH_SCOPE':queue.append(target)
+                    if target not in owners or owners[target][0]['kind']=='MISSION_DIRECTORY_CONVENTION' and chain[0]['kind']!='MISSION_DIRECTORY_CONVENTION' or owners[target][-1]['kind']=='EXPLICIT_SUBMISSION_FINISH_SCOPE' and edge['kind']!='EXPLICIT_SUBMISSION_FINISH_SCOPE' and chain[0]['kind']=='EXPLICIT_MAIN_MISSION_ID':
                         owners[target]=chain+[edge];queue.append(target)
-                diagnostics['exactTalkReferences']+=len(list(refs(obj)))
-                diagnostics['timelineReferences']+=sum(1 for task,_ in objects(obj) if task.get('$type','').endswith('.PlayTimeline'))
+        source_talk_scopes={path:{'pointers':scope_pointers(path),'talkIds':sorted({tid for edge in scope_proofs[path] for tid in edge['scopeTalkIds']}),'proofs':[{**edge,'sourceSha256':hashes[edge['source']]} for edge in scope_proofs[path]]} for path in sorted(seen) if scope_pointers(path)}
+        diagnostics['exactTalkReferences']=sum(1 for path in seen for _,ptr,_ in refs(metadata[path]) if allowed_pointer(path,ptr))
+        diagnostics['timelineReferences']=sum(1 for path in seen for task,ptr in objects(metadata[path]) if allowed_pointer(path,ptr) and task.get('$type','').endswith('.PlayTimeline'))
         for path in sorted(seen):
-            obj=metadata[path];found=list(refs(obj));files[path]=hashes[path]
+            obj=metadata[path];found=[ref for ref in refs(obj) if allowed_pointer(path,ref[1])];files[path]=hashes[path]
             option_ids={task['TalkSentenceID'] for task,_ in objects(obj) if task.get('$type','').endswith('.OptionTalkInfo') and isinstance(task.get('TalkSentenceID'),int)}
             for edge in owners[path]:
                 files[edge['source']]=hashes[edge['source']]
                 if edge.get('tableSource'):files[edge['tableSource']]=hashes[edge['tableSource']]
+            for edge in scope_proofs[path]:
+                files[edge['source']]=hashes[edge['source']]
+                for proof in edge['finishOwnershipProofs']:files[proof['source']]=hashes[proof['source']]
             existing={r.get('talk_id') for s in quests[mid]['sections'] if s.get('source')==path for r in s['rows']}
             grouped=defaultdict(list)
             for tid,ptr,kind in found: grouped[tid].append({'pointer':ptr,'kind':kind})
@@ -217,18 +349,26 @@ def build(archive):
         related_documents=[]
         for path in sorted(seen):
             for task,ptr in objects(metadata[path]):
-                message_id=task.get('MessageSectionID');key='message-'+str(message_id)
+                if not allowed_pointer(path,ptr):continue
+                message_id=task.get('MessageSectionID');message_pointer=ptr+'/MessageSectionID';reference_kind='EXPLICIT_MESSAGE_SECTION_ID';message_proof={}
+                if path.startswith('Config/Level/Mission/') and Path(path).name.startswith('MissionInfo_') and task.get('MainMissionID') in membership and task.get('FinishType')=='MessageSectionFinish' and task.get('ParamType')=='Equal':
+                    message_id=task.get('ParamInt1');message_pointer=ptr+'/ParamInt1';reference_kind='MISSION_FINISH_MESSAGE_SECTION'
+                elif path.startswith('Config/Level/Mission/') and Path(path).name.startswith('MissionInfo_') and task.get('MainMissionID') in membership and task.get('FinishType')=='MessagePerformSectionFinish' and task.get('ParamType')=='Equal' and task.get('ParamInt1') in perform_messages:
+                    message_id=task['ParamInt1'];message_pointer=ptr+'/ParamInt1';reference_kind='MISSION_FINISH_PERFORM_MESSAGE_SECTION'
+                    table_index=perform_messages[message_id];files[message_table]=hashes[message_table]
+                    message_proof={'sectionTableSource':message_table,'sectionTableSha256':hashes[message_table],'sectionIdPointer':f'/{table_index}/ID','sectionPerformPointer':f'/{table_index}/IsPerformMessage'}
+                key='message-'+str(message_id)
                 if isinstance(message_id,int) and key in messages:
                     document=messages[key]
-                    related_documents.append({'id':key,'docId':key,'sourceId':key,'originalTableSource':document['source'],'sectionId':document['sections'][0]['anchor'] if document['sections'] else None,'sectionIds':[s['anchor'] for s in document['sections']],'title':document['title'],'url':document['url'],'count':document['count'],'sha256':sha((SITE/'data/documents'/(key+'.json')).read_bytes()),'messageSectionId':message_id,'referenceSource':path,'referenceSourceSha256':hashes[path],'pointer':ptr+'/MessageSectionID','ownership':[{**edge,'sourceSha256':hashes[edge['source']],**({'tableSha256':hashes[edge['tableSource']]} if edge.get('tableSource') else {})} for edge in owners[path]]})
+                    related_documents.append({'id':key,'docId':key,'sourceId':key,'originalTableSource':document['source'],'sectionId':document['sections'][0]['anchor'] if document['sections'] else None,'sectionIds':[s['anchor'] for s in document['sections']],'title':document['title'],'url':document['url'],'count':document['count'],'sha256':sha((SITE/'data/documents'/(key+'.json')).read_bytes()),'messageSectionId':message_id,'referenceKind':reference_kind,**message_proof,'referenceSource':path,'referenceSourceSha256':hashes[path],'pointer':message_pointer,'ownership':[{**edge,'sourceSha256':hashes[edge['source']],**({'tableSha256':hashes[edge['tableSource']]} if edge.get('tableSource') else {})} for edge in owners[path]]})
         old_count=sum(bool(r.get('talk_id') and r.get('hash') and r.get('text')) for s in quest['sections'] for r in s['rows']);added_count=sum(len(s['rows']) for s in missions.get(mid,[]));local_count=sum(t in local for path in seen for t,_,_ in refs(metadata[path]))
         reason='LINKED' if old_count+added_count else 'STRUCTURE_UNAVAILABLE' if not seen else 'NO_LOCAL_KOREAN_FOR_EXACT_REFERENCES' if diagnostics['exactTalkReferences'] else 'TIMELINE_IDS_NOT_EXPOSED' if diagnostics['timelineReferences'] else 'NO_EXACT_DIALOGUE_REFERENCE'
         original_choices=sum(r.get('label')=='선택지' and bool(r.get('talk_id') and r.get('hash') and r.get('text')) for s in quest['sections'] for r in s['rows']);supplement_choices=sum(r['displayKind']=='선택지' for s in missions.get(mid,[]) for r in s['rows'])
         missing_primary_story=[ref for ref in unavailable_paths if ref['target'].startswith('Story/') and ref['ownershipSeed']['kind']=='EXPLICIT_MAIN_MISSION_ID']
         missing_reference_story=[ref for ref in unavailable_paths if ref['target'].startswith('Story/') and ref['ownershipSeed']['kind']=='MISSION_DIRECTORY_CONVENTION']
         primary_supplement=sum(len(s['rows']) for s in missions.get(mid,[]) if s['ownership'][0]['kind']=='EXPLICIT_MAIN_MISSION_ID')
-        primary_original=sum(bool(r.get('talk_id') and r.get('hash') and r.get('text')) for s in quest['sections'] if owners.get(s.get('source'),[{}])[0].get('kind')=='EXPLICIT_MAIN_MISSION_ID' for r in s['rows'])
-        coverage[mid]={'originalRows':old_count,'originalChoices':original_choices,'originalDialogue':old_count-original_choices,'supplementRows':added_count,'supplementChoices':supplement_choices,'supplementDialogue':added_count-supplement_choices,'primaryOriginalRows':primary_original,'primarySupplementRows':primary_supplement,'primaryRows':primary_original+primary_supplement,'referenceRows':old_count+added_count-primary_original-primary_supplement,'primaryReason':'LINKED' if primary_original+primary_supplement else 'NO_CONFIRMED_PRIMARY_ROWS','primaryCompleteness':'PARTIAL_MISSING_REFERENCED_STRUCTURE' if missing_primary_story else 'NO_MISSING_REFERENCED_STORY_STRUCTURE','missingPrimaryStoryReferences':missing_primary_story,'missingReferenceStoryReferences':missing_reference_story,'unavailablePathReferences':unavailable_paths,'relatedDocuments':related_documents,'sourceOwnership':{path:[{**edge,'sourceSha256':hashes[edge['source']],**({'tableSha256':hashes[edge['tableSource']]} if edge.get('tableSource') else {})} for edge in owners[path]] for path in sorted(seen)},'structureFilesReached':len(seen),'localReferences':local_count,'reason':reason,**diagnostics}
+        primary_original=sum(bool(r.get('talk_id') and r.get('hash') and r.get('text')) for s in quest['sections'] if owners.get(s.get('source'),[{}])[0].get('kind')=='EXPLICIT_MAIN_MISSION_ID' for r in s['rows'] if s.get('source') not in source_talk_scopes or r.get('talk_id') in source_talk_scopes[s['source']]['talkIds'])
+        coverage[mid]={'originalRows':old_count,'originalChoices':original_choices,'originalDialogue':old_count-original_choices,'supplementRows':added_count,'supplementChoices':supplement_choices,'supplementDialogue':added_count-supplement_choices,'primaryOriginalRows':primary_original,'primarySupplementRows':primary_supplement,'primaryRows':primary_original+primary_supplement,'referenceRows':old_count+added_count-primary_original-primary_supplement,'primaryReason':'LINKED' if primary_original+primary_supplement else 'NO_CONFIRMED_PRIMARY_ROWS','primaryCompleteness':'PARTIAL_MISSING_REFERENCED_STRUCTURE' if missing_primary_story else 'NO_MISSING_REFERENCED_STORY_STRUCTURE','missingPrimaryStoryReferences':missing_primary_story,'missingReferenceStoryReferences':missing_reference_story,'unavailablePathReferences':unavailable_paths,'relatedDocuments':related_documents,'sourceTalkScopes':source_talk_scopes,'sourceOwnership':{path:[{**edge,'sourceSha256':hashes[edge['source']],**({'tableSha256':hashes[edge['tableSource']]} if edge.get('tableSource') else {})} for edge in owners[path]] for path in sorted(seen)},'structureFilesReached':len(seen),'localReferences':local_count,'reason':reason,**diagnostics}
     for conflict in group_conflicts:
         conflict['sourceSha256']=hashes[conflict['source']]
         conflict['targetSha256']=hashes.get(conflict['target'])

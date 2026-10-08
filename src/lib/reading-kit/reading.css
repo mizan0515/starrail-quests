@@ -42,3 +42,29 @@ starlight-theme-select .icon{top:50%;transform:translateY(-50%);pointer-events:n
 .rw-media{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:1rem;margin-block:1.5rem;max-width:100%}.rw-media figure{display:grid;justify-items:center;align-content:start;gap:.65rem;margin:0;min-width:0;padding:1rem;border:1px solid var(--sl-color-hairline);border-radius:.7rem;background:var(--sl-color-bg-nav)}.rw-media img{display:block;object-fit:contain;width:auto;height:auto;max-width:100%;max-height:220px;margin:0}.rw-media figcaption{display:grid;gap:.35rem;width:100%;font-size:.8rem;line-height:1.6}.rw-media figcaption>*{margin:0}.rw-media figcaption strong{color:var(--sl-color-white)}.rw-media figcaption span{color:var(--sl-color-gray-2)}.rw-media figcaption a{width:max-content;max-width:100%;padding-block:.3rem}.rw-media>figure:only-child{max-width:340px}
 .rw-edge-statement{display:flex;flex-wrap:wrap;align-items:baseline;gap:.2rem .65rem;line-height:1.7}.rw-edge-statement>span{min-width:0;overflow-wrap:anywhere}.rw-edge-arrow{font-weight:400;color:var(--muted,var(--sl-color-gray-2))}.rw-edge-subject,.rw-edge-object{font-weight:650;color:var(--ink,var(--sl-color-white))}.rw-edge-predicate{font-weight:500}.rw-map-node .rw-map-incoming{position:relative;padding:.5rem 1.1rem .5rem .55rem;min-height:44px;box-sizing:border-box}.rw-map-incoming .rw-edge-proof-icon{position:absolute;right:.35rem;top:.55rem;font-size:.7rem}.rw-map-evidence>summary .rw-edge-statement{display:inline-flex;vertical-align:top}.rw-map-incoming:focus-visible{outline:3px solid var(--brass,var(--sl-color-text-accent));outline-offset:3px}
 .rw-media>figure.rw-media-wide:only-child{max-width:100%;justify-items:stretch}.rw-media figure.rw-media-wide img{width:100%;max-height:none}
+
+/* A relation has two named endpoints and its own predicate and evidence. */
+.rw-relation-bands{display:grid;gap:1rem;margin-block:1.5rem 0}
+.rw-relation-band{min-width:0;margin:0!important;padding:1.1rem 1.25rem;border:1px solid var(--line,var(--sl-color-hairline));border-radius:10px;background:var(--paper,var(--sl-color-bg))}
+.rw-relation-band-line{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.55fr) minmax(0,1fr);align-items:center;gap:1.2rem}
+.rw-relation-endpoint{display:grid;gap:.3rem;min-width:0;padding:.6rem .75rem;border-radius:6px;background:var(--selected,var(--sl-color-bg-nav));line-height:1.55}
+.rw-relation-endpoint small{font-size:.75rem;color:var(--muted,var(--sl-color-gray-2))}
+.rw-relation-endpoint a,.rw-relation-endpoint strong{font-size:1rem;font-weight:700;color:var(--ink,var(--sl-color-white));text-decoration:none;overflow-wrap:anywhere;word-break:keep-all}
+.rw-relation-endpoint a{min-height:44px;display:flex;align-items:center}
+.rw-relation-endpoint a:hover{text-decoration:underline;text-underline-offset:.2em}
+.rw-relation-focus{box-shadow:inset 3px 0 var(--brass,var(--sl-color-text-accent))}
+.rw-relation-predicate{display:grid;gap:.4rem;text-align:center;min-width:0;word-break:keep-all;overflow-wrap:anywhere}
+.rw-relation-predicate>strong{font-size:.9375rem;line-height:1.65;font-weight:600;color:var(--ink,var(--sl-color-white))}
+.rw-relation-predicate .rw-attribution{font-size:.7rem;line-height:1.6}
+.rw-relation-direction{position:relative;display:block;height:1.2rem;line-height:1.2rem;text-align:right;color:var(--brass,var(--sl-color-text-accent));font-size:1.25rem}
+.rw-relation-direction:before{content:'';position:absolute;inset-inline:0 .3rem;top:50%;height:1px;background:currentColor}
+.rw-relation-proof{border:0!important;border-top:1px solid var(--line,var(--sl-color-hairline))!important;margin:.85rem 0 0!important;padding:.45rem 0 0!important;background:transparent!important}
+.rw-relation-proof summary{min-height:44px;font-size:.78rem;line-height:1.8;color:var(--muted,var(--sl-color-gray-2));cursor:pointer}
+.rw-relation-proof p,.rw-relation-proof blockquote{font-size:.95rem;line-height:1.85}
+
+.rw-reading-connections{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.25rem;margin-block:1.5rem 0}
+.rw-reading-connection{min-width:0;padding:1rem 0;border-block:1px solid var(--line,var(--sl-color-hairline))}
+.rw-reading-connection>a{display:flex;justify-content:space-between;align-items:center;gap:.5rem;min-height:44px;color:var(--ink,var(--sl-color-white));font-size:1.0625rem;font-weight:700;text-decoration:none}
+.rw-reading-connection>a:hover{text-decoration:underline;text-underline-offset:.2em}
+.rw-reading-connection>p{font-size:.9rem;line-height:1.8;color:var(--muted,var(--sl-color-gray-2));margin:.5rem 0!important}
+@container(max-width:30rem){.rw-relation-band{padding:.85rem}.rw-relation-band-line{grid-template-columns:repeat(2,minmax(0,1fr));gap:.7rem 1.3rem}.rw-relation-endpoint{position:relative;padding:.5rem .6rem}.rw-relation-endpoint:first-child{grid-area:1/1}.rw-relation-endpoint:last-child{grid-area:1/2}.rw-relation-endpoint:first-child:after{content:'→';position:absolute;right:-1.05rem;top:50%;transform:translateY(-50%);color:var(--brass,var(--sl-color-text-accent))}.rw-relation-endpoint:first-child small:before{content:'주체 · '}.rw-relation-endpoint:last-child small:before{content:'상대 · '}.rw-relation-predicate{grid-area:2/1/3/3;text-align:left;padding:.25rem .15rem}.rw-relation-direction{display:none}.rw-relation-proof{margin-top:.6rem!important}.rw-reading-connections{grid-template-columns:1fr}}
