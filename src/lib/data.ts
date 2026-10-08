@@ -40,13 +40,23 @@ const topics=resolvedTopics.map(topic=>{
 });
 const partVersions=new Map<string,Set<string>>();
 for(const [id,parent] of Object.entries(aliases)){if(versionMap[id]){if(!partVersions.has(parent))partVersions.set(parent,new Set());partVersions.get(parent)!.add(versionMap[id]);}}
-export const catalog=originalCatalog.map(d=>{const observed=d.category==='퀘스트'?[...new Set([versionMap[d.id]||'unknown',...(partVersions.get(d.id)||[])])]:[];const addedDialogue=(missionDialogue[d.id]||[]).reduce((count,s)=>count+s.rows.length,0);return {...d,count:d.count+addedDialogue+(missionReading[d.id]?.messageRows||0),addedDialogue,...missionReading[d.id],versions:[...observed,...(observed.some(v=>/^\d+\.\d+$/.test(v)&&Number(v)<=2.6)?['early']:[])]};});
+export const displayMissionTitle=(d:any)=>{
+ if(d.category!=='퀘스트'||!/^quest-\d+$/.test(d.id))return d.title;
+ const fallback=`임무 ${d.id.slice(6)} · 제목 미확인`;
+ if(typeof d.title!=='string'||!d.title.trim())return fallback;
+ if(d.title==='한국어 본문 미수록'){
+  const titleHash=d.title_hash===undefined?JSON.parse(fs.readFileSync(path.resolve('data/documents',d.id+'.json'),'utf8')).title_hash:d.title_hash;
+  if(titleHash==='')return fallback;
+ }
+ return d.title;
+};
+export const catalog=originalCatalog.map(d=>{const observed=d.category==='퀘스트'?[...new Set([versionMap[d.id]||'unknown',...(partVersions.get(d.id)||[])])]:[];const addedDialogue=(missionDialogue[d.id]||[]).reduce((count,s)=>count+s.rows.length,0);return {...d,title:displayMissionTitle(d),count:d.count+addedDialogue+(missionReading[d.id]?.messageRows||0),addedDialogue,...missionReading[d.id],versions:[...observed,...(observed.some(v=>/^\d+\.\d+$/.test(v)&&Number(v)<=2.6)?['early']:[])]};});
 export const readingCatalogVersion=createHash('sha256').update(JSON.stringify(catalog)).digest('hex').slice(0,12);
 export {topics,stats,versionEvidence};
 export const versionLabel=(v:string)=>v==='early'?'1.0~2.6':v==='unknown'?'버전 미확인':v;
 export const versions=[...new Set(catalog.flatMap(d=>d.versions))].sort((a,b)=>a==='early'?1:b==='early'?-1:a==='unknown'?1:b==='unknown'?-1:b.localeCompare(a,undefined,{numeric:true}));
 export const kinds={main:'개척 임무',continuance:'개척 후문',companion:'동행 임무',adventure:'모험 임무',daily:'일일 임무'};
 export const href=(p:string)=>`${import.meta.env.BASE_URL.replace(/\/$/,'')}/${p}`;
-export const doc=(id:string)=>JSON.parse(fs.readFileSync(path.resolve('data/documents',id+'.json'),'utf8'));
+export const doc=(id:string)=>{const original=JSON.parse(fs.readFileSync(path.resolve('data/documents',id+'.json'),'utf8'));return {...original,title:displayMissionTitle(original)};};
 export const docUrl=(id:string)=>href('문서/'+id+'.html');
 export const topicUrl=(id:string)=>href('설정/'+id+'.html');
