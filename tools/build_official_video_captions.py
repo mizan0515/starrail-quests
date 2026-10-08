@@ -1,4 +1,4 @@
-"""Read official CaptionList/Korean records and explicit runtime owner chains.
+"""Read official CaptionList/Korean records and explicit runtime or scoped MainMission owner chains.
 
 No downloads. Metadata supplies schema/paths/conditions; all Korean body comes
 from the official Korean TextMap. Unknown fields, path identity collisions,
@@ -280,14 +280,52 @@ def build(args):
             seeds[source].append({'kind': 'EXPLICIT_RUNTIME_OWNERMAINMISSIONID', 'source': source,
                                   'sourceSha256': hashes[source], 'pointer': pointer, 'missionId': owner})
 
+    # The owner is scoped to the actual MissionJsonPath row, not its folder.
+    main_seeds = defaultdict(list)
+    catalog = json.loads((args.site / 'data/catalog.json').read_text('utf8'))
+    registered = {r['id'] for r in catalog if r['id'].startswith('quest-')}
+    for ident in list(registered):
+        document = json.loads((args.site / 'data/documents' / (ident + '.json')).read_text('utf8'))
+        registered.update(a for a in document.get('aliases', []) if a in document.get('missionParts', []))
+    for path, obj in metadata.items():
+        if not path.startswith('Config/Level/Mission/') or not Path(path).name.startswith('MissionInfo_') or not isinstance(obj, dict):
+            continue
+        for i, row in enumerate(obj.get('SubMissionList', [])):
+            if not isinstance(row, dict):
+                continue
+            target, owner = row.get('MissionJsonPath'), row.get('MainMissionID', obj.get('MainMissionID'))
+            if type(owner) is not int or owner <= 0 or not isinstance(target, str) or target not in metadata:
+                continue
+            path_pointer = f'/SubMissionList/{i}/MissionJsonPath'
+            owner_pointer = f'/SubMissionList/{i}/MainMissionID' if 'MainMissionID' in row else '/MainMissionID'
+            main_seeds[path].append({'kind': 'EXPLICIT_MAIN_MISSION_ID', 'source': path,
+                'sourceSha256': hashes[path], 'pointer': owner_pointer, 'missionId': owner,
+                'missionJsonPathPointer': path_pointer, 'missionJsonPath': target})
+    conflicting_sources = {r['source'] for r in owner_conflicts}
+    unregistered_owners = []
+
     def owners(source):
         found = []
         queue = deque([(source, [], {source})])
         while queue:
             path, chain, seen = queue.popleft()
+            if path in conflicting_sources:
+                continue
             if path in seeds:
                 found.extend({'missionId': seed['missionId'], 'ownershipSeed': seed,
                               'chain': list(reversed(chain))} for seed in seeds[path])
+                continue
+            if path in main_seeds and chain:
+                first = chain[-1]
+                for seed in main_seeds[path]:
+                    if first['kind'] != 'EXPLICIT_JSON_PATH' or first['pointer'] != seed['missionJsonPathPointer'] or first['target'] != seed['missionJsonPath']:
+                        continue
+                    proof = {'missionId': seed['missionId'], 'ownershipSeed': seed, 'chain': list(reversed(chain))}
+                    if 'quest-' + str(seed['missionId']) not in registered:
+                        if proof not in unregistered_owners:
+                            unregistered_owners.append(proof)
+                    else:
+                        found.append(proof)
                 continue
             if len(chain) >= 12:
                 continue
@@ -295,7 +333,7 @@ def build(args):
                 if edge['source'] in seen:
                     continue
                 queue.append((edge['source'], chain + [edge], seen | {edge['source']}))
-        return found
+        return sorted(found, key=lambda r: r['ownershipSeed']['kind'] != 'EXPLICIT_RUNTIME_OWNERMAINMISSIONID')
 
     videos = defaultdict(list)
     for index, row in enumerate(video_config):
@@ -329,7 +367,7 @@ def build(args):
                 continue
             ownership = owners(source)
             if not ownership:
-                exclusions.append(dict(base, reason='NO_EXPLICIT_NONCONFLICTING_RUNTIME_OWNER'))
+                exclusions.append(dict(base, reason='NO_EXPLICIT_NONCONFLICTING_REGISTERED_OWNER'))
                 continue
             caption = unique[caption_path]
             absent = [str(r['hash']) for r in caption['rows'] if r['hash'] not in textmap or not textmap[r['hash']]['raw']]
@@ -389,11 +427,12 @@ def build(args):
         'manifestSha256': sha(manifest), 'catalogSha256': sha(design_raw), 'packs': pack_manifest,
         'metadataRepository': METADATA_REPO, 'metadataCommit': METADATA_COMMIT, 'metadataArchiveSha256': sha(args.archive.read_bytes()),
         'preserved45Corpus': before, 'preserved45CorpusUnchanged': before == after,
-        'method': 'Strict CaptionList schema/EOF; complete fixture field and IEEE binary32 identity unique across every non-language catalog entry; official Korean TextMap hash; explicit nonconflicting RuntimeGroup owner and exact path/typed Performance/Video foreign keys; conditional caption playback retained.'},
+        'method': 'Strict CaptionList schema/EOF; complete fixture field and IEEE binary32 identity unique across every non-language catalog entry; official Korean TextMap hash; explicit nonconflicting RuntimeGroup owner or row-scoped MissionInfo MainMissionID/MissionJsonPath and exact path/typed Performance/Video foreign keys; conditional caption playback retained.'},
         'missions': dict(missions), 'counts': counts, 'unsupportedCaptionFixtures': unsupported,
         'unresolvedKoreanCaptionRows': unresolved_korean,
         'missingOfficialPacks': missing_packs, 'excludedPlaybackSites': exclusions,
         'playVideoLookupDiagnostics': lookup_diagnostics, 'runtimeOwnerConflicts': owner_conflicts,
+        'unregisteredExplicitMainMissionOwners': unregistered_owners,
         'limitations': ['영상 자막의 화자 이름은 CaptionList에 수록된 필드 범위에서 확인되지 않는다.',
                         '자막의 재생 조건과 호출 경로를 함께 수록한다. 구조의 나열 순서는 전체 임무의 실행 순서와 구분한다.']}
     if args.measure_output:

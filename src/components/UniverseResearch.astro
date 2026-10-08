@@ -1,16 +1,23 @@
 ---
-import {disclosureAttributes,sourceLinkAttributes} from '../lib/reading-kit/reader.mjs';
+import {readerDisclosure,sourceLink} from '../lib/reading-kit/reader.mjs';
+import {renderCvaModule} from '../lib/reading-kit/cva.mjs';
+import {createReadingKit,escapeHtml as E,cvaId} from '../lib/reading-kit/render.mjs';
 import {doc,docUrl} from '../lib/data';
 const {cluster}=Astro.props;
 const proofUrl=e=>{const d=doc(e.docId),s=d.sections.find(s=>s.anchor===e.anchor);const index=s?.rows.findIndex(r=>e.talkId?r.talk_id===e.talkId:r.text===e.quote);if(index===undefined||index<0)throw Error('Missing cluster source: '+e.docId);return docUrl(e.docId)+'#'+e.anchor+'-row-'+(index+1);};
+const parts=p=>p.parts?`<div class="universe-role-split"><p>${E(p.partsRelation)}</p><div>${p.parts.map(part=>`<section><h4>${E(part.title)}</h4><p>${E(part.text)}</p></section>`).join('')}</div></div>`:'';
+const panelExtras=p=>parts(p)+readerDisclosure(`이 설명의 원문 ${p.evidence.length}개`,p.evidence.map(e=>`<div><blockquote class="rw-quotation">${E(e.quote)}</blockquote>${sourceLink(proofUrl(e),doc(e.docId).title+' · 해당 구절 ↗',{reading:true}).replace('<a ','<a data-cluster-evidence ')}</div>`).join(''),{className:'universe-research-evidence'});
+const sequence=cluster.layout==='sequence',parallel=cluster.layout==='split';
+const panels=renderCvaModule({id:cvaId('universe-'+cluster.id,cluster.panels),orientation:sequence?'vertical':'horizontal',type:sequence||parallel?'scene-composition':'comparison',variant:sequence?'scene-rail':parallel?'parallel-lanes':'columns',
+ props:{title:'',body:'',...(sequence||parallel?{relationLabel:sequence?'함께 읽는 순서 · 연구 임무에서 두 제왕과 기물의 기록으로':'같은 질문을 서로 다른 기록에서 읽기',caption:''}:{})},
+ items:cluster.panels.map((p,i)=>({id:'research-panel-'+i,title:p.title,body:p.text,label:p.author})),itemExtras:cluster.panels.map(panelExtras)
+}).replace(/data-cva-item-index="(\d+)"/g,(_,i)=>`data-cva-item-index="${i}" data-cluster-panel="${E(cluster.id+'-'+i)}"`);
+const kit=createReadingKit();
+
 ---
 <section id="research" class="universe-research not-content" data-universe-cluster={cluster.id}>
   <header><p class="eyebrow">기록을 함께 읽기 · 원문에 근거한 편집</p><h2>{cluster.title}</h2><p class="universe-research-question">{cluster.question}</p><p>{cluster.intro}</p></header>
   {cluster.layout==='sequence'&&<p class="universe-research-order-label">함께 읽는 순서 · 연구 임무에서 두 제왕과 기물의 기록으로</p>}
-  <div class:list={['universe-research-panels','universe-research-'+cluster.layout]}>{cluster.panels.map((panel,i)=><article data-cluster-panel={cluster.id+'-'+i}>
-    <p class="universe-research-author">{panel.author}</p><h3>{panel.title}</h3><p>{panel.text}</p>
-    {panel.parts&&<div class="universe-role-split"><p>{panel.partsRelation}</p><div>{panel.parts.map(part=><section><h4>{part.title}</h4><p>{part.text}</p></section>)}</div></div>}
-    <details {...disclosureAttributes({className:'universe-research-evidence'})}><summary>이 설명의 원문 {panel.evidence.length}개</summary>{panel.evidence.map(e=><div><blockquote class="rw-quotation">{e.quote}</blockquote><a {...sourceLinkAttributes({reading:true})} href={proofUrl(e)} data-cluster-evidence>{doc(e.docId).title} · 해당 구절 ↗</a></div>)}</details>
-  </article>)}</div>
-  <nav class="universe-related-reading" aria-label="함께 읽는 원문">{cluster.related.map(ref=><a href={docUrl(ref.docId)} data-reading-link><strong>{doc(ref.docId).title}</strong><span>{ref.reason}</span><span aria-hidden="true">↗</span></a>)}</nav>
+  <div class:list={['universe-research-panels','universe-research-'+cluster.layout]}><Fragment set:html={panels}/></div>
+  <nav class="universe-related-reading" aria-label="함께 읽는 원문"><Fragment set:html={kit.directory(cluster.related.map(ref=>({name:doc(ref.docId).title,url:docUrl(ref.docId),summary:ref.reason,kind:'함께 읽는 원문'})))}/></nav>
 </section>

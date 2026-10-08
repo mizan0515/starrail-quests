@@ -2,9 +2,11 @@
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import DialogueBrowse from '../components/DialogueBrowse.astro';
 import {href} from '../lib/data';
+import library from '../../data/official-talk-library.json';
 ---
 <StarlightPage frontmatter={{title:'대사 원문 자료실',editUrl:false,tableOfContents:false}}>
  <p class="page-deck">게임 한국어 대사 표에 수록된 화자의 발언과 선택지를 읽습니다.</p>
  <nav class="shelf-nav" aria-label="대사 읽기"><a href={href('versions/index.html')}>임무에서 읽기</a><a href={href('우주.html')}>우주 콘텐츠에서 읽기</a></nav>
+ <nav class="reading-next" aria-label="한국어 수록본"><a href={href('대사/official-4.6.html')}><span>한국어 수록본 4.6 · 추가·변경 원문 {library.rows.length.toLocaleString('ko-KR')}행</span><strong>화자와 구절로 찾기 →</strong></a></nav>
  <DialogueBrowse/>
 </StarlightPage>

@@ -1,0 +1,78 @@
+@import './cva/vendor/module-styles.css';
+@import './cva/vendor/scene-styles.css';
+
+/* Canonical CVA structure with the game's existing paper, ink and brass tokens. */
+.cva-page[data-cva].cva-reader-fragment[data-cva-profile],
+.cva-page[data-cva].cva-reader-frame[data-cva-profile] {
+ --cva-bg:var(--paper,var(--sl-color-black));
+ --cva-surface:var(--surface,var(--sl-color-bg-nav));
+ --cva-inset:var(--selected,var(--sl-color-gray-6));
+ --cva-text:var(--ink,var(--sl-color-text));
+ --cva-muted:var(--muted,var(--sl-color-gray-2));
+ --cva-copy:var(--ink,var(--sl-color-text));
+ --cva-accent:var(--brass,var(--sl-color-accent));
+ --cva-accent-text:var(--brass,var(--sl-color-accent));
+ --cva-accent-ink:var(--paper,var(--sl-color-black));
+ --cva-border:var(--line,var(--sl-color-gray-5));
+ --cva-focus:var(--brass,var(--sl-color-accent));
+ --cva-tint:var(--selected,var(--sl-color-gray-6));
+ --cva-axis:var(--muted,var(--sl-color-gray-3));
+ --cva-radius:.8rem;--cva-page-padding:0px;--cva-module-space:1.5rem;
+ --cva-gap:1.25rem;--cva-scene-gap:1.5rem;--cva-item-padding:1.25rem;
+ --cva-content-width:100%;--cva-body-size:1rem;--cva-body-leading:1.9;
+ --cva-section-size:clamp(1.25rem,1.05rem + .8vw,1.6rem);
+ --cva-scene-item-size:clamp(1.05rem,.96rem + .5vw,1.3rem);
+ --cva-cover-size:clamp(1.6rem,1.1rem + 2vw,2.5rem);
+ font-family:var(--sl-font),Pretendard,'Noto Sans KR','Malgun Gothic',system-ui,sans-serif;
+ color-scheme:normal;background:transparent;max-inline-size:100%;
+}
+.cva-page[data-cva] :is(.cva-module,.cva-scene,.cva-item-extra){min-inline-size:0;max-inline-size:100%}
+.cva-page[data-cva] .cva-module{scroll-margin-block-start:calc(var(--sl-nav-height,4.5rem) + 1rem)}
+.cva-page[data-cva] .cva-item-extra{margin-block-start:1rem;line-height:1.8;color:var(--cva-copy);overflow-wrap:anywhere}
+.cva-page[data-cva] .cva-item-extra>:first-child{margin-block-start:0}
+.cva-page[data-cva] .cva-item-extra a{color:var(--cva-text);text-decoration-thickness:1px}
+.cva-page[data-cva] :is(.cva-image-source,.sc-spotlight-nav a){min-block-size:44px;display:inline-flex;align-items:center}
+.cva-page[data-cva] :is(.cva-title,.cva-item-title,.sc-item-title) a{color:inherit;text-decoration:none}
+.cva-page[data-cva] :is(.cva-title,.cva-item-title,.sc-item-title) a:hover{text-decoration:underline;text-decoration-color:var(--cva-accent)}
+.cva-page[data-cva] .cva-item-extra :is(pre,code){white-space:pre-wrap;overflow-wrap:anywhere;max-inline-size:100%}
+.cva-page[data-cva] .cva-item-extra details{max-inline-size:100%}
+.cva-page[data-cva] .cva-item-extra summary{min-block-size:44px;cursor:pointer}
+.cva-page[data-cva] .cva-media img{max-inline-size:100%}
+.cva-page[data-cva] .cva-media-provenance{padding:.25rem .75rem}
+.cva-page[data-cva] .cva-caption .cva-image-source{font-size:.8125rem}
+.cva-page[data-cva] .cva-module-head:empty{display:none}
+.rw-cva-atlas .cva-page[data-cva] .rw-relation-band{padding:0;border:0;background:transparent}
+.rw-cva-atlas .cva-page[data-cva] .rw-relation-proof{margin:0!important;padding:0!important;border:0!important}
+.rw-cva-atlas .cva-page[data-cva] .cva-item-extra{margin-block-start:.6rem}
+.rw-cva-atlas .cva-page[data-cva] .sc-ledger caption{font-size:.8125rem;font-weight:500;color:var(--cva-muted);padding-block:0 1rem}
+.rw-cva-atlas .cva-page[data-cva] .sc-ledger th .sc-item-title{font-size:1rem}
+.cva-page[data-cva] .rw-node-kind{display:block;font-size:.75rem;font-weight:500;line-height:1.6;color:var(--cva-muted);margin-block-end:.25rem}
+.cva-page[data-cva] .rw-edge-statement{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .6rem;line-height:1.7}
+.cva-page[data-cva] .rw-edge-predicate{font-size:.875rem;font-weight:600;color:var(--cva-accent-text)}
+.rw-cva-atlas .cva-page[data-cva] .sc-feedback.has-cycle{border-width:1px;border-radius:1.25rem;padding:1.5rem}
+.rw-cva-atlas .cva-page[data-cva] .sc-ring-members{grid-template-columns:repeat(auto-fit,minmax(min(100%,12rem),1fr));gap:1.5rem}
+.rw-cva-atlas .cva-page[data-cva] .sc-feedback .sc-copy{padding:.25rem 0}
+.rw-cva-atlas .cva-page[data-cva] .sc-feedback .sc-number{font-size:1.25rem;margin-block-end:.75rem}
+.rw-cva-atlas .cva-page[data-cva] .sc-copy:has(>.cva-badge)>.sc-item-title>.rw-node-kind{display:none}
+.cva-page[data-cva] .sc-ledger table{table-layout:fixed;inline-size:100%}
+.cva-page[data-cva] .sc-ledger th:first-child{inline-size:34%}
+.cva-page[data-cva] .sc-ledger th:nth-child(2){inline-size:18%}
+.cva-page[data-cva] .sc-ledger :is(th,td){vertical-align:top;overflow-wrap:anywhere}
+.cva-page[data-cva] :is(.cva-item-title,.sc-item-title){font-size:var(--cva-scene-item-size);line-height:1.55}
+.cva-page[data-cva] :is(a,summary,button,[tabindex]):focus-visible{outline:3px solid var(--cva-focus);outline-offset:3px}
+@media(max-width:600px){
+ .cva-page[data-cva].cva-reader-fragment[data-cva-profile],.cva-page[data-cva].cva-reader-frame[data-cva-profile]{--cva-gap:1rem;--cva-scene-gap:1rem;--cva-item-padding:1rem;--cva-module-space:1.25rem}
+ .cva-page[data-cva] .cva-item-extra :is(.relation-endpoints,.entity-links){flex-wrap:wrap}
+ .cva-page[data-cva] .cva-scene :is(.sc-collection,.sc-reading-list,.sc-before-after){grid-template-columns:minmax(0,1fr)}
+ .cva-page[data-cva] .cva-item-extra table{display:block;max-inline-size:100%;overflow-x:auto}
+ .cva-page[data-cva] .sc-ledger-scroll{overflow:visible}
+ .cva-page[data-cva] .sc-ledger table{min-inline-size:0}
+ .cva-page[data-cva] .sc-ledger :is(table,tbody,tr,th,td){display:block;inline-size:auto;min-inline-size:0}
+ .cva-page[data-cva] .sc-ledger thead{display:none}
+ .cva-page[data-cva] .sc-ledger tr{margin-block-end:1rem;border:1px solid var(--cva-border);border-radius:var(--cva-radius);overflow:hidden}
+ .cva-page[data-cva] .sc-ledger :is(th,td){border:0;padding:1rem}
+ .cva-page[data-cva] .sc-ledger tr>td{border-block-start:1px solid var(--cva-border)}
+ .cva-page[data-cva] .sc-ledger tr>td:nth-child(2)::before{content:'원문의 성격';display:block;font-size:.75rem;color:var(--cva-muted);margin-block-end:.5rem}
+ .cva-page[data-cva] .sc-ledger tr>td:last-child::before{content:'맥락과 근거';display:block;font-size:.75rem;color:var(--cva-muted);margin-block-end:.5rem}
+}
+@media(prefers-reduced-motion:reduce){.cva-page[data-cva] *, .cva-page[data-cva] *::before,.cva-page[data-cva] *::after{scroll-behavior:auto;transition:none;animation:none}}

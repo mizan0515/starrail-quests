@@ -236,7 +236,7 @@ def check_page(content, scenes, evidence, mission_id):
         owner_list = one([node for node in proof.immediate('ol') if 'caption-source-rows' not in node.classes()], 'explicit owner chain')
         owner_nodes = owner_list.immediate('li')
         require(len(owner_nodes) == len(ownership), f'{anchor}: owner chain edge coverage differs')
-        labels = {'EXPLICIT_RUNTIME_OWNERMAINMISSIONID': '실행 그룹의 임무 소유 참조', 'EXPLICIT_JSON_PATH': 'JSON 파일의 명시 경로', 'EXPLICIT_PERFORMANCE_LOOKUP': '연출 식별자와 파일 경로'}
+        labels = {'EXPLICIT_RUNTIME_OWNERMAINMISSIONID': '실행 그룹의 임무 소유 참조', 'EXPLICIT_MAIN_MISSION_ID': '임무 소속의 명시 참조', 'EXPLICIT_JSON_PATH': 'JSON 파일의 명시 경로', 'EXPLICIT_PERFORMANCE_LOOKUP': '연출 식별자와 파일 경로'}
         for node, edge in zip(owner_nodes, ownership):
             expected = labels.get(edge['kind'], edge['kind']) + ' · ' + edge['source'] + ' ↗'
             if edge.get('pointer'):
@@ -247,6 +247,8 @@ def check_page(content, scenes, evidence, mission_id):
                 expected += ' · ' + edge['event']
             if edge.get('performanceId'):
                 expected += ' · 연출 ' + str(edge['performanceId'])
+            if edge.get('missionJsonPathPointer'):
+                expected += ' · 임무 경로 ' + edge['missionJsonPathPointer'] + ' · ' + edge['missionJsonPath']
             # Only UI edge labels allow insignificant template whitespace.
             require(re.sub(r'\s+', ' ', node.text()).strip() == expected, f'{anchor}: explicit owner edge differs')
             link = one(node.elements(lambda item: item.tag == 'a'), 'owner source link')

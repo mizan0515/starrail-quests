@@ -9,6 +9,7 @@ const source=(path:string)=>missionStructureUrl(path);
 ---
 <li>
   {label} · <a href={source(edge.source)} {...sourceLinkAttributes({variant:'inline'})}>{edge.source} ↗</a>{edge.pointer&&<> · {edge.pointer}</>}{edge.missionId&&<> · 임무 {edge.missionId}</>}{edge.event&&<> · {edge.event}</>}{edge.performanceId&&<> · 연출 {edge.performanceId}</>}
+  {edge.missionJsonPathPointer&&<> · 임무 경로 {edge.missionJsonPathPointer} · {edge.missionJsonPath}</>}
   {startedEvent&&<details {...disclosureAttributes({className:'source-details'})}>
     <summary>진행 조건과 대화의 연결 확인</summary>
     <dl>

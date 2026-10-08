@@ -13,6 +13,47 @@ ROOT=Path(__file__).resolve().parents[1]
 def read(p):return json.loads(p.read_text(encoding='utf8'))
 
 
+def caption_owned(document,section):
+    """Recognize the two exact caption seeds, including an aliased mission part.
+
+    The MainMission seed must identify the same source/path/pointer as the first
+    explicit JSON edge. Matching mission numbers or a nonempty arbitrary chain
+    alone cannot promote a source into the primary reader.
+    """
+    owner=section.get('ownership',{});seed=owner.get('ownershipSeed',{})
+    chain=owner.get('chain')
+    if not isinstance(chain,list) or not chain:return False
+    runtime=seed.get('kind')=='EXPLICIT_RUNTIME_OWNERMAINMISSIONID'
+    first=chain[0]
+    path=seed.get('missionJsonPath');pointer=seed.get('missionJsonPathPointer')
+    main=(seed.get('kind')=='EXPLICIT_MAIN_MISSION_ID'
+          and isinstance(path,str) and bool(path) and isinstance(pointer,str) and bool(pointer)
+          and first.get('kind')=='EXPLICIT_JSON_PATH' and first.get('source')==seed.get('source')
+          and first.get('pointer')==pointer and first.get('target')==path)
+    return ((runtime or main) and
+            'quest-'+str(owner.get('missionId')) in document.get('missionParts',[document['id']]) and
+            str(seed.get('missionId'))==str(owner.get('missionId')))
+
+
+def caption_scope_self_test():
+    source=read(ROOT/'data/official-video-captions.json')
+    owner,scenes=next((owner,scenes) for owner,scenes in source['missions'].items()
+                     if scenes and scenes[0]['ownership']['ownershipSeed']['kind']=='EXPLICIT_MAIN_MISSION_ID')
+    section=scenes[0];document={'id':owner}
+    assert caption_owned(document,section),'Exact MainMission caption seed rejected'
+    for field,value in [('kind','DIRECTORY_MATCH'),('missionJsonPath',''),
+                        ('missionJsonPathPointer','/wrong'),('source','foreign.json'),('missionId',0)]:
+        changed=json.loads(json.dumps(section));changed['ownership']['ownershipSeed'][field]=value
+        assert not caption_owned(document,changed),('Unsafe caption seed accepted',field)
+    for field,value in [('kind','EXPLICIT_PERFORMANCE_LOOKUP'),('target','foreign.json')]:
+        changed=json.loads(json.dumps(section));changed['ownership']['chain'][0][field]=value
+        assert not caption_owned(document,changed),('Unsafe first caption edge accepted',field)
+    changed=json.loads(json.dumps(section));changed['ownership']['chain']=[]
+    assert not caption_owned(document,changed),'Empty caption chain accepted'
+    assert not caption_owned({'id':'quest-foreign'},section),'Foreign mission caption accepted'
+    assert caption_owned({'id':'quest-parent','missionParts':[owner]},section),'Exact preserved alias part rejected'
+
+
 def reading_counts(document,scenes,coverage,message_sections):
     """Partition original, dialogue, caption and message rows by explicit scope."""
     counts=Counter();primary_scenes=reference_scenes=reference_rows=0
@@ -21,10 +62,7 @@ def reading_counts(document,scenes,coverage,message_sections):
         rows=section['rows']
         if not rows:continue
         if section.get('recordType')=='CUTSCENE_CAPTION':
-            owner=section.get('ownership',{});seed=owner.get('ownershipSeed',{})
-            linked=(seed.get('kind')=='EXPLICIT_RUNTIME_OWNERMAINMISSIONID'
-                    and 'quest-'+str(seed.get('missionId')) in document.get('missionParts',[document['id']])
-                    and seed.get('missionId')==owner.get('missionId') and bool(owner.get('chain')))
+            linked=caption_owned(document,section)
             scope=None
         else:
             chain=section.get('_messageOwnership',owners.get(section.get('source'),section.get('ownership',[])))
@@ -44,6 +82,7 @@ def reading_counts(document,scenes,coverage,message_sections):
             'state':'dialogue-linked' if counts['dialogue'] else 'captions-linked' if counts['caption'] else 'choices-only' if counts['choice'] else 'overview-only'}
 
 def main():
+    caption_scope_self_test()
     catalogue=read(ROOT/'data/universe-catalog.json');count=0;originals=0
     for mode in catalogue['modes']:
         file=ROOT/'dist/우주'/(mode['id']+'.html');page=Page();page.feed(file.read_text('utf8'))

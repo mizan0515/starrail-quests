@@ -2,7 +2,7 @@
 const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const kinds=new Set(['dialogue','choice','gap','branch','original']);
 export function readerAttributes({variant='dialogue',className='',id='',label=''}={}){
- return {class:['rw-reader','not-content',className].filter(Boolean).join(' '),'data-reading-template':'reader','data-reading-variant':variant,...(id?{id}:{}),...(label?{'aria-label':label}:{})};
+ return {class:['rw-reader','not-content','cva-page','cva-reader-frame',className].filter(Boolean).join(' '),'data-cva':true,'data-cva-profile':'forma','data-reading-template':'reader','data-reading-variant':variant,...(id?{id}:{}),...(label?{'aria-label':label}:{})};
 }
 export function rowAttributes(kind='original'){
  if(!kinds.has(kind))throw Error('Unknown source row kind: '+kind);

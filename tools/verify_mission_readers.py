@@ -196,6 +196,60 @@ def explicitly_owned(chain):
     return isinstance(chain,list) and bool(chain) and isinstance(chain[0],dict) and chain[0].get('kind')=='EXPLICIT_MAIN_MISSION_ID'
 
 
+def caption_owned(document,section):
+    """Classify an exact caption owner independently of the UI adapter.
+
+    MainMission seeds require the seed's exact JSON source, pointer and path in
+    the first ownership edge, as well as a preserved canonical/alias mission.
+    """
+    owner=section.get('ownership',{});seed=owner.get('ownershipSeed',{})
+    chain=owner.get('chain')
+    if not isinstance(chain,list) or not chain or not isinstance(chain[0],dict):return False
+    first=chain[0]
+    runtime=seed.get('kind')=='EXPLICIT_RUNTIME_OWNERMAINMISSIONID'
+    path=seed.get('missionJsonPath');pointer=seed.get('missionJsonPathPointer')
+    source=seed.get('source')
+    main=(seed.get('kind')=='EXPLICIT_MAIN_MISSION_ID'
+          and isinstance(source,str) and bool(source)
+          and isinstance(path,str) and bool(path) and isinstance(pointer,str) and bool(pointer)
+          and first.get('kind')=='EXPLICIT_JSON_PATH' and first.get('source')==source
+          and first.get('pointer')==pointer and first.get('target')==path)
+    return ((runtime or main) and
+            'quest-'+str(owner.get('missionId')) in document.get('missionParts',[document['id']]) and
+            str(seed.get('missionId'))==str(owner.get('missionId')))
+
+
+def caption_scope_self_test(root):
+    read=lambda p:json.loads(p.read_text(encoding='utf8'))
+    source=read(root/'data/official-video-captions.json');aliases=read(root/'data/aliases.json')
+    measured=Counter();fixture=None
+    for owner,scenes in source['missions'].items():
+        target=aliases.get(owner,owner);document=read(root/'data/documents'/(target+'.json'))
+        for section in scenes:
+            assert caption_owned(document,section),('Exact caption source seed rejected',owner,section['anchor'])
+            kind=section['ownership']['ownershipSeed']['kind']
+            measured[kind]+=len(section['rows'])
+            if kind=='EXPLICIT_MAIN_MISSION_ID' and fixture is None:fixture=(document,section)
+    assert sum(measured.values())==source['counts']['rows'],'Exact caption source aggregation differs'
+    assert fixture is not None,'MainMission caption regression fixture absent'
+    document,section=fixture
+    for field,value in [('kind','DIRECTORY_MATCH'),('missionJsonPath',''),
+                        ('missionJsonPathPointer','/wrong'),('source','foreign.json'),('missionId',0)]:
+        changed=json.loads(json.dumps(section));changed['ownership']['ownershipSeed'][field]=value
+        assert not caption_owned(document,changed),('Unsafe caption seed accepted',field)
+    for field,value in [('kind','EXPLICIT_PERFORMANCE_LOOKUP'),('target','foreign.json')]:
+        changed=json.loads(json.dumps(section));changed['ownership']['chain'][0][field]=value
+        assert not caption_owned(document,changed),('Unsafe caption first edge accepted',field)
+    changed=json.loads(json.dumps(section));changed['ownership']['chain']=[]
+    assert not caption_owned(document,changed),'Empty caption chain accepted'
+    assert not caption_owned({'id':'quest-foreign'},section),'Foreign mission caption accepted'
+    changed=json.loads(json.dumps(section));changed['ownership']['ownershipSeed'].pop('source');changed['ownership']['chain'][0].pop('source')
+    assert not caption_owned(document,changed),'Both missing source identities accepted'
+    owner='quest-'+str(section['ownership']['missionId'])
+    assert caption_owned({'id':'quest-parent','missionParts':[owner]},section),'Exact preserved alias part rejected'
+    return {'sourceRowsBySeed':dict(measured),'mutationsRejected':10}
+
+
 def difference(actual,expected):
     offset=next((i for i,(a,b) in enumerate(zip(actual,expected)) if a!=b),min(len(actual),len(expected)))
     return {'firstDifference':offset,'actualLength':len(actual),'expectedLength':len(expected),
@@ -205,6 +259,7 @@ def difference(actual,expected):
 
 def main(dist):
     root=Path(__file__).resolve().parents[1]
+    caption_scope_self_test(root)
     read=lambda p:json.loads(p.read_text(encoding='utf-8'))
     source_catalog=read(root/'data/catalog.json')
     quests=[d for d in source_catalog if d['category']=='퀘스트']
@@ -304,8 +359,7 @@ def main(dist):
         sections=[*doc['sections'],*supplement.get(id,[]),*related_sections]
         def linked(section):
             if section.get('recordType')=='CUTSCENE_CAPTION':
-                owner=section.get('ownership',{});seed=owner.get('ownershipSeed',{})
-                return seed.get('kind')=='EXPLICIT_RUNTIME_OWNERMAINMISSIONID' and 'quest-'+str(seed.get('missionId')) in doc.get('missionParts',[id]) and owner.get('missionId')==seed.get('missionId') and bool(owner.get('chain'))
+                return caption_owned(doc,section)
             chain=section['_messageOwnership'] if '_messageOwnership' in section else ownership.get(section.get('source'),section.get('ownership',[]))
             return explicitly_owned(chain)
         scopes=mission_coverage.get('sourceTalkScopes',{})

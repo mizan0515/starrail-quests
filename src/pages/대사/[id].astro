@@ -3,13 +3,16 @@ import {disclosureAttributes} from '../../lib/reading-kit/reader.mjs';
 import fs from 'node:fs';import path from 'node:path';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import Scene from '../../components/Scene.astro';
+import OfficialTalkReader from '../../components/OfficialTalkReader.astro';
+import library from '../../../data/official-talk-library.json';
 import {dialogueData,dialogueUrl} from '../../lib/explorer';
 import {href,versionLabel,catalog,docUrl} from '../../lib/data';
-export function getStaticPaths(){return dialogueData.pages.map(p=>({params:{id:p.id},props:{p}}));}
-const {p}=Astro.props;const d=JSON.parse(fs.readFileSync(path.resolve('data/dialogues',p.id+'.json'),'utf8'));
-const peers=dialogueData.pages.filter(x=>x.version===p.version);const pos=peers.findIndex(x=>x.id===p.id);const titles=Object.fromEntries(catalog.filter(x=>x.category==='퀘스트').map(x=>[x.id,x.title]));
-const proof=dialogueData.evidence;const snap=proof.snapshots.find(s=>s.version===(p.version==='early'?proof.firstSnapshotBaseline:p.version));
+export function getStaticPaths(){return [...dialogueData.pages.map(p=>({params:{id:p.id},props:{p}})),...library.rows.map(row=>({params:{id:'official-4.6-'+row.talk_id},props:{officialRow:row}}))];}
+const {p,officialRow}=Astro.props;const d=p?JSON.parse(fs.readFileSync(path.resolve('data/dialogues',p.id+'.json'),'utf8')):null;
+const peers=p?dialogueData.pages.filter(x=>x.version===p.version):[];const pos=peers.findIndex(x=>x.id===p?.id);const titles=Object.fromEntries(catalog.filter(x=>x.category==='퀘스트').map(x=>[x.id,x.title]));
+const proof=dialogueData.evidence;const snap=p?proof.snapshots.find(s=>s.version===(p.version==='early'?proof.firstSnapshotBaseline:p.version)):null;
 ---
+{officialRow?<OfficialTalkReader row={officialRow}/>:
 <StarlightPage frontmatter={{title:`${versionLabel(p.version)} · 한국어 대사 ${p.part}`,editUrl:false,tableOfContents:false}}>
  <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('versions/'+p.version+'.html')}>{versionLabel(p.version)} 버전</a><span>/</span><span>대사 묶음 {p.part}</span></nav>
  <p class="page-deck">{p.count}개 실제 대사 · 임무 연결 확인 {p.linked}개</p>
@@ -20,6 +23,7 @@ const proof=dialogueData.evidence;const snap=proof.snapshots.find(s=>s.version==
  <nav class="reading-next" aria-label="다음 대사 묶음">{peers[pos-1]&&<a href={dialogueUrl(peers[pos-1].id)}><span>앞선 표 묶음</span><strong>대사 {peers[pos-1].part}</strong></a>}{peers[pos+1]&&<a href={dialogueUrl(peers[pos+1].id)}><span>다음 표 묶음</span><strong>대사 {peers[pos+1].part}</strong></a>}</nav>
  <section class="local-proof" id="verified-sources"><h2>확인한 파일과 원문 근거</h2><p>TalkSentenceConfig에서 대사 ID·화자 문자열·본문 문자열을 읽고 한국어 TextMap에 대응했습니다. 각 행의 식별자는 위 ‘원문 출처와 식별자’에 있습니다.</p><details {...disclosureAttributes({className:'source-details'})}><summary>원본 파일·표 엔트리·버전 대조 근거</summary><p>대사 표 · {proof.dialogueTable.file} · 엔트리 {proof.dialogueTable.entry_hash} · 바이트 {proof.dialogueTable.offset}–{proof.dialogueTable.offset+proof.dialogueTable.size}</p><p>한국어 TextMap · {proof.textMap.file} · 엔트리 {proof.textMap.entry_hash}</p>{proof.sources.map(s=><p>{s.file} · SHA-256 {s.sha256}</p>)}{snap&&<><p>최초 등장 스냅샷 {snap.version} · 커밋 {snap.commit} · SHA-256 {snap.sha256}</p><a href={snap.source}>대조한 버전별 ID·해시 표</a></>}<p>표 행별 바이트 범위는 <a href={href('대사원문/'+p.id+'.json')}>이 묶음의 구조화 원문</a>에서 확인할 수 있습니다.</p></details></section>
 </StarlightPage>
+}
 <script>
  const select=document.querySelector<HTMLSelectElement>('[data-reader-speaker]');if(select){const rows=[...document.querySelectorAll<HTMLElement>('.original-row')];select.value=new URLSearchParams(location.search).get('speaker')||'';const update=()=>{let count=0;rows.forEach(r=>{r.hidden=!!select.value&&r.dataset.speaker!==select.value;if(!r.hidden)count++;});document.querySelector('[data-reader-count]')!.textContent=`${count}개 대사`;};select.addEventListener('change',update);update();}
 </script>

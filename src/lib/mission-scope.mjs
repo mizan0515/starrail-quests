@@ -2,9 +2,17 @@
 export function missionRowLinked(section,row,coverage={}){
  if(section.recordType==='CUTSCENE_CAPTION'){
   const owner=section.ownership;
-  return owner?.ownershipSeed?.kind==='EXPLICIT_RUNTIME_OWNERMAINMISSIONID'
+  const seed=owner?.ownershipSeed;
+  const explicitRuntime=seed?.kind==='EXPLICIT_RUNTIME_OWNERMAINMISSIONID';
+  const first=owner?.chain?.[0];
+  const explicitMission=seed?.kind==='EXPLICIT_MAIN_MISSION_ID'
+   &&typeof seed.missionJsonPath==='string'&&!!seed.missionJsonPath
+   &&typeof seed.missionJsonPathPointer==='string'&&!!seed.missionJsonPathPointer
+   &&first?.kind==='EXPLICIT_JSON_PATH'&&first.source===seed.source
+   &&first.pointer===seed.missionJsonPathPointer&&first.target===seed.missionJsonPath;
+  return (explicitRuntime||explicitMission)
    &&Array.isArray(coverage.missionIds)&&coverage.missionIds.some(id=>String(id)===String(owner.missionId))
-   &&String(owner.ownershipSeed.missionId)===String(owner.missionId)
+   &&String(seed.missionId)===String(owner.missionId)
    &&Array.isArray(owner.chain)&&owner.chain.length>0;
  }
  const chain=section.relatedDocument?.ownership||coverage.sourceOwnership?.[section.source]||section.ownership;

@@ -1,0 +1,35 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import library from '../../data/official-talk-library.json';
+import SourceParagraphs from './SourceParagraphs.astro';
+import OfficialTalkProof from './OfficialTalkProof.astro';
+import MissionOwnershipProof from './MissionOwnershipProof.astro';
+import CatalogReturn from './CatalogReturn.astro';
+import {href,docUrl,catalog,missionStructureUrl} from '../lib/data';
+import {readerAttributes,rowAttributes,disclosureAttributes,sourceLinkAttributes} from '../lib/reading-kit/reader.mjs';
+import {renderCvaModule} from '../lib/reading-kit/cva.mjs';
+import {sourceParagraphs} from '../lib/source-paragraphs';
+import {escapeHtml as E,safeHref} from '../lib/reading-kit/render.mjs';
+const {row}=Astro.props;
+const previous=row.previous;
+const previousUrl=previous?href(previous.url):null;
+const missions=row.missionLinks||[];
+const titles=Object.fromEntries(catalog.filter(d=>d.category==='퀘스트').map(d=>[d.id,d.title]));
+const anchor='talk-'+row.talk_id;
+const comparison=previous?renderCvaModule({id:'cva-talk-compare-'+row.talk_id,type:'comparison',variant:'columns',orientation:'horizontal',props:{title:'',body:''},items:[{id:'baseline',title:'4.5 보존본',body:'',label:previous.speaker},{id:'current',title:'4.6 수록본',body:'',label:row.speaker}],itemExtras:[`<div data-talk-baseline><span class="speaker">${E(previous.speaker)}</span>${sourceParagraphs(previous.text,anchor+'-baseline')}${previousUrl?`<a data-reading-link href="${safeHref(previousUrl)}">보존된 대사표 원문 ↗</a>`:''}</div>`,`<div data-talk-current><span class="speaker">${E(row.speaker)}</span>${sourceParagraphs(row.text,anchor+'-current')}<a href="#${E(anchor)}">현재 원문의 출처 확인 ↑</a></div>`]}):'';
+---
+<StarlightPage frontmatter={{title:`${row.speaker} · 대사 ${row.talk_id}`,editUrl:false,tableOfContents:false}}>
+ <CatalogReturn/>
+ <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('대사.html')}>대사 원문 자료실</a><span>/</span><a href={href('대사/official-4.6.html')}>4.6 한국어 수록본</a></nav>
+ <p class="document-meta"><span class="kind-badge">대사표 원문</span><span>한국어 수록본 4.6</span><span>{previous?'4.5·4.6 표기 대조':'4.5 보존본에 없는 대사 ID'}</span></p>
+ <section {...readerAttributes({variant:'scene',className:'source-section',id:'original'})} data-official-talk-library={row.talk_id}>
+  <div {...rowAttributes('original')} class="rw-source-row original-row" data-passage="original" data-speaker={row.speaker}>
+   <span class="speaker rw-source-speaker">{row.speaker}</span>
+   <SourceParagraphs text={row.text} anchor={anchor}/>
+   <OfficialTalkProof row={row} evidence={library.evidence}/>
+  </div>
+ </section>
+ {previous&&<section class="talk-version-comparison" aria-labelledby="version-comparison"><h2 id="version-comparison">수록본의 표기 대조</h2><p>같은 대사 식별자의 본문과 화자를 수록본별로 읽습니다.</p><Fragment set:html={comparison}/></section>}
+ {missions.length>0?<section id="mission-links"><h2>이 대사를 참조하는 임무</h2><p>임무 구조의 직접 참조로 연결된 자료입니다. 아래 근거에서 호출 경로와 조건을 확인할 수 있습니다.</p><ul class="entity-document-list">{missions.map(m=><li><a href={docUrl(m.missionId)} data-reading-link><strong>{titles[m.missionId]||m.missionId}</strong><span>같은 대사 식별자의 명시 참조</span></a><details {...disclosureAttributes({className:'source-details'})} data-pagefind-ignore data-talk-mission-proof={m.missionId}><summary>임무와 대사의 연결 근거</summary><ol>{m.ownership.map(edge=><MissionOwnershipProof edge={edge}/>)}</ol><p><a href={missionStructureUrl(m.source)} {...sourceLinkAttributes({variant:'inline'})}>{m.source} ↗</a> · {m.referencePointer}</p>{m.conditions?.length>0&&<><p>이 대사의 호출 조건</p><pre>{JSON.stringify(m.conditions,null,2)}</pre></>}</details></li>)}</ul></section>:<p class="muted" data-talk-unassigned>임무 연결 · 현재 대조한 구조 자료에서 미확인</p>}
+ <nav class="reading-next" aria-label="원문 목록"><a href={href('대사/official-4.6.html')}><span>한국어 수록본 4.6</span><strong>대사 목록에서 찾기</strong></a></nav>
+</StarlightPage>
