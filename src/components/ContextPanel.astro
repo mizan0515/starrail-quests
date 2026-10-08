@@ -24,7 +24,8 @@ import {href} from '../lib/data';
  // intercept its pointer events.
  if(inherited){document.body.append(returnNav);returnNav.hidden=false;returnNav.querySelector('a')!.setAttribute('href',inherited);}
  const withReturn=(href:string,from:string|null)=>{const url=new URL(href,location.href);if(from)url.searchParams.set('from',from);return url.href;};
- const readingOrigin=inherited||safeReturn(location.pathname+location.search+(location.hash||'#original'));
+ const currentReadingOrigin=(anchor=location.hash||'#original')=>inherited||safeReturn(location.pathname+location.search+anchor);
+ const readingOrigin=currentReadingOrigin();
  if(readingOrigin)document.querySelectorAll<HTMLAnchorElement>('a[data-reading-link]').forEach(a=>a.href=withReturn(a.href,readingOrigin));
  const close=()=>{dialog.close();trigger?.focus({preventScroll:true});};
  dialog.querySelector('.context-close')!.addEventListener('click',close);
@@ -33,7 +34,7 @@ import {href} from '../lib/data';
  document.addEventListener('click',async event=>{
   const target=event.target instanceof Element?event.target.closest<HTMLAnchorElement>('a[data-context-key],a[data-reading-link]'):null;
   if(!target||event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey)return;
-  if(!target.dataset.contextKey){if(readingOrigin)target.href=withReturn(target.href,readingOrigin);return;}
+  if(!target.dataset.contextKey){const origin=currentReadingOrigin(target.id?'#'+target.id:location.hash||'#original');if(origin)target.href=withReturn(target.href,origin);return;}
   event.preventDefault();trigger=target;
   const row=target.closest('.original-body') as HTMLElement|null;
   const origin=inherited||safeReturn(location.pathname+location.search+'#'+(target.id||row?.id||target.closest('.source-section')?.id||'original'));

@@ -2,10 +2,10 @@
 import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
 import Scene from './Scene.astro';
 import {readerAttributes,disclosureAttributes} from '../lib/reading-kit/reader.mjs';
-import {missionPassageKind,missionSectionLinked,missionStructureUrl} from '../lib/data';
+import {missionPassageKind,missionSections,missionStructureUrl} from '../lib/data';
 const {document:d,supplements=[],messages=[],reading,coverage}=Astro.props;
 const allScenes=[...d.sections,...supplements,...messages].filter(s=>s.rows.length);
-const scenes=allScenes.filter(s=>missionSectionLinked(d.id,s)),referenceScenes=allScenes.filter(s=>!missionSectionLinked(d.id,s));
+const {primary:scenes,reference:referenceScenes}=missionSections(d.id,allScenes);
 const isGap=(r:any)=>missionPassageKind(r)==='gap';
 const speakers=[...new Set(scenes.flatMap(s=>s.rows.filter(r=>!isGap(r)).map(r=>r.speaker||'화자 미지정')))].sort((a,b)=>String(a).localeCompare(String(b),'ko'));
 const name=(s:any,i:number)=>{const names=[...new Set(s.rows.filter(r=>r.label!=='선택지'&&r.displayKind!=='choice'&&r.displayKind!=='선택지').map(r=>r.speaker).filter(x=>x&&x!=='화자 미지정'))];return `장면 ${i+1} · ${names.length?names.slice(0,3).join(' · '):s.rows.every(r=>r.label==='선택지'||(r.displayKind==='choice'||r.displayKind==='선택지'))?'선택지':'원문'}`;};

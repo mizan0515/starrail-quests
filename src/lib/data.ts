@@ -8,14 +8,15 @@ import resolvedTopics from '../../data/topics.json';
 import editedTopics from '../../editorial/topics.json';
 import stats from '../../data/stats.json';
 import dialogueSupplements from '../../data/mission-dialogue-supplements.json';
+import {partitionMissionSections,missionRowLinked} from './mission-scope.mjs';
 export const missionDialogue=dialogueSupplements.missions as Record<string,any[]>;
 export const missionCoverage=(dialogueSupplements as any).coverage as Record<string,any>;
 export const missionStructureUrl=(source:string)=>`https://github.com/${dialogueSupplements.evidence.repository}/blob/${dialogueSupplements.evidence.commit}/${source}`;
 export const missionPassageKind=(row:any):'gap'|'choice'|'dialogue'=>row.label==='대사 누락'||typeof row.text!=='string'||!row.text.trim()||(row.text==='한국어 본문 미수록'&&row.hash===''&&/^MessageItemConfig:\d+\.(?:MainText|OptionText)$/.test(row.source||''))?'gap':row.label==='선택지'||row.displayKind==='choice'||row.displayKind==='선택지'?'choice':'dialogue';
 export const missionSectionLinked=(id:string,section:any)=>{
- const chain=section.relatedDocument?.ownership||missionCoverage[id]?.sourceOwnership?.[section.source]||section.ownership;
- return chain?.[0]?.kind==='EXPLICIT_MAIN_MISSION_ID';
+ return section.rows.every(row=>missionRowLinked(section,row,missionCoverage[id]));
 };
+export const missionSections=(id:string,sections:any[])=>partitionMissionSections(sections,missionCoverage[id]);
 export const missionMessages=Object.fromEntries(Object.entries(missionCoverage).map(([id,coverage])=>{
  const references=new Map<string,any>();
  for(const ref of coverage.relatedDocuments||[]){const previous=references.get(ref.id);if(!previous||(previous.ownership?.[0]?.kind!=='EXPLICIT_MAIN_MISSION_ID'&&ref.ownership?.[0]?.kind==='EXPLICIT_MAIN_MISSION_ID'))references.set(ref.id,ref);}
@@ -26,7 +27,7 @@ export const missionMessages=Object.fromEntries(Object.entries(missionCoverage).
 export const missionReading=Object.fromEntries(originalCatalog.filter(d=>d.category==='퀘스트').map(d=>{
  const original=JSON.parse(fs.readFileSync(path.resolve('data/documents',d.id+'.json'),'utf8'));
  const sections=[...original.sections,...(missionDialogue[d.id]||[]),...(missionMessages[d.id]||[])];
- const linked=sections.filter(s=>missionSectionLinked(d.id,s)),reference=sections.filter(s=>!missionSectionLinked(d.id,s));
+ const {primary:linked,reference}=missionSections(d.id,sections);
  const rows=linked.flatMap(s=>s.rows),choiceCount=rows.filter(r=>missionPassageKind(r)==='choice').length,gapCount=rows.filter(r=>missionPassageKind(r)==='gap').length,dialogueCount=rows.length-choiceCount-gapCount;
  return [d.id,{dialogueCount,choiceCount,gapCount,sceneCount:linked.filter(s=>s.rows.length).length,referenceRows:reference.reduce((n,s)=>n+s.rows.length,0),referenceSceneCount:reference.filter(s=>s.rows.length).length,messageRows:(missionMessages[d.id]||[]).reduce((n,s)=>n+s.rows.length,0),state:dialogueCount?'dialogue-linked':choiceCount?'choices-only':'overview-only'}];
 })) as Record<string,{dialogueCount:number,choiceCount:number,gapCount:number,sceneCount:number,referenceRows:number,referenceSceneCount:number,messageRows:number,state:string}>;

@@ -75,6 +75,8 @@ class MissionPage(HTMLParser):
         self.count_texts = []
         self.coverage_texts = []
         self.reader_links = []
+        self.scope_notes = []
+        self.scope_note = None
         self.position = 0
         self.current_row = self.body = self.count = self.coverage = None
 
@@ -103,6 +105,10 @@ class MissionPage(HTMLParser):
         if 'mission-progress' in classes: self.progress_positions.append(self.position)
         if 'source-section' in classes:
             self.sections.append({'id':a.get('id'),'insideReader':inside,'isReference':reference,'isPrimary':primary_scene})
+        if 'source-scope-note' in classes:
+            self.scope_note={'sectionId':self.sections[-1]['id'],'isReference':reference,'text':[]}
+            self.scope_notes.append(self.scope_note)
+            flags.add('scopeNote')
         if 'original-row' in classes:
             self.current_row = {'attrs':a,'insideReader':inside,'isReference':reference,'isPrimary':primary_scene,'bodies':[]}
             self.rows.append(self.current_row)
@@ -137,6 +143,7 @@ class MissionPage(HTMLParser):
                 if 'count' in flags: self.count=None
                 if 'coverage' in flags: self.coverage=None
                 if 'summary' in flags: self.summary=None
+                if 'scopeNote' in flags: self.scope_note=None
                 break
 
     def handle_data(self,text):
@@ -144,6 +151,7 @@ class MissionPage(HTMLParser):
         if self.count is not None: self.count.append(text)
         if self.coverage is not None: self.coverage.append(text)
         if self.summary is not None: self.summary.append(text)
+        if self.scope_note is not None: self.scope_note['text'].append(text)
 
 
 class BrowseBindings(HTMLParser):
@@ -274,13 +282,26 @@ def main(dist):
         def linked(section):
             chain=section['_messageOwnership'] if '_messageOwnership' in section else ownership.get(section.get('source'),section.get('ownership',[]))
             return explicitly_owned(chain)
-        primary=[s for s in sections if s['rows'] and linked(s)]
-        reference=[s for s in sections if s['rows'] and not linked(s)]
+        scopes=mission_coverage.get('sourceTalkScopes',{})
+        for source,chain in ownership.items():
+            if explicitly_owned(chain) and any(edge.get('kind')=='EXPLICIT_SUBMISSION_FINISH_SCOPE' and edge.get('target')==source for edge in chain):
+                require(source in scopes and isinstance(scopes[source].get('talkIds'),list),
+                        'shared source ownership lacks exact dialogue scope',quest=id,source=source)
+        primary,reference=[],[]
+        for section in sections:
+            scope=scopes.get(section.get('source')) if '_messageOwnership' not in section else None
+            selected,remaining=[],[]
+            for i,row in enumerate(section['rows'],1):
+                located={**row,'readerRowAnchor':section['anchor']+'-row-'+str(i)}
+                target=selected if linked(section) and (not scope or row.get('talk_id') in scope['talkIds']) else remaining
+                target.append(located)
+            if selected:primary.append({**section,'rows':selected})
+            if remaining:reference.append({**section,'anchor':section['anchor']+'-reference' if selected else section['anchor'],'rows':remaining})
         active=[*primary,*reference]
         expected=[]
         for s in active:
             for i,row in enumerate(s['rows'],1):
-                expected.append((s['anchor']+'-row-'+str(i),row,not linked(s)))
+                expected.append((row['readerRowAnchor'],row,s in reference))
         anchors=[a for a,_,_ in expected]
         require(len(set(anchors))==len(anchors),'source row anchors collide',quest=id)
         source_kinds=Counter(passage(row) for s in primary for row in s['rows'])
@@ -325,6 +346,14 @@ def main(dist):
         if reference:
             require(bool(page.reference_summaries) and ''.join(page.reference_summaries[0]).startswith('임무 자료의 추가 대화'),
                     'reference dialogue label missing',quest=id)
+        scope_notes={note['sectionId']:note for note in page.scope_notes}
+        require(len(scope_notes)==len(reference),'reference source scope note missing or duplicated',quest=id)
+        for section in reference:
+            note=scope_notes.get(section['anchor'],{})
+            scoped=bool(scopes.get(section.get('source')))
+            expected_note='이 묶음은 아래에 표시한 임무 연결 범위 밖의 원문입니다.' if scoped else '임무 자료에 함께 수록된 추가 원문입니다.'
+            require(note.get('isReference') and ''.join(note.get('text',[]))==expected_note,
+                    'reference source proof implies primary row ownership',quest=id,anchor=section['anchor'])
         require(len(page.readers)==1,'primary mission reader count differs',quest=id,actual=len(page.readers))
         for anchor in ('original','linked-dialogue'):
             require(page.ids[anchor]==1,'primary reader legacy anchor missing or duplicated',quest=id,anchor=anchor)
@@ -339,7 +368,7 @@ def main(dist):
                 require(page.ids[anchor]==1,'legacy stage anchor missing or duplicated',quest=id,anchor=anchor)
                 stats['stageAnchors']+=1
         actual_sections=[s['id'] for s in page.sections if s['insideReader']]
-        expected_location={s['anchor']:not linked(s) for s in active}
+        expected_location={s['anchor']:s in reference for s in active}
         for section in page.sections:
             if section['insideReader'] and section['id'] in expected_location:
                 require(section['isPrimary']==(not expected_location[section['id']]),
