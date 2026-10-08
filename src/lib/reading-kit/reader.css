@@ -1,0 +1,39 @@
+/* Source-reader and disclosure geometry is owned by the shared HTML templates. */
+:root { --sl-sidebar-width: 240px; --sl-nav-height: 72px; }
+.rw-reader, .rw-app { min-inline-size: 0; }
+.rw-reader { container-type: inline-size; }
+.rw-reader[data-reading-variant="scene"] { margin-block: 1.75rem !important; scroll-margin-top: 7rem; }
+.rw-reader :where(div, form, label, nav, li, p, dl, dt, dd), .rw-app :where(article, header, div, li) { min-inline-size: 0; }
+.rw-source-row { margin-block: 1.25rem !important; }
+.rw-source-speaker { display: block; color: var(--brass, var(--sl-color-text-accent)); font-size: .88rem; font-weight: 650; line-height: 1.6; margin: 0; }
+.rw-source-body { white-space: pre-wrap; overflow-wrap: anywhere; word-break: keep-all; font-size: 1.0625rem; line-height: 1.95; margin-block: .35rem 0 !important; }
+.rw-source-row[data-reading-kind="choice"] { border: 1px solid var(--line, var(--sl-color-hairline)); border-inline-start: 3px solid var(--brass, var(--sl-color-text-accent)); border-radius: 6px; padding: .8rem 1rem; background: var(--selected, var(--sl-color-bg-sidebar)); }
+.rw-source-row[data-reading-kind="choice"] .rw-source-body { font-size: 1rem; }
+.rw-reader[data-reading-variant="transcript"] .rw-source-row { margin-block: 0 !important; }
+.rw-reader[data-reading-variant="transcript"] .rw-source-body { margin: 0 !important; font-size: inherit; }
+.rw-reader-controls { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; align-items: end; gap: .75rem; margin-block: 1.25rem .5rem !important; }
+.rw-reader-controls > * { margin: 0 !important; min-inline-size: 0; }
+.rw-reader-controls label { display: grid; gap: .35rem; min-inline-size: 0; font-size: .82rem; font-weight: 600; }
+.rw-reader-controls :is(select, button) { box-sizing: border-box; inline-size: 100%; min-inline-size: 0; block-size: 46px; min-block-size: 46px; margin: 0; padding: .55rem .75rem; border: 1px solid var(--line, var(--sl-color-hairline)); border-radius: 7px; background: var(--paper, var(--sl-color-bg)); color: var(--ink, var(--sl-color-text)); font: inherit; line-height: 1.5; }
+.rw-reader-controls select { font-size: .88rem; }
+.rw-reader-controls button { cursor: pointer; font-size: .85rem; }
+.sl-markdown-content .rw-disclosure { box-sizing: border-box; min-inline-size: 0; border-inline: 0; border-block: 1px solid var(--line, var(--sl-color-hairline)); padding-inline: 0; padding-block: 0; margin-block: 1rem; overflow-wrap: anywhere; }
+.sl-markdown-content .rw-disclosure > summary { box-sizing: border-box; display: list-item; list-style: disclosure-closed inside; min-block-size: 44px; margin: 0 !important; padding: .55rem .45rem; align-content: center; color: var(--ink, var(--sl-color-text)); font-size: .85rem; font-weight: 600; line-height: 1.75; cursor: pointer; overflow-wrap: anywhere; }
+.sl-markdown-content .rw-disclosure[open] > summary { list-style-type: disclosure-open; }
+.sl-markdown-content .rw-disclosure > summary::before { content: none !important; display: none !important; }
+.sl-markdown-content .rw-disclosure > summary::marker { color: var(--brass, var(--sl-color-text-accent)); }
+.rw-disclosure > :not(summary) { margin-block: .75rem; }
+.rw-disclosure :is(dl, ul, ol, pre) { font-size: .82rem; line-height: 1.85; overflow-wrap: anywhere; }
+.rw-disclosure ul, .rw-disclosure ol { padding-inline-start: 1.4rem; }
+.rw-disclosure li + li { margin-block-start: .5rem; }
+.rw-disclosure dd { margin-inline-start: 0; }
+.rw-disclosure pre { white-space: pre-wrap; max-inline-size: 100%; }
+.rw-disclosure :is(summary, a):focus-visible, .rw-reader-controls :focus-visible { outline: 3px solid var(--brass, var(--sl-color-text-accent)); outline-offset: 3px; }
+.rw-map-node { margin: 0 !important; }
+.rw-map-sources > .rw-disclosure[open] { grid-column: 1 / -1; }
+@container (max-width: 26rem) {
+ .rw-reader-controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+ .rw-reader-controls button { grid-column: 1 / -1; inline-size: auto; justify-self: start; min-inline-size: 5rem; }
+}
+@media (max-width: 50rem) { :root { --sl-nav-height: 64px; } }
+@media (max-width: 40rem) { .rw-source-body { font-size: 1rem; } }

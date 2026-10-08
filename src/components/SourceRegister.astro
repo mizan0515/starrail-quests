@@ -1,4 +1,5 @@
 ---
+import {disclosureAttributes} from '../lib/reading-kit/reader.mjs';
 import {evidenceUrl} from '../lib/atlas';
 const {entries}=Astro.props;
 const unique=[...new Map(entries.map(e=>[`${e.id}:${e.hash}:${e.quote||e.needle}`,e])).values()] as any[];
@@ -7,5 +8,5 @@ const grouped=[...new Set(unique.map(e=>e.id))].map(id=>({id,entries:unique.filt
 <section class="source-register" id="verified-sources">
  <p class="eyebrow">이 페이지의 검증 근거</p><h2>확인한 원문과 근거</h2>
  <p>자료명과 인용 구절에서 원문 전체로 이동할 수 있습니다. 기록 속 인물·조직의 주장은 발언 주체와 함께 표시하며, 여러 기록을 연결한 해석은 편집자의 읽기로 구분합니다.</p>
- <ol>{grouped.map(group=><li><a href={evidenceUrl(group.entries[0])} data-reading-link><strong>{group.entries[0].title}</strong><span>인용한 원문으로 ↗</span></a><ul>{group.entries.map(e=><li><span class="evidence-voice">{e.status||'해설에 인용한 원문'}</span><a class="source-quote-link" href={evidenceUrl(e)} data-reading-link><q>{e.quote||e.needle}</q><span class="sr-only"> · 이 문장의 원문 위치</span></a></li>)}</ul><details class="source-details"><summary>대조한 출처 식별자</summary>{[...new Set(group.entries.map(e=>`${e.anchor} · 한국어 문자열 ${e.hash}`))].map(value=><p>{value}</p>)}</details></li>)}</ol>
+ <ol>{grouped.map(group=><li><a href={evidenceUrl(group.entries[0])} data-reading-link><strong>{group.entries[0].title}</strong><span>인용한 원문으로 ↗</span></a><ul>{group.entries.map(e=><li><span class="evidence-voice">{e.status||'해설에 인용한 원문'}</span><a class="source-quote-link" href={evidenceUrl(e)} data-reading-link><q>{e.quote||e.needle}</q><span class="sr-only"> · 이 문장의 원문 위치</span></a></li>)}</ul><details {...disclosureAttributes({className:'source-details'})}><summary>대조한 출처 식별자</summary>{[...new Set(group.entries.map(e=>`${e.anchor} · 한국어 문자열 ${e.hash}`))].map(value=><p>{value}</p>)}</details></li>)}</ol>
 </section>
