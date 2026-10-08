@@ -21,5 +21,7 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Mission dialogue source QA failed'}
   & python tools/verify_mission_readers.py
   if($LASTEXITCODE -ne 0){throw 'Primary reader source and classification QA failed'}
+  & node --test tools/reading_return.test.mjs
+  if($LASTEXITCODE -ne 0){throw 'Reading return context QA failed'}
   Write-Output 'RESULT: PASS'
 } finally {Pop-Location}
