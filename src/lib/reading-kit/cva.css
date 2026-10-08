@@ -41,6 +41,30 @@
 .cva-page[data-cva] .cva-media-provenance{padding:.25rem .75rem}
 .cva-page[data-cva] .cva-caption .cva-image-source{font-size:.8125rem}
 .cva-page[data-cva] .cva-module-head:empty{display:none}
+/* A CVA module owns its tracks. Legacy wrappers must not grid the whole module. */
+.rw-cva-bridge,.rw-reading-connections,.rw-index-links:has(>.cva-page),.rw-media:has(>.cva-page){display:block}
+.rw-cva-bridge>.cva-page,.rw-index-links>.cva-page,.rw-media>.cva-page{inline-size:100%;min-inline-size:0;grid-column:1/-1}
+.rw-cva-bridge>.cva-page+.cva-page,.rw-index-links>.cva-page+.cva-page{margin-block-start:var(--cva-module-space,1.5rem)}
+.cva-page[data-cva] :is(.cva-items,.cva-item,.cva-item-copy,.sc-semantic-footer){margin:0}
+.cva-page[data-cva] .cva-item-copy{padding:var(--cva-item-padding)}
+.cva-page[data-cva].cva-reader-fragment>.cva-module{padding-block:.25rem}
+.cva-page[data-cva] .cva-item-copy>.cva-item-title{margin-block:0}
+.cva-page[data-cva] .cva-item-copy>*+*{margin-block-start:.65rem}
+.rw-cva-bridge .cva-page[data-cva] .cva-item{margin:0!important}
+.cva-page[data-cva] .cva-module-cards[data-variant="grid"]>.cva-items{grid-template-columns:repeat(auto-fit,minmax(min(100%,19rem),1fr));align-items:stretch}
+.rw-index-links .cva-page[data-cva] .rw-index-entry{padding:0 1.5rem 0 0;border:0}
+.rw-index-links .cva-page[data-cva] .rw-index-arrow{inset-block-start:.15rem}
+.rw-cva-atlas>header{margin-block-end:1.25rem}
+.rw-cva-atlas .cva-page[data-cva] .cva-module-cards[data-variant="list"] .cva-item{background:transparent}
+.rw-cva-atlas .cva-page[data-cva] .cva-item-title:has(>.rw-edge-statement){font-size:1rem}
+.rw-cva-atlas .cva-page[data-cva] .rw-edge-statement{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1.25fr) auto minmax(0,1fr);gap:.5rem .75rem;align-items:center;inline-size:100%;font-weight:600}
+.rw-cva-atlas .cva-page[data-cva] :is(.rw-edge-subject,.rw-edge-object){padding:.65rem .75rem;border-radius:.5rem;background:var(--cva-inset);min-inline-size:0}
+.rw-cva-atlas .cva-page[data-cva] .rw-edge-predicate{text-align:center;font-size:.9375rem}
+.rw-cva-atlas .cva-page[data-cva] .rw-edge-arrow{font-size:1rem;color:var(--cva-accent-text)}
+.rw-cva-atlas .cva-page[data-cva] .cva-item-body{font-size:.9375rem;line-height:1.85;margin-block:.85rem 0}
+.rw-reading-connections{margin-block-start:1.5rem}
+.rw-reading-connections-title{font-size:1.1rem;margin-block:0 1rem!important}
+.rw-reading-connections .cva-page[data-cva] .rw-reading-connection{padding:0;border:0}
 .rw-cva-atlas .cva-page[data-cva] .rw-relation-band{padding:0;border:0;background:transparent}
 .rw-cva-atlas .cva-page[data-cva] .rw-relation-proof{margin:0!important;padding:0!important;border:0!important}
 .rw-cva-atlas .cva-page[data-cva] .cva-item-extra{margin-block-start:.6rem}
@@ -78,5 +102,10 @@
  .cva-page[data-cva] .sc-ledger tr>td{border-block-start:1px solid var(--cva-border)}
  .cva-page[data-cva] .sc-ledger tr>td:nth-child(2)::before{content:'원문의 성격';display:block;font-size:.75rem;color:var(--cva-muted);margin-block-end:.5rem}
  .cva-page[data-cva] .sc-ledger tr>td:last-child::before{content:'맥락과 근거';display:block;font-size:.75rem;color:var(--cva-muted);margin-block-end:.5rem}
+}
+@container (max-width:34rem){
+ .rw-cva-atlas .cva-page[data-cva] .rw-edge-statement{grid-template-columns:minmax(0,1fr);gap:.4rem}
+ .rw-cva-atlas .cva-page[data-cva] .rw-edge-arrow{justify-self:center;transform:rotate(90deg)}
+ .rw-cva-atlas .cva-page[data-cva] .rw-edge-predicate{padding-block:.1rem}
 }
 @media(prefers-reduced-motion:reduce){.cva-page[data-cva] *, .cva-page[data-cva] *::before,.cva-page[data-cva] *::after{scroll-behavior:auto;transition:none;animation:none}}

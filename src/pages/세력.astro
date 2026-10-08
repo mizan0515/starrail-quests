@@ -4,8 +4,8 @@ import {atlas,atlasUrl} from '../lib/atlas';
 import {createReadingKit} from '../lib/reading-kit/render.mjs';
 import {href} from '../lib/data';
 ---
-<StarlightPage frontmatter={{title:'세력',description:'세력의 목적·소속·발언과 개척자의 여정',editUrl:false,tableOfContents:false}}>
-<p class="page-deck">군대의 목표, 조직의 신앙, 인물의 소속과 발언에서 개척자의 여정으로 이어 읽습니다.</p>
-<Fragment set:html={createReadingKit().directory(atlas.nodes.filter(n=>n.axis==='bridge').map(n=>({name:n.name,summary:n.intro,url:atlasUrl(n.id)})))}/>
+<StarlightPage frontmatter={{title:'세력',description:'군대·조직·단체의 목적, 신앙과 소속 인물',editUrl:false,tableOfContents:false}}>
+<p class="page-deck">나누크의 군대, 약사를 따르는 반란 조직, 클리포트를 지원하는 회사 등 세력별 목적과 구성원을 살펴봅니다.</p>
+<Fragment set:html={createReadingKit().directory(atlas.nodes.filter(n=>n.axis==='bridge').map(n=>({name:n.name,summary:n.directorySummary||n.intro,kind:n.directoryKind||'',url:atlasUrl(n.id)})))}/>
 <p><a href={href('맥락/stellaron.html')}>스텔라론과 열계, 우주정거장의 수용체 →</a></p>
 </StarlightPage>

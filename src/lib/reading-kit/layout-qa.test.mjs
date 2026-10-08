@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateLayout} from './layout-qa.mjs';
+import {validateLayout,validateCollectionLayout} from './layout-qa.mjs';
 const rect=(left,top,width,height)=>({left,top,width,height,right:left+width,bottom:top+height});
 function fixture(){return {document:{scrollWidth:390,clientWidth:390},elements:[
  {id:'proof',role:'summary',rect:rect(16,100,358,44),parentRect:rect(16,100,358,100),computed:{marginInlineStart:0,listStyleType:'disclosure-closed',listStylePosition:'inside',beforeContent:'none',beforeDisplay:'none',afterContent:'none',afterDisplay:'none'}},
@@ -15,3 +15,32 @@ test('narrow controls and long source overflow are rejected',()=>{const s=fixtur
 test('missing measurements cannot establish layout success',()=>{assert.equal(validateLayout({}).status,'FAIL');const s=fixture();delete s.elements[0].computed.beforeContent;assert.ok(errors(s).includes('disclosure pseudo marker measurement missing'));s.elements[2].rect.width=NaN;assert.ok(errors(s).includes('element geometry missing'));});
 
 test('grid child inherited Markdown margin is rejected by template invariant',()=>{const s=fixture();s.elements[1].expectedMarginTop=0;s.elements[1].computed.marginTop=18;assert.ok(errors(s).includes('framework block margin differs from template'));s.elements[1].computed.marginTop=0;assert.equal(validateLayout(s).status,'PASS');});
+
+const collectionCard=(id,left,top,width,height,parentRect)=>({id,rect:rect(left,top,width,height),parentRect:{...parentRect},computed:{marginTop:0,marginBottom:0}});
+function collectionFixture({width=800,count=4,columns=2,minWidth=240,gap=20,direction='ltr'}={}) {
+ const rowCount=Math.ceil(count/columns),height=rowCount*100+(rowCount-1)*20;
+ const containerRect=rect(16,100,width,height),cardsRect={...containerRect};
+ const cardWidth=(width-(columns-1)*gap)/columns;
+ const cards=Array.from({length:count},(_,index)=>{
+  const column=index%columns,visualColumn=direction==='rtl'?columns-1-column:column;
+  return collectionCard('card-'+index,16+visualColumn*(cardWidth+gap),100+Math.floor(index/columns)*120,cardWidth,100,cardsRect);
+ });
+ return {document:{scrollWidth:width+32,clientWidth:width+32},collections:[{id:'directory',containerRect,moduleRect:{...containerRect},cardsRect,cardMinWidth:minWidth,columnGap:gap,direction,cards}]};
+}
+const collectionErrors=s=>validateCollectionLayout(s).errors.map(e=>e.error);
+
+test('single card fills its available box on wide and narrow screens',()=>{for(const width of [800,358]){const s=collectionFixture({width,count:1,columns:1});const result=validateCollectionLayout(s);assert.equal(result.status,'PASS');assert.equal(result.measurements[0].expected,'full-width');}});
+test('multiple collection cards use actual two or three columns when space is available',()=>{for(const columns of [2,3]){const s=collectionFixture({columns,count:columns+1});const result=validateCollectionLayout(s);assert.equal(result.status,'PASS');assert.equal(result.measurements[0].columns,columns);assert.equal(result.measurements[0].expected,'multi-column');}});
+test('multiple cards form one full-width column at narrow width',()=>{const s=collectionFixture({width:358,columns:1,count:3});const result=validateCollectionLayout(s);assert.equal(result.status,'PASS');assert.equal(result.measurements[0].columns,1);assert.equal(result.measurements[0].expected,'single-column');});
+test('nested host grid shrinking a full CVA collection to half width is rejected',()=>{const s=collectionFixture({width:390,columns:1,count:3});s.document={scrollWidth:832,clientWidth:832};s.collections[0].containerRect=rect(16,100,800,340);assert.ok(collectionErrors(s).includes('collection module does not fill available width'));});
+test('one card left in a two-track collection is rejected even without overflow',()=>{const s=collectionFixture({width:800,count:1,columns:1});s.collections[0].cards[0].rect=rect(16,100,390,100);assert.ok(collectionErrors(s).includes('collection single-column card does not fill available width'));});
+test('a desktop collection losing its columns is rejected using its available width',()=>{const s=collectionFixture({width:800,columns:1,count:3});assert.ok(collectionErrors(s).includes('collection loses multiple columns at available width'));});
+test('a narrow collection retaining desktop columns is rejected',()=>{const s=collectionFixture({width:358,columns:2,count:4});const e=collectionErrors(s);assert.ok(e.includes('collection must use one column at narrow width'));assert.ok(e.includes('collection card below minimum available width'));});
+test('column capacity uses the cards content box rather than viewport or module width',()=>{const s=collectionFixture({width:740,minWidth:360,gap:20,columns:2,count:2});const c=s.collections[0];s.document={scrollWidth:932,clientWidth:932};c.containerRect=rect(-64,100,900,100);c.moduleRect={...c.containerRect};assert.equal(validateCollectionLayout(s).status,'PASS');c.cardMinWidth=380;assert.ok(collectionErrors(s).includes('collection must use one column at narrow width'));});
+test('inactive zero-width browser or collection measurements cannot pass',()=>{const s=collectionFixture();s.document={scrollWidth:0,clientWidth:0};assert.ok(collectionErrors(s).includes('document measurement missing or inactive'));s.document={scrollWidth:832,clientWidth:832};s.collections[0].moduleRect=rect(16,100,0,0);assert.ok(collectionErrors(s).includes('collection geometry missing or inactive'));const reader=fixture();reader.elements[2].rect=rect(16,350,0,0);assert.equal(validateLayout(reader).status,'FAIL');});
+test('zero-width cards cannot establish success even in an otherwise measured page',()=>{const s=collectionFixture();s.collections[0].cards[1].rect=rect(426,100,0,0);assert.ok(collectionErrors(s).includes('collection card geometry missing or inactive'));});
+test('cards are checked against their actual parent content box',()=>{const s=collectionFixture(),c=s.collections[0];c.cards[1].rect=rect(426,100,414,100);assert.ok(collectionErrors(s).includes('collection card exceeds containing box'));c.cards[1].parentRect=rect(0,0,832,1000);assert.ok(collectionErrors(s).includes('collection card parent differs from measured cards box'));});
+test('CSS visual reordering is rejected while DOM and visual RTL order can agree',()=>{const s=collectionFixture(),c=s.collections[0];[c.cards[0].rect,c.cards[1].rect]=[c.cards[1].rect,c.cards[0].rect];assert.ok(collectionErrors(s).includes('collection visual order differs from DOM order'));assert.equal(validateCollectionLayout(collectionFixture({direction:'rtl'})).status,'PASS');});
+test('overlapping cards cannot count as a valid multi-column layout',()=>{const s=collectionFixture(),c=s.collections[0];c.cards[1].rect=rect(200,100,390,100);assert.ok(collectionErrors(s).includes('collection cards overlap'));});
+test('inherited sibling block margins and omitted margin measurements are rejected',()=>{const s=collectionFixture(),c=s.collections[0];c.cards[1].computed.marginTop=18;assert.ok(collectionErrors(s).includes('collection sibling block margin is not zero'));c.cards[1].computed.marginTop=0;c.cards[1].computed.marginBottom=12;assert.ok(collectionErrors(s).includes('collection sibling block margin is not zero'));delete c.cards[1].computed.marginBottom;assert.ok(collectionErrors(s).includes('collection sibling margin measurement missing'));});
+test('missing, contradictory, or duplicated collection measurements cannot pass',()=>{assert.equal(validateCollectionLayout({}).status,'FAIL');assert.equal(validateCollectionLayout({collections:{}}).status,'FAIL');assert.equal(validateLayout({elements:{}}).status,'FAIL');assert.equal(validateLayout({elements:[null]}).status,'FAIL');const s=collectionFixture(),c=s.collections[0];c.cards[1].id=c.cards[0].id;assert.ok(collectionErrors(s).includes('collection card identity missing or duplicated'));c.cards[1].id='card-1';c.cards[1].rect.right+=20;assert.ok(collectionErrors(s).includes('collection card geometry missing or inactive'));});
