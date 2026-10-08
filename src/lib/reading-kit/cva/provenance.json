@@ -3,72 +3,83 @@
   "sourceRepository": "https://github.com/ttaem00/chzz-vod-analyzer",
   "license": "GPL-3.0",
   "licenseFile": "vendor/COPYING",
-  "licenseSha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
+  "licenseSha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
   "scope": "Authored CVA components/modules/scene catalog/renderers and their scoped styles. Original Forma engine, third-party fonts, game assets, templates, exporter and fixture content are excluded from rendering.",
   "files": [
     {
       "file": "vendor/components.js",
       "source": "tools/cva_design_system/components.js",
       "sourceSha256": "aace4bb022f8140f15f831f4373c170553c1fc6c77406d5ec3e87f1935c959f0",
-      "vendorSha256": "aace4bb022f8140f15f831f4373c170553c1fc6c77406d5ec3e87f1935c959f0",
+      "vendorSha256": "5dde607bfcbcb797a75ad25bb196ccf1c9eab0bae7676363559693fa7e685dd0",
       "adaptation": null,
       "patchSha256": null,
-      "patch": null
+      "patch": null,
+      "sourceNormalizedSha256": "5dde607bfcbcb797a75ad25bb196ccf1c9eab0bae7676363559693fa7e685dd0"
     },
     {
       "file": "vendor/modules.js",
       "source": "tools/cva_design_system/modules.js",
       "sourceSha256": "58249076678eb25329e77a25b22abca31d08479c55b9bb1af60e60bc3cc6b7c3",
-      "vendorSha256": "7eca8a565adb415383d67cbb0632db8cd3a5826325cea586602641c294928271",
+      "vendorSha256": "e4b441b47a655994383fcdcc9c87b859c1370ba38ef0b72a347817d062f0a196",
       "adaptation": "Use the validated per-call local media registry; omit authored demo asset registration.",
       "patchSha256": "236252fad13609c8511c762251c8c2b2d29317bd864fcb43750ac65707d2bdc4",
-      "patch": "--- modules.js\n+++ modules.js\n@@ -1,18 +1,7 @@\n /* Data contract for editable modules. No product state or browser storage is read. */\r\n (function (global) {\r\n   'use strict';\r\n-  const media = [\r\n-    { id: 'brand-welcome', label: 'CVA 기존 환영 그림', src: 'assets/welcome.png', alt: '기존 CVA 브랜드의 다람쥐와 황동 장치로 구성된 환영 그림', kind: 'brand' },\r\n-    { id: 'editor-workspace', label: '탬패드 기존 편집 작업실', src: 'assets/editor.png', alt: '기존 탬패드의 영상·장면·컷 목록과 편집 영역 화면', kind: 'reference' },\r\n-    { id: 'product-architecture', label: 'Forma 공간 이미지', src: '../assets/product-architecture.webp', alt: '밝은 빛이 들어오는 차분한 건축 공간', kind: 'product' },\r\n-    { id: 'product-paper', label: 'Forma 종이 이미지', src: '../assets/product-paper.webp', alt: '겹쳐진 종이와 부드러운 그림자로 표현한 정돈된 구성', kind: 'product' },\r\n-    { id: 'product-coast', label: 'Forma 해안 이미지', src: '../assets/product-coast.webp', alt: '수평선이 이어지는 고요한 해안 풍경', kind: 'product' },\r\n-    { id: 'scene-hub-role', label: 'Elio 제공 장면 · 중추와 루파', src: '../assets/hub-role.webp', alt: '명조 2장 6막 중추에 도착하자 루파의 모습이 바뀌는 기존 장면 이미지', kind: 'scene' },\r\n-    { id: 'scene-lupa-awakens', label: 'Elio 제공 장면 · 루파의 기억', src: '../assets/lupa-awakens.webp', alt: '다음 이야기에서 기억을 되찾은 루파의 기존 장면 이미지', kind: 'scene' },\r\n-    { id: 'scene-reality-reunion', label: 'Elio 제공 장면 · 현실의 재회', src: '../assets/reality-reunion.webp', alt: '현실에서 재회한 일행과 사냥터를 가리키는 주파수의 기존 장면 이미지', kind: 'scene' },\r\n-    { id: 'scene-copper-mirror', label: 'Elio 제공 장면 · 청동거울', src: '../assets/copper-mirror.jpg', alt: '방랑자의 의심과 청동거울에 비친 미아 장면', kind: 'scene' },\r\n-    { id: 'scene-rigged-spear', label: 'Elio 제공 장면 · 루파의 창', src: '../assets/rigged-spear.jpg', alt: '준결승에서 루파의 창이 방랑자를 공격하다 장면', kind: 'scene' }\r\n-  ];\r\n+  const media = (global.CVA_LOCAL_MEDIA || []).map(asset => ({ ...asset }));\n   const profiles = ['ttaem', 'elio', 'editor', 'forma'];\r\n   const orientations = ['original', 'vertical', 'horizontal'];\r\n   const documentByteLimit = 2 * 1024 * 1024;\r\n"
+      "patch": "--- modules.js\n+++ modules.js\n@@ -1,18 +1,7 @@\n /* Data contract for editable modules. No product state or browser storage is read. */\r\n (function (global) {\r\n   'use strict';\r\n-  const media = [\r\n-    { id: 'brand-welcome', label: 'CVA 기존 환영 그림', src: 'assets/welcome.png', alt: '기존 CVA 브랜드의 다람쥐와 황동 장치로 구성된 환영 그림', kind: 'brand' },\r\n-    { id: 'editor-workspace', label: '탬패드 기존 편집 작업실', src: 'assets/editor.png', alt: '기존 탬패드의 영상·장면·컷 목록과 편집 영역 화면', kind: 'reference' },\r\n-    { id: 'product-architecture', label: 'Forma 공간 이미지', src: '../assets/product-architecture.webp', alt: '밝은 빛이 들어오는 차분한 건축 공간', kind: 'product' },\r\n-    { id: 'product-paper', label: 'Forma 종이 이미지', src: '../assets/product-paper.webp', alt: '겹쳐진 종이와 부드러운 그림자로 표현한 정돈된 구성', kind: 'product' },\r\n-    { id: 'product-coast', label: 'Forma 해안 이미지', src: '../assets/product-coast.webp', alt: '수평선이 이어지는 고요한 해안 풍경', kind: 'product' },\r\n-    { id: 'scene-hub-role', label: 'Elio 제공 장면 · 중추와 루파', src: '../assets/hub-role.webp', alt: '명조 2장 6막 중추에 도착하자 루파의 모습이 바뀌는 기존 장면 이미지', kind: 'scene' },\r\n-    { id: 'scene-lupa-awakens', label: 'Elio 제공 장면 · 루파의 기억', src: '../assets/lupa-awakens.webp', alt: '다음 이야기에서 기억을 되찾은 루파의 기존 장면 이미지', kind: 'scene' },\r\n-    { id: 'scene-reality-reunion', label: 'Elio 제공 장면 · 현실의 재회', src: '../assets/reality-reunion.webp', alt: '현실에서 재회한 일행과 사냥터를 가리키는 주파수의 기존 장면 이미지', kind: 'scene' },\r\n-    { id: 'scene-copper-mirror', label: 'Elio 제공 장면 · 청동거울', src: '../assets/copper-mirror.jpg', alt: '방랑자의 의심과 청동거울에 비친 미아 장면', kind: 'scene' },\r\n-    { id: 'scene-rigged-spear', label: 'Elio 제공 장면 · 루파의 창', src: '../assets/rigged-spear.jpg', alt: '준결승에서 루파의 창이 방랑자를 공격하다 장면', kind: 'scene' }\r\n-  ];\r\n+  const media = (global.CVA_LOCAL_MEDIA || []).map(asset => ({ ...asset }));\n   const profiles = ['ttaem', 'elio', 'editor', 'forma'];\r\n   const orientations = ['original', 'vertical', 'horizontal'];\r\n   const documentByteLimit = 2 * 1024 * 1024;\r\n",
+      "sourceNormalizedSha256": "8fab8d82352704ed9ba9ea36ede078d2a5115a3a886a379a214368a04a05f0ba"
     },
     {
       "file": "vendor/scene-catalog.js",
       "source": "tools/cva_design_system/scene-catalog.js",
       "sourceSha256": "bec1b9a6a6d8a02e40d30f1695246a16e26c9450b4a66ae71664f67c6dc88a5a",
-      "vendorSha256": "b450af86412573821c87cd122c45b9fd506db30c3ef64b350f0e497e93930cb9",
+      "vendorSha256": "4753bd318ea7f10e3e341755d694efe2e104c2fe7636aee1ac4a360479a56351",
       "adaptation": "Initialize the canonical scene catalog from three explicit empty records. Make the source-only copper-mirror demo preload optional when no FW_STORY is provided; no fixture source/assets are loaded or rendered.",
       "patchSha256": "1818f394fea1793564f77d782ffa9974b22986f8213b6e719a605d51610fbb62",
-      "patch": "--- scene-catalog.js\n+++ scene-catalog.js\n@@ -15,7 +15,7 @@\n     }\r\n     return { id, title: source.title, body: source.body, label: source.eyebrow || '', image: mediaByScene[id] };\r\n   }\r\n-  const chosen = ['hub-role', 'lupa-awakens', 'reality-reunion'].map(selectedScene);\r\n+  const chosen = global.CVA_LOCAL_SCENE_ITEMS.map(value => ({ ...value }));\r\n   const clone = value => JSON.parse(JSON.stringify(value));\r\n   const item = (id, title, body, label = '', image = '', value) => ({ id, title, body, label, image, ...(value === undefined ? {} : { value }) });\r\n   const props = (eyebrow, title, body, image, caption, relationLabel, items) => ({ eyebrow, title, body, image, caption, relationLabel, items });\r\n@@ -212,12 +212,14 @@\n   // A supplied scene serves as visual evidence; no invented item stats or isolated artwork.\r\n   const mirror = sourceScenes.get('copper-mirror');\r\n   const dossier = entries.find(value => value.variant === 'item-dossier');\r\n-  if (!mirror || mirror.image !== 'assets/copper-mirror.jpg') throw new Error('청동거울의 기존 장면 자료가 필요합니다.');\r\n+  if (mirror) {\n+  if (mirror.image !== 'assets/copper-mirror.jpg') throw new Error('청동거울의 기존 장면 자료가 필요합니다.');\r\n   dossier.props.image = 'scene-copper-mirror';\r\n   dossier.props.title = '청동거울을, 등장 장면과 함께.';\r\n   dossier.props.body = '아이템의 모습과 쓰임은 확인한 장면에서 읽습니다. 능력치·등급·획득 조건은 아래 작성 항목에 근거를 확인한 뒤 적습니다.';\r\n   dossier.props.caption = mirror.title + ' · 제공된 Elio 장면 이미지';\r\n-  dossier.props.items.unshift({ id:'mirror-source', title:mirror.title, body:mirror.body, label:mirror.eyebrow, image:'' });\r\n+  dossier.props.items.unshift({ id:'mirror-source', title:mirror.title, body:mirror.body, label:mirror.eyebrow, image:'' });\n+  }\r\n \r\n   const templates = [\r\n     { id: 'scene-story', name: 'Elio 장면 이야기', description: '큰 표지와 장면 축에서 시작해 갤러리와 원자료로 이어지는 읽기 페이지입니다.', category: '이야기 · Elio', preferredProfile: 'elio', purpose: 'story', compositions: ['scene-chapter-cover', 'scene-scene-rail', 'scene-story-montage', 'scene-evidence-focus'] },\r\n"
+      "patch": "--- scene-catalog.js\n+++ scene-catalog.js\n@@ -15,7 +15,7 @@\n     }\r\n     return { id, title: source.title, body: source.body, label: source.eyebrow || '', image: mediaByScene[id] };\r\n   }\r\n-  const chosen = ['hub-role', 'lupa-awakens', 'reality-reunion'].map(selectedScene);\r\n+  const chosen = global.CVA_LOCAL_SCENE_ITEMS.map(value => ({ ...value }));\r\n   const clone = value => JSON.parse(JSON.stringify(value));\r\n   const item = (id, title, body, label = '', image = '', value) => ({ id, title, body, label, image, ...(value === undefined ? {} : { value }) });\r\n   const props = (eyebrow, title, body, image, caption, relationLabel, items) => ({ eyebrow, title, body, image, caption, relationLabel, items });\r\n@@ -212,12 +212,14 @@\n   // A supplied scene serves as visual evidence; no invented item stats or isolated artwork.\r\n   const mirror = sourceScenes.get('copper-mirror');\r\n   const dossier = entries.find(value => value.variant === 'item-dossier');\r\n-  if (!mirror || mirror.image !== 'assets/copper-mirror.jpg') throw new Error('청동거울의 기존 장면 자료가 필요합니다.');\r\n+  if (mirror) {\n+  if (mirror.image !== 'assets/copper-mirror.jpg') throw new Error('청동거울의 기존 장면 자료가 필요합니다.');\r\n   dossier.props.image = 'scene-copper-mirror';\r\n   dossier.props.title = '청동거울을, 등장 장면과 함께.';\r\n   dossier.props.body = '아이템의 모습과 쓰임은 확인한 장면에서 읽습니다. 능력치·등급·획득 조건은 아래 작성 항목에 근거를 확인한 뒤 적습니다.';\r\n   dossier.props.caption = mirror.title + ' · 제공된 Elio 장면 이미지';\r\n-  dossier.props.items.unshift({ id:'mirror-source', title:mirror.title, body:mirror.body, label:mirror.eyebrow, image:'' });\r\n+  dossier.props.items.unshift({ id:'mirror-source', title:mirror.title, body:mirror.body, label:mirror.eyebrow, image:'' });\n+  }\r\n \r\n   const templates = [\r\n     { id: 'scene-story', name: 'Elio 장면 이야기', description: '큰 표지와 장면 축에서 시작해 갤러리와 원자료로 이어지는 읽기 페이지입니다.', category: '이야기 · Elio', preferredProfile: 'elio', purpose: 'story', compositions: ['scene-chapter-cover', 'scene-scene-rail', 'scene-story-montage', 'scene-evidence-focus'] },\r\n",
+      "sourceNormalizedSha256": "1d98f5ab45d13201f892679af8b7715ca129ddb2b9bf2249dd999c4ad1bc7fd4"
     },
     {
       "file": "vendor/scene-renderer.js",
       "source": "tools/cva_design_system/scene-renderer.js",
       "sourceSha256": "89c4d806457b873b12c48c24cceea170732e362500dd707df799234d724ad8f5",
-      "vendorSha256": "89c4d806457b873b12c48c24cceea170732e362500dd707df799234d724ad8f5",
+      "vendorSha256": "7f0bf10fb449000dec0a4507b1ce16e0c5209ec8e0bd6321412833b063d0f598",
       "adaptation": null,
       "patchSha256": null,
-      "patch": null
+      "patch": null,
+      "sourceNormalizedSha256": "7f0bf10fb449000dec0a4507b1ce16e0c5209ec8e0bd6321412833b063d0f598"
     },
     {
       "file": "vendor/module-renderer.js",
       "source": "tools/cva_design_system/module-renderer.js",
       "sourceSha256": "0b1dde4647c971696011b80140708c0ec9cc32e27bab18012d8eed6e68228994",
-      "vendorSha256": "0b1dde4647c971696011b80140708c0ec9cc32e27bab18012d8eed6e68228994",
+      "vendorSha256": "3e946de1744e7401f99fa97b492fc27ba6c6ab39cf4d5418ec9740e8d932df35",
       "adaptation": null,
       "patchSha256": null,
-      "patch": null
+      "patch": null,
+      "sourceNormalizedSha256": "3e946de1744e7401f99fa97b492fc27ba6c6ab39cf4d5418ec9740e8d932df35"
     },
     {
       "file": "vendor/module-styles.css",
       "source": "tools/cva_design_system/module-styles.css",
       "sourceSha256": "08c225f4e2b3b14b87ad212aff928bd45e568e06f0ae34f47da4181c083f6a54",
-      "vendorSha256": "08c225f4e2b3b14b87ad212aff928bd45e568e06f0ae34f47da4181c083f6a54",
+      "vendorSha256": "c22249390648444a990c522104e005d7f103cb9e159a85f6b1aa7cd3d6517273",
       "adaptation": null,
       "patchSha256": null,
-      "patch": null
+      "patch": null,
+      "sourceNormalizedSha256": "c22249390648444a990c522104e005d7f103cb9e159a85f6b1aa7cd3d6517273"
     },
     {
       "file": "vendor/scene-styles.css",
       "source": "tools/cva_design_system/scene-styles.css",
       "sourceSha256": "10fcb52f3ec9363c30dffa1b5eac340d7ad4010593a78203292b6fab7ab56540",
-      "vendorSha256": "10fcb52f3ec9363c30dffa1b5eac340d7ad4010593a78203292b6fab7ab56540",
+      "vendorSha256": "f4ec720a733df8844c280e3c5cc3472defad333067a9878bfecdbc4f4e1b9f0c",
       "adaptation": null,
       "patchSha256": null,
-      "patch": null
+      "patch": null,
+      "sourceNormalizedSha256": "f4ec720a733df8844c280e3c5cc3472defad333067a9878bfecdbc4f4e1b9f0c"
     }
   ],
-  "adapterContract": "CVA_MODULES.create → explicit empty fields → actual game content → CVA_MODULES.normalizeDocument → CVA_RENDERER.renderBlock. Isolated per-call local registry/context."
+  "adapterContract": "CVA_MODULES.create → explicit empty fields → actual game content → CVA_MODULES.normalizeDocument → CVA_RENDERER.renderBlock. Isolated per-call local registry/context.",
+  "normalization": "LF",
+  "sourceLineEndings": "CRLF",
+  "normalizationNote": "Only CRLF becomes LF; no other whitespace, BOM, bare CR or content is normalized. sourceSha256 and patchSha256 retain exact original adoption bytes. sourceNormalizedSha256, vendorSha256 and licenseSha256 pin LF UTF-8 content. sourceLineEndings reproduces the original source and license byte hashes.",
+  "licenseSourceSha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809"
 }

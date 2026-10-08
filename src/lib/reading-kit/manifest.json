@@ -1,7 +1,7 @@
 {
-  "version": "1.8.0",
+  "version": "1.8.1",
   "files": {
-    "cva/provenance.json": "ac890cd899aefd43b1c7aaba636a876c6be491853da69e213272df2643f62f90",
+    "cva/provenance.json": "c8937a7c16d08c9217075505e105c51b553242057d7327326e7b550bc02dcad8",
     "cva/vendor/components.js": "5dde607bfcbcb797a75ad25bb196ccf1c9eab0bae7676363559693fa7e685dd0",
     "cva/vendor/COPYING": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
     "cva/vendor/module-renderer.js": "3e946de1744e7401f99fa97b492fc27ba6c6ab39cf4d5418ec9740e8d932df35",
@@ -10,9 +10,9 @@
     "cva/vendor/scene-catalog.js": "4753bd318ea7f10e3e341755d694efe2e104c2fe7636aee1ac4a360479a56351",
     "cva/vendor/scene-renderer.js": "7f0bf10fb449000dec0a4507b1ce16e0c5209ec8e0bd6321412833b063d0f598",
     "cva/vendor/scene-styles.css": "f4ec720a733df8844c280e3c5cc3472defad333067a9878bfecdbc4f4e1b9f0c",
-    "cva.css": "58e86342ae87636fe0b5e833ff722ec0953fe832c613e0b37b8a3c843ffd954f",
+    "cva.css": "38253abe4c002bce3b4752b6c0439fb8e0a0ff9b96f605499501bd5433d4cbf1",
     "cva.mjs": "fcc17c9b42b8bc06382ff802bab3af8def9c4685b7dfb05758df36bebc7b0be4",
-    "cva.test.mjs": "429b227d988ee0d275e4092b48c98196256cd0122d1797bfd11936b02fcfe573",
+    "cva.test.mjs": "d76c2c4c3344e3bdcc41fe4cc4a567bd34dea91b4f3a8cada89a8f713df02826",
     "graph.mjs": "ea21f33061b44341df29d999bb07fd9b93f0face98dc60d1f7b506cb534c7361",
     "graph.test.mjs": "1334a91d1da97ac8501acf4708e412de2ca489ef43e1725a6b4f65c9219bbe3a",
     "integrity.mjs": "4866844ee37c39b2ed35c642a89dc50ff7bbee60baa254f16a2b69126e9d773f",

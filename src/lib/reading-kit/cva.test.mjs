@@ -12,6 +12,50 @@ const visible=html=>html.replace(/<script type="application\/json"[\s\S]*?<\/scr
 const definition=type=>cvaModuleDefinitions.find(value=>value.type===type);
 const sourceAsset={id:'source-image',src:'/verified/source-image.webp',alt:'검증용 대체 텍스트 < & >',width:731,height:419,sourceUrl:'https://example.org/verified-original'};
 
+const sha=value=>crypto.createHash('sha256').update(value).digest('hex');
+// Git may change CRLF/LF at checkout. No whitespace, BOM, bare CR or content
+// normalization is permitted; the original adoption byte hashes stay pinned.
+const normalizedLF=value=>String(value).replace(/\r\n/g,'\n');
+function applyProvenancePatch(input,patch,reverse=false){
+ const lines=normalizedLF(input).split('\n'),diff=normalizedLF(patch).split('\n');
+ assert.equal(diff.pop(),'','Provenance patch must end with a newline');
+ assert.match(diff.shift(),/^--- /);assert.match(diff.shift(),/^\+\+\+ /);
+ const output=[];let cursor=0,hunks=0;
+ for(let i=0;i<diff.length;){
+  const match=diff[i++].match(/^@@ -(\d+),(\d+) \+(\d+),(\d+) @@$/);
+  assert.ok(match,'Invalid provenance patch hunk');hunks++;
+  const start=Number(match[reverse?3:1])-1;
+  assert.ok(start>=cursor&&start<=lines.length,'Provenance patch hunk order differs');
+  output.push(...lines.slice(cursor,start));cursor=start;let oldCount=0,newCount=0;
+  while(i<diff.length&&!diff[i].startsWith('@@ ')){
+   const line=diff[i++],kind=line[0],value=line.slice(1);
+   assert.ok([' ','-','+'].includes(kind),'Invalid provenance patch line');
+   if(kind!=='+')oldCount++;if(kind!=='-')newCount++;
+   const consume=kind===' '||kind===(reverse?'+':'-');
+   const emit=kind===' '||kind===(reverse?'-':'+');
+   if(consume)assert.equal(lines[cursor++],value,'Provenance patch content differs');
+   if(emit)output.push(value);
+  }
+  assert.equal(oldCount,Number(match[2]));assert.equal(newCount,Number(match[4]));
+ }
+ assert.ok(hunks,'Provenance patch has no hunks');
+ return output.concat(lines.slice(cursor)).join('\n');
+}
+function verifyVendoredText(value,file,provenance){
+ assert.equal(provenance.normalization,'LF');assert.equal(provenance.sourceLineEndings,'CRLF');
+ const vendor=normalizedLF(value);
+ assert.equal(sha(vendor),file.vendorSha256,'Vendored LF content differs');
+ let source=vendor;
+ if(file.adaptation){
+  assert.equal(sha(file.patch),file.patchSha256,'Exact adoption patch differs');
+  source=applyProvenancePatch(vendor,file.patch,true);
+  assert.equal(applyProvenancePatch(source,file.patch),vendor,'Adaptation does not reproduce vendored content');
+ }
+ assert.equal(sha(source),file.sourceNormalizedSha256,'Normalized original source differs');
+ assert.equal(sha(source.replace(/\n/g,'\r\n')),file.sourceSha256,'Original adoption bytes differ');
+ return vendor;
+}
+
 function inputFor(type,variant){
  const fields=definition(type).fields,props={title:'실제 입력 제목',body:sourceText};
  if(fields.some(field=>field.key==='relationLabel'))props.relationLabel='입력된 관계 문장';
@@ -28,14 +72,36 @@ test('canonical authored subset exposes 14 types and 52 original variants, with 
  const base=new URL('./cva/',import.meta.url),p=JSON.parse(fs.readFileSync(new URL('provenance.json',base),'utf8'));
  assert.equal(p.license,'GPL-3.0');
  for(const file of p.files){
-  const hash=crypto.createHash('sha256').update(fs.readFileSync(new URL(file.file,base))).digest('hex');
-  assert.equal(hash,file.vendorSha256);
-  if(!file.adaptation)assert.equal(file.sourceSha256,file.vendorSha256);
-  else assert.equal(crypto.createHash('sha256').update(file.patch).digest('hex'),file.patchSha256);
+  verifyVendoredText(fs.readFileSync(new URL(file.file,base),'utf8'),file,p);
+  if(!file.adaptation)assert.equal(file.sourceNormalizedSha256,file.vendorSha256);
  }
- assert.equal(crypto.createHash('sha256').update(fs.readFileSync(new URL(p.licenseFile,base))).digest('hex'),p.licenseSha256);
+ const license=normalizedLF(fs.readFileSync(new URL(p.licenseFile,base),'utf8'));
+ assert.equal(sha(license),p.licenseSha256);
+ assert.equal(sha(license.replace(/\n/g,'\r\n')),p.licenseSourceSha256);
  const adapter=fs.readFileSync(new URL('./cva.mjs',import.meta.url),'utf8');
  for(const api of ['CVA_MODULES.create','CVA_MODULES.normalizeDocument','CVA_RENDERER.renderBlock'])assert.ok(adapter.includes(api));
+});
+
+test('LF/CRLF checkouts retain exact pinned content, while real changes and forged adaptations fail',()=>{
+ const base=new URL('./cva/',import.meta.url),p=JSON.parse(fs.readFileSync(new URL('provenance.json',base),'utf8'));
+ for(const file of p.files){
+  const value=normalizedLF(fs.readFileSync(new URL(file.file,base),'utf8'));
+  for(const checkout of [value,value.replace(/\n/g,'\r\n')])assert.equal(verifyVendoredText(checkout,file,p),value);
+  for(const changed of ['\ufeff'+value,value.replace(/\n/g,'\r'),value+'\n/* unrelated content */\n']){
+   assert.throws(()=>verifyVendoredText(changed,file,p),/Vendored LF content differs/);
+  }
+  const contaminated=value+'\n/* unrelated content */\n';
+  assert.throws(()=>verifyVendoredText(contaminated,{...file,vendorSha256:sha(contaminated)},p),/Normalized original source differs/);
+  if(file.adaptation){
+   assert.throws(()=>verifyVendoredText(value,{...file,patch:file.patch+'\n'},p),/Exact adoption patch differs/);
+   const patch=file.patch.replace(/(CVA_LOCAL_[A-Z_]+)/,'$1_CHANGED');
+   assert.notEqual(patch,file.patch);
+   assert.throws(()=>verifyVendoredText(value,{...file,patch,patchSha256:sha(patch)},p),/Provenance patch content differs/);
+  }
+ }
+ const license=normalizedLF(fs.readFileSync(new URL(p.licenseFile,base),'utf8'));
+ for(const checkout of [license,license.replace(/\n/g,'\r\n')])assert.equal(sha(normalizedLF(checkout)),p.licenseSha256);
+ assert.notEqual(sha(normalizedLF(license+'\nChanged license text')),p.licenseSha256);
 });
 
 test('all 52 actual variants × 4 profiles × 3 orientations preserve the supplied model and escaped body',()=>{
