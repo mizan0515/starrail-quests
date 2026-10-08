@@ -77,6 +77,8 @@ class MissionPage(HTMLParser):
         self.reader_links = []
         self.scope_notes = []
         self.scope_note = None
+        self.headings = []
+        self.heading = None
         self.position = 0
         self.current_row = self.body = self.count = self.coverage = None
 
@@ -85,6 +87,8 @@ class MissionPage(HTMLParser):
         a = dict(attrs)
         classes = set(a.get('class','').split())
         flags = set()
+        if tag=='h1':
+            self.heading=[];self.headings.append(self.heading);flags.add('heading')
         if a.get('id'): self.ids[a['id']] += 1
         if 'data-mission-reader' in a:
             self.readers.append(self.position)
@@ -144,15 +148,25 @@ class MissionPage(HTMLParser):
                 if 'coverage' in flags: self.coverage=None
                 if 'summary' in flags: self.summary=None
                 if 'scopeNote' in flags: self.scope_note=None
+                if 'heading' in flags: self.heading=None
                 break
 
     def handle_data(self,text):
+        if self.heading is not None:self.heading.append(text)
         if self.body is not None: self.body['text'].append(text)
         if self.count is not None: self.count.append(text)
         if self.coverage is not None: self.coverage.append(text)
         if self.summary is not None: self.summary.append(text)
         if self.scope_note is not None: self.scope_note['text'].append(text)
 
+
+def expected_mission_title(document):
+    """Independent display expectation; preserved source titles stay unchanged."""
+    title=document.get('title')
+    if document.get('category')=='퀘스트' and re.fullmatch(r'quest-\d+',document.get('id','')):
+        if not isinstance(title,str) or not title.strip() or (title=='한국어 본문 미수록' and document.get('title_hash')==''):
+            return '임무 '+document['id'].split('-',1)[1]+' · 제목 미확인'
+    return title
 
 class BrowseBindings(HTMLParser):
     def __init__(self):
@@ -317,6 +331,10 @@ def main(dist):
             require(bool(canary),'Kafka cross-mission ownership canary source missing',quest=id)
             require(all(not linked(s) for s in canary),'Kafka cross-mission dialogue incorrectly owned by mission',quest=id)
         built=built_quests.get(id,{})
+        expected_title=expected_mission_title(doc)
+        require(built.get('title')==expected_title,'reading catalogue display title differs from source-aware expectation',quest=id,expected=expected_title,actual=built.get('title'))
+        stats['displayTitlesChecked']+=1
+        stats['displayTitleFallbacks' if expected_title!=doc.get('title') else 'unchangedSourceTitles']+=1
         for field,value in counts.items():
             require(built.get(field)==value,'reading catalogue field differs',quest=id,field=field,expected=value,actual=built.get(field))
         observed={evidence['missions'].get(id,'unknown'),*part_versions.get(id,set())}
@@ -334,6 +352,7 @@ def main(dist):
         for error in template.finish():require(False,error,quest=id)
         page=MissionPage()
         page.feed(html)
+        require([''.join(parts).strip() for parts in page.headings]==[expected_title.strip()],'mission page h1 differs from source-aware expectation',quest=id,expected=expected_title,actual=[''.join(parts).strip() for parts in page.headings])
         for ref,message in related:
             original_url=BASE+'/'+message['url'].lstrip('/')
             require(original_url in page.reader_links,'inline message original document link missing',quest=id,
