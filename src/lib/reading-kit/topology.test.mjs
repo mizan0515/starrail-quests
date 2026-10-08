@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {validateTopology, topologyFromRelations} from './topology.mjs';
+import {validateTopology, topologyFromRelations, relationStructureGroups, focusRelationLayout, sourceRelationHubs} from './topology.mjs';
 import {createReadingKit, escapeHtml, safeHref} from './render.mjs';
 
 const base = () => ({
@@ -166,10 +166,12 @@ test('ordinary relations retain each attributed speaker and source beside its ow
   const before = JSON.stringify(input), t = topologyFromRelations(input, {id: 'structure', focusId: 'a'}), html = kit().network(input, {id: 'structure', focusId: 'a'}), visible = withoutModels(html);
   assert.deepEqual(statements(html), expectedStatements(t));
   assert.equal(byClass(visible, 'div', 'rw-relation-band').length, 2);
-  assert.equal(byClass(visible, 'small', 'rw-node-kind').length, 4);
+  assert.equal(byClass(visible, 'small', 'rw-node-kind').length, 7);
   for (const kind of byClass(visible, 'small', 'rw-node-kind')) assert.equal(visibleText(kind.inner), '인물');
   assert.equal(byClass(visible, 'span', 'rw-edge-predicate').filter(p => visibleText(p.inner) === '형체를 제공했다고 말한다').length, 1);
-  const rows = relationCards(visible);
+  const rows = byClass(visible, 'article', 'sc-card');
+  assert.deepEqual(variants(html), ['character-orbit']);
+  assert.ok(visible.includes('rw-focus-name')); assert.ok(!visible.includes('중심 인물'));
   rows.forEach((row, i) => {
     assertProofNear(row.inner, t, t.edges[i]);
     assert.ok(row.inner.includes(escapeHtml('발언·기록에 따른 관계 · ' + input[i].speaker)));
@@ -229,7 +231,7 @@ test('return edges and mutually directed relations alone do not declare a cycle'
   const derived = topologyFromRelations(relations, {focusId: 'a'});
   assert.equal(derived.layout, undefined); assert.ok(derived.edges.every(e => e.kind === 'relation'));
   const mutual = kit().topology(derived);
-  assert.deepEqual(variants(mutual), ['list']);
+  assert.deepEqual(variants(mutual), ['character-orbit']);
   assert.deepEqual(statements(mutual), expectedStatements(derived));
 });
 
@@ -343,4 +345,76 @@ test('attributed source speakers stay visible in proof and empty networks stay e
   const html = kit().topology(t), proof = byClass(withoutModels(html), 'details', 'rw-relation-proof')[0];
   assert.ok(proof.inner.includes('발언·기록에 따른 관계 · 파수인'));
   assert.equal(topologyFromRelations([]), null); assert.equal(kit().network([]), '');
+});
+
+test('reviewed membership is nested under its actual group and preserves the original direction and proof', () => {
+  const t = {id:'affiliation',title:'소속',nodes:[node('kafka'),node('hunters')],edges:[{...edge('member','kafka','hunters','소속'),structure:'membership'}]};
+  const html=kit().topology(t),visible=withoutModels(html);
+  assert.deepEqual(variants(html),['nested-world']);
+  assert.deepEqual(statements(html),expectedStatements(t));
+  assert.deepEqual(relationStructureGroups(t.edges).map(g=>g.parent),['hunters']);
+  assert.ok(visible.indexOf('HUNTERS')<visible.indexOf('KAFKA'));
+  assert.equal(byClass(visible,'details','rw-relation-proof').length,1);
+  assertProofNear(byClass(visible,'div','rw-relation-band')[0].inner,t,t.edges[0]);
+});
+
+test('containment and membership require reviewed source metadata, and ordinary location or reading links do not acquire it', () => {
+  const t=base();t.edges[0].structure='containment';
+  const html=kit().topology(t);
+  assert.deepEqual(variants(html),['nested-world']);assert.deepEqual(statements(html),expectedStatements(t));
+  assert.equal(relationStructureGroups(t.edges)[0].parent,'a');
+  for(const invalid of ['location','birthplace','invented']){t.edges[0].structure=invalid;assert.throws(()=>validateTopology(t));}
+  t.edges[0].structure='membership';t.edges[0].claimKind='inference';assert.throws(()=>validateTopology(t));
+  t.edges[0].claimKind='explicit';t.edges[0].kind='sequence';assert.throws(()=>validateTopology(t));
+  assert.deepEqual(relationStructureGroups([{...edge('place','a','b','출신 지역')}]),[]);
+});
+
+test('large source scopes keep all members, directions and proofs across the CVA item boundary', () => {
+  for (const structure of ['membership','containment']) {
+    const t={id:'large-'+structure,title:'전체 구성',nodes:[node('group'),...Array.from({length:25},(_,i)=>node('member-'+i))],edges:Array.from({length:25},(_,i)=>({...edge('e'+i,structure==='membership'?'member-'+i:'group',structure==='membership'?'group':'member-'+i,'역할 '+i),structure}))};
+    const before=JSON.stringify(t),html=kit().topology(t),visible=withoutModels(html);
+    assert.deepEqual(variants(html),['nested-world','nested-world']);
+    assert.deepEqual(models(html).map(m=>m.props.items.length),[24,1]);
+    assert.deepEqual(statements(html),expectedStatements(t));
+    const proofs=byClass(visible,'details','rw-relation-proof');
+    assert.equal(proofs.length,25);assert.equal(new Set(proofs.map(p=>attribute(p.attrs,'id'))).size,25);
+    byClass(visible,'div','rw-relation-band').forEach((row,i)=>assertProofNear(row.inner,t,t.edges[i]));
+    assert.equal(JSON.stringify(t),before);
+  }
+});
+
+test('source actions around a declared focus use directional orbit or hub without sequence numbers', () => {
+  const incoming=edge('in','a','b','설명한다'),outgoing=edge('out','b','c','부탁한다');
+  const t={id:'focus-shape',title:'인물의 관계',nodes:[node('a'),{...node('b'),focus:true},node('c')],edges:[incoming,outgoing]};
+  assert.equal(focusRelationLayout(t.nodes,t.edges).variant,'character-orbit');
+  const html=kit().topology(t),visible=withoutModels(html);
+  assert.deepEqual(statements(html),expectedStatements(t));
+  assert.ok(visible.includes('data-relation-direction="incoming"'));assert.ok(visible.includes('data-relation-direction="outgoing"'));
+  assert.ok(!visible.includes('sc-number'));assert.ok(!visible.includes('sc-stage-result'));
+  t.edges=[edge('one','b','a','돕는다'),edge('two','b','c','방문한다')];
+  const hub=kit().topology(t);
+  assert.deepEqual(variants(hub),['hub']);assert.deepEqual(statements(hub),expectedStatements(t));
+  assert.equal(byClass(withoutModels(hub),'details','rw-relation-proof').length,2);
+  t.edges.push(edge('unrelated','a','c','별개 행동'));assert.equal(focusRelationLayout(t.nodes,t.edges),null);
+});
+
+test('source trees use direct hubs without adding a join, containment, cycle or temporal order', () => {
+ const t={id:'formation',title:'기억의 형성',nodes:['material','field','bubble','meme'].map(node),edges:[edge('field','material','field','응집하여 공간을 형성한다'),edge('bubble','material','bubble','집합체를 이룬다'),edge('meme','field','meme','잠재의식 조각이 쌓여 형성한다')]};
+ const before=JSON.stringify(t),html=kit().topology(t),visible=withoutModels(html);
+ assert.deepEqual(variants(html),['hub','hub']);assert.deepEqual(statements(html),expectedStatements(t));
+ assert.ok(visible.includes('data-hub-shape="fan"'));assert.ok(visible.includes('data-hub-shape="pair"'));
+ assert.equal(byClass(visible,'details','rw-relation-proof').length,3);
+ assert.ok(!visible.includes('sc-number'));assert.ok(!visible.includes('sc-common-scope'));assert.equal(JSON.stringify(t),before);
+ assert.deepEqual(sourceRelationHubs(t.nodes,t.edges).map(g=>g.parent),['material','field']);
+ for(const change of [x=>x.edges.push(edge('join','bubble','meme','별도 연결')),x=>x.edges.push(edge('return','meme','material','귀환')),x=>x.edges[0].claimKind='inference',x=>x.edges[0].kind='sequence',x=>x.nodes[0].focus=true]){const x=structuredClone(t);change(x);assert.equal(sourceRelationHubs(x.nodes,x.edges),null);}
+});
+
+test('large direct hubs reserve one item for the actual center and retain every branch proof', () => {
+ const t={id:'large-tree',title:'관계 전체',nodes:[node('root'),...Array.from({length:25},(_,i)=>node('child-'+i)),node('leaf')],edges:[...Array.from({length:25},(_,i)=>edge('direct-'+i,'root','child-'+i,'직접 관계 '+i)),edge('branch','child-0','leaf','별도 직접 관계')]};
+ const before=JSON.stringify(t),html=kit().topology(t),visible=withoutModels(html);
+ assert.deepEqual(models(html).map(m=>m.props.items.length),[24,3,2]);
+ assert.deepEqual(statements(html),expectedStatements(t));
+ assert.equal(byClass(visible,'details','rw-relation-proof').length,26);
+ assert.equal(new Set(byClass(visible,'details','rw-relation-proof').map(p=>attribute(p.attrs,'id'))).size,26);
+ assert.equal(JSON.stringify(t),before);
 });

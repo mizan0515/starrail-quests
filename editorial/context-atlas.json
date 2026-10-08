@@ -1014,7 +1014,7 @@
             "id": "meme",
             "from": "field",
             "to": "meme",
-            "label": "잠재의식 조각이 쌓여 형성한다",
+            "label": "그 안의 잠재의식 조각이 쌓여 형성된다",
             "text": "기억의 영역 밈은 기억의 영역 속 잠재의식 조각이 쌓여 만들어진 실체다.",
             "evidence": [
               {
@@ -2090,7 +2090,8 @@
             "status": "원문 서술"
           },
           "status": "원문 서술",
-          "direction": "incoming"
+          "direction": "incoming",
+          "structure": "membership"
         },
         {
           "target": "xianzhou",
@@ -2578,7 +2579,8 @@
             "status": "원문 서술"
           },
           "status": "원문 서술",
-          "direction": "incoming"
+          "direction": "incoming",
+          "structure": "membership"
         },
         {
           "target": "aeon-aeon-9",

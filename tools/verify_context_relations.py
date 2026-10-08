@@ -501,6 +501,8 @@ def verify(site=SITE, atlas=None, graph=None, sources_only=False):
             require(decision is not None and [relation.get(k) for k in ('target', 'direction', 'status', 'verb', 'why')] == decision,
                     'Actor/direction/setting-versus-editorial meaning differs from reviewed original context: ' + str(key))
             direction = relation.get('direction')
+            reviewed_structure = 'membership' if key in {('stellaron-hunters', 0), ('genius-society', 0)} else None
+            require(relation.get('structure') == reviewed_structure, 'Relationship structure differs from source review: ' + str(key))
             require(direction in ('incoming', 'outgoing'), 'Explicit reviewed direction required')
             require((direction == 'incoming') == (key in INCOMING), 'Relation direction differs from semantic review: ' + str(key))
             require(relation['target'] != node['id'] and relation['verb'].strip(), 'Invalid relation endpoints/predicate')
@@ -517,6 +519,7 @@ def verify(site=SITE, atlas=None, graph=None, sources_only=False):
                 ident = 'atlas/' + node['id'] + '/relation-' + str(index)
                 require(ident in relations, 'Missing generated relation')
                 r = relations[ident]
+                require(r.get('structure') == reviewed_structure, 'Generated source relationship structure differs: ' + ident)
                 left, right = (relation['target'], node['id']) if direction == 'incoming' else (node['id'], relation['target'])
                 require((r['from'], r['to'], r['label']) == (left, right, relation['verb']), 'Generated actor/predicate/target differs: ' + ident)
                 claim = claims[r['reasonClaimId']]
@@ -533,6 +536,9 @@ def verify(site=SITE, atlas=None, graph=None, sources_only=False):
             evidence(event['evidence'])
             events += 1
         for edge in (node.get('topology') or {}).get('edges', []):
+            if node['id'] == 'memory' and edge['id'] == 'meme':
+                require(edge['label'] == '그 안의 잠재의식 조각이 쌓여 형성된다',
+                        'Memory field location was made the active forming material')
             for e in edge['evidence']:
                 evidence(e)
             topology_edges += 1
@@ -567,6 +573,9 @@ def self_test(site, sources_only):
         ('INCOMING_REVERSED', lambda a: next(n for n in a['nodes'] if n['id'] == 'swarm-research')['links'][1].update(direction='outgoing')),
         ('OUTGOING_REVERSED', lambda a: a['nodes'][0]['links'][0].update(direction='incoming')),
         ('UNKNOWN_DIRECTION', lambda a: a['nodes'][0]['links'][0].update(direction='sideways')),
+        ('INVENTED_MEMBERSHIP_FROM_LOCATION', lambda a: next(n for n in a['nodes'] if n['id'] == 'bronya')['links'][0].update(structure='membership')),
+        ('READING_AS_CONTAINMENT', lambda a: next(n for n in a['nodes'] if n['id'] == 'herta')['links'][0].update(structure='containment')),
+        ('FIELD_AS_FORMING_ACTOR', lambda a: next(e for n in a['nodes'] if n['id'] == 'memory' for e in n['topology']['edges'] if e['id'] == 'meme').update(label='잠재의식 조각이 쌓여 형성한다')),
         ('WRONG_CITED_HASH', lambda a: a['nodes'][0]['links'][0]['evidence'].update(hash='1')),
         ('WRONG_QUOTE', lambda a: a['nodes'][0]['links'][0]['evidence'].update(quote='invented quotation')),
         ('WRONG_ACTOR', lambda a: next(n for n in a['nodes'] if n['id'] == 'swarm-research')['links'][1].update(target='bronya')),

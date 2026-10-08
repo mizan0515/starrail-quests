@@ -68,6 +68,54 @@
 .rw-cva-atlas .cva-page[data-cva] .rw-relation-band{padding:0;border:0;background:transparent}
 .rw-cva-atlas .cva-page[data-cva] .rw-relation-proof{margin:0!important;padding:0!important;border:0!important}
 .rw-cva-atlas .cva-page[data-cva] .cva-item-extra{margin-block-start:.6rem}
+/* Source structure chooses the CVA composition; the reader's width chooses density. */
+.rw-source-scope,.rw-focus-relations{margin-block:1.25rem;min-inline-size:0}
+.rw-source-scope>.cva-page,.rw-focus-relations>.cva-page{inline-size:100%}
+.rw-source-scope .cva-page[data-cva] .cva-module-head{margin-block-end:.75rem}
+.rw-source-scope .cva-page[data-cva] .sc-common-scope{padding:1.25rem;border-width:1px}
+.rw-source-scope .cva-page[data-cva] .sc-scope-members{grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1rem;margin-block-start:1rem}
+.rw-source-scope .cva-page[data-cva] .sc-scope-members .sc-card{padding:1rem}
+.rw-source-scope .cva-page[data-cva] .sc-copy{padding:0}
+.rw-source-scope .cva-page[data-cva] .rw-edge-statement{font-size:.875rem;font-weight:500}
+.rw-source-scope .cva-page[data-cva] :is(.rw-edge-subject,.rw-edge-object){background:transparent;padding:0}
+.rw-source-scope .cva-page[data-cva] .rw-edge-statement{display:flex}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit{grid-template-columns:minmax(0,1fr) minmax(8rem,.55fr) minmax(0,1fr);gap:1.25rem}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-placeholder{aspect-ratio:auto;min-block-size:8rem;border-radius:1rem;border-style:solid;font-size:1.35rem;padding:1.25rem .75rem}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-placeholder a{color:var(--cva-text);text-decoration:none}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members{gap:1.25rem}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li{border:1px solid var(--cva-border);border-radius:.8rem;background:var(--cva-surface)}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li{position:relative}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li::after{content:'→';position:absolute;inset-block-start:50%;inline-size:1.25rem;text-align:center;line-height:1;color:var(--cva-accent-text);transform:translateY(-50%);font-size:1.25rem}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:has([data-relation-direction="incoming"])::after{inset-inline-end:-1.25rem}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:has([data-relation-direction="outgoing"])::after{inset-inline-start:-1.25rem}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:has([data-relation-direction="incoming"]){grid-column:1}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:has([data-relation-direction="outgoing"]){grid-column:3}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:has([data-relation-row="1"]){grid-row:1}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:has([data-relation-row="2"]){grid-row:2}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:has([data-relation-row="3"]){grid-row:3}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:has([data-relation-row="4"]){grid-row:4}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:has([data-relation-row="5"]){grid-row:5}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:has([data-relation-row="6"]){grid-row:6}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:has([data-relation-row="7"]){grid-row:7}
+.rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:has([data-relation-row="8"]){grid-row:8}
+.rw-focus-relations .cva-page[data-cva] .sc-copy{padding:1rem}
+.rw-focus-relations .cva-page[data-cva] .rw-edge-statement{display:flex;font-size:.875rem;font-weight:500;gap:.25rem .4rem;margin-block:.75rem}
+.rw-focus-relations .cva-page[data-cva] :is(.rw-edge-subject,.rw-edge-object){padding:0;background:transparent}
+.rw-focus-relations .cva-page[data-cva] .rw-edge-statement .rw-node-kind{display:none}
+.rw-focus-relations .cva-page[data-cva] .rw-edge-predicate{text-align:start;font-size:.875rem}
+.rw-focus-relations .cva-page[data-cva] .rw-relation-attribution{font-size:.75rem;line-height:1.6;color:var(--cva-muted);margin-block:.75rem .25rem}
+.rw-focus-relations .cva-page[data-cva] .cva-module-flow[data-variant="hub"] .cva-flow-list{grid-template-columns:repeat(auto-fit,minmax(min(100%,18rem),1fr));gap:1.25rem}
+.rw-focus-relations:not([data-hub-shape="pair"]) .cva-page[data-cva] .cva-module-flow[data-variant="hub"] .cva-node:first-child{grid-column:1/-1;max-inline-size:24rem;inline-size:100%;justify-self:center}
+.rw-focus-relations .cva-page[data-cva] .cva-flow-role{display:none}
+.rw-focus-relations .cva-page[data-cva] .cva-node:first-child .cva-item-title{font-size:1.35rem}
+.rw-focus-relations .cva-page[data-cva] .cva-node:first-child .rw-node-kind{display:none}
+.rw-focus-relations[data-hub-shape="pair"] .cva-page[data-cva] .cva-flow-list{grid-template-columns:repeat(2,minmax(0,1fr));align-items:center}
+.rw-focus-relations[data-hub-shape="pair"] .cva-page[data-cva] .cva-node:first-child{grid-column:1;max-inline-size:none}
+.rw-focus-relations[data-hub-shape="pair"] .cva-page[data-cva] .cva-node:last-child{position:relative;grid-column:2}
+.rw-focus-relations[data-hub-shape="pair"] .cva-page[data-cva] .cva-node:last-child::before{content:'→';position:absolute;inset-inline-start:-1.25rem;inset-block-start:50%;inline-size:1.25rem;text-align:center;color:var(--cva-accent-text);transform:translateY(-50%)}
+.rw-reading-unit[data-quote-layout] .cva-page[data-cva] .cva-quote{margin:0;padding:.75rem 0 .75rem 1.25rem;border:0;border-inline-start:2px solid var(--cva-accent);border-radius:0;background:transparent;max-inline-size:100%}
+.rw-reading-unit[data-quote-layout="emphasis"] .cva-page[data-cva] .cva-quote .cva-body{font-size:clamp(1.1rem,1rem + .4vw,1.4rem);font-weight:600;line-height:1.8}
+.rw-reading-unit[data-quote-layout="prose"] .cva-page[data-cva] .cva-quote .cva-body{font-size:1rem;font-weight:400;line-height:1.9}
 .rw-cva-atlas .cva-page[data-cva] .sc-ledger caption{font-size:.8125rem;font-weight:500;color:var(--cva-muted);padding-block:0 1rem}
 .rw-cva-atlas .cva-page[data-cva] .sc-ledger th .sc-item-title{font-size:1rem}
 .cva-page[data-cva] .rw-node-kind{display:block;font-size:.75rem;font-weight:500;line-height:1.6;color:var(--cva-muted);margin-block-end:.25rem}
@@ -103,9 +151,33 @@
  .cva-page[data-cva] .sc-ledger tr>td:nth-child(2)::before{content:'원문의 성격';display:block;font-size:.75rem;color:var(--cva-muted);margin-block-end:.5rem}
  .cva-page[data-cva] .sc-ledger tr>td:last-child::before{content:'맥락과 근거';display:block;font-size:.75rem;color:var(--cva-muted);margin-block-end:.5rem}
 }
+/* The upstream scene changes to one column at 700px. Keep edge placement and
+   connector visibility on that same breakpoint, independently of its container. */
+@media(max-width:700px){
+ .rw-focus-relations[data-hub-shape="pair"] .cva-page[data-cva] .cva-flow-list{grid-template-columns:minmax(0,1fr)}
+ .rw-focus-relations[data-hub-shape="pair"] .cva-page[data-cva] .cva-node:nth-child(n){grid-column:1}
+ .rw-focus-relations[data-hub-shape="pair"] .cva-page[data-cva] .cva-node:last-child::before{content:'↓';inset-inline-start:50%;inset-block-start:-1.25rem;transform:translateX(-50%)}
+ .rw-focus-relations .cva-page[data-cva] .sc-orbit{display:flex;flex-direction:column}
+ .rw-focus-relations .cva-page[data-cva] .sc-orbit-core{inline-size:100%;max-inline-size:22rem;align-self:center}
+ .rw-focus-relations .cva-page[data-cva] .sc-orbit-placeholder{min-block-size:4.5rem}
+ .rw-focus-relations .cva-page[data-cva] .sc-orbit-members{display:grid;grid-template-columns:minmax(0,1fr)}
+ .rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:nth-child(n){grid-column:1;grid-row:auto}
+ .rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li::after{display:none}
+}
 @container (max-width:34rem){
+ .rw-focus-relations[data-hub-shape="pair"] .cva-page[data-cva] .cva-flow-list{grid-template-columns:minmax(0,1fr)}
+ .rw-focus-relations[data-hub-shape="pair"] .cva-page[data-cva] .cva-node:nth-child(n){grid-column:1}
+ .rw-focus-relations[data-hub-shape="pair"] .cva-page[data-cva] .cva-node:last-child::before{content:'↓';inset-inline-start:50%;inset-block-start:-1.25rem;transform:translateX(-50%)}
  .rw-cva-atlas .cva-page[data-cva] .rw-edge-statement{grid-template-columns:minmax(0,1fr);gap:.4rem}
  .rw-cva-atlas .cva-page[data-cva] .rw-edge-arrow{justify-self:center;transform:rotate(90deg)}
  .rw-cva-atlas .cva-page[data-cva] .rw-edge-predicate{padding-block:.1rem}
+ .rw-focus-relations .cva-page[data-cva] .sc-orbit{display:flex;flex-direction:column}
+ .rw-focus-relations .cva-page[data-cva] .sc-orbit-core{inline-size:100%;max-inline-size:22rem;align-self:center}
+ .rw-focus-relations .cva-page[data-cva] .sc-orbit-placeholder{min-block-size:4.5rem}
+ .rw-focus-relations .cva-page[data-cva] .sc-orbit-members{display:grid;grid-template-columns:minmax(0,1fr)}
+ .rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li:nth-child(n){grid-column:1;grid-row:auto}
+ .rw-focus-relations .cva-page[data-cva] .sc-orbit-members>li::after{display:none}
+ .rw-focus-relations .cva-page[data-cva] .rw-edge-arrow{transform:none;justify-self:auto}
+ .rw-source-scope .cva-page[data-cva] .sc-common-scope{padding:1rem}
 }
 @media(prefers-reduced-motion:reduce){.cva-page[data-cva] *, .cva-page[data-cva] *::before,.cva-page[data-cva] *::after{scroll-behavior:auto;transition:none;animation:none}}
