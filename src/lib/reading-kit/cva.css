@@ -59,6 +59,10 @@
 .cva-page[data-cva] .sc-ledger th:nth-child(2){inline-size:18%}
 .cva-page[data-cva] .sc-ledger :is(th,td){vertical-align:top;overflow-wrap:anywhere}
 .cva-page[data-cva] :is(.cva-item-title,.sc-item-title){font-size:var(--cva-scene-item-size);line-height:1.55}
+.cva-page[data-cva].cva-reader-frame .cva-module-text{padding:.5rem 0 .25rem}
+.cva-page[data-cva].cva-reader-frame .cva-module-text>.cva-module-head{margin:0}
+.cva-page[data-cva].cva-reader-frame .cva-module-head>.cva-title{font-size:1.35rem;line-height:1.4;margin:.25rem 0 .5rem}
+.cva-page[data-cva].cva-reader-frame .cva-module-head>.cva-eyebrow{margin:0 0 .25rem}
 .cva-page[data-cva] :is(a,summary,button,[tabindex]):focus-visible{outline:3px solid var(--cva-focus);outline-offset:3px}
 @media(max-width:600px){
  .cva-page[data-cva].cva-reader-fragment[data-cva-profile],.cva-page[data-cva].cva-reader-frame[data-cva-profile]{--cva-gap:1rem;--cva-scene-gap:1rem;--cva-item-padding:1rem;--cva-module-space:1.25rem}
