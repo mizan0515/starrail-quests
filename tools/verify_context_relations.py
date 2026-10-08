@@ -7,6 +7,8 @@ import argparse
 from copy import deepcopy
 import hashlib
 import json
+import re
+from html.parser import HTMLParser
 from pathlib import Path
 
 SITE = Path(__file__).resolve().parents[1]
@@ -454,6 +456,57 @@ def read(path):
     return json.loads(path.read_text('utf8'))
 
 
+
+class RelationProofPage(HTMLParser):
+    """Bind reason, original quote and link to the same disclosure."""
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.proofs, self.stack = [], []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'details':
+            self.stack.append({'id': attrs.get('id', ''), 'text': [], 'quotes': [], 'links': [], 'quote': None, 'paragraphs': [], 'paragraph': None})
+        if self.stack:
+            p = self.stack[-1]
+            if tag == 'blockquote':
+                p['quote'] = []
+                p['quotes'].append(p['quote'])
+            if tag == 'p' and p['quote'] is None:
+                p['paragraph'] = []
+                p['paragraphs'].append(p['paragraph'])
+            if tag == 'a':
+                p['links'].append(attrs.get('href', ''))
+
+    def handle_endtag(self, tag):
+        if tag == 'blockquote' and self.stack:
+            self.stack[-1]['quote'] = None
+        if tag == 'p' and self.stack:
+            self.stack[-1]['paragraph'] = None
+        if tag == 'details' and self.stack:
+            self.proofs.append(self.stack.pop())
+
+    def handle_data(self, text):
+        for p in self.stack:
+            p['text'].append(text)
+            if p['quote'] is not None:
+                p['quote'].append(text)
+            if p['paragraph'] is not None:
+                p['paragraph'].append(text)
+
+
+def check_rendered_relation(page, claim, evidence, candidate_suffixes, label):
+    expected_reason = re.sub(r'\s+', ' ', claim['text']).strip()
+    candidates = [p for p in page.proofs if any(p['id'].endswith('-edge-' + suffix) for suffix in candidate_suffixes)]
+    for p in candidates:
+        paragraphs = [re.sub(r'\s+', ' ', ''.join(v)).strip() for v in p['paragraphs']]
+        quotes = [''.join(q).replace('\r\n', '\n') for q in p['quotes']]
+        if (expected_reason in paragraphs and all(e['quote'].replace('\r\n', '\n') in quotes and
+                                           e['url'] in p['links'] for e in evidence)):
+            return
+    raise ValueError('Authored relation reason/original quote/source link absent from its HTML proof: ' + label)
+
+
 def verify(site=SITE, atlas=None, graph=None, sources_only=False):
     atlas = atlas or read(site / 'editorial/context-atlas.json')
     manifests = {}
@@ -486,6 +539,8 @@ def verify(site=SITE, atlas=None, graph=None, sources_only=False):
         require(len(relations) == len(graph['relations']), 'Duplicate relation ID')
         claims = {c['id']: c for c in graph['claims']}
         proof = {e['id']: e for e in graph['evidence']}
+        cluster_index = {c['id']: c for c in graph['clusters']}
+        rendered_pages = {}
     all_ids, count, topology_edges, events, comparisons = set(), 0, 0, 0, 0
     incoming = set()
     for node in atlas['nodes']:
@@ -531,6 +586,14 @@ def verify(site=SITE, atlas=None, graph=None, sources_only=False):
                 require(len(evs) == 1 and evs[0]['sourceId'] == relation['evidence']['id'] and
                         evs[0]['quote'] == relation['evidence']['quote'] and
                         evs[0]['sourceSha256'] == hashlib.sha256(original['text'].encode()).hexdigest(), 'Relation cited original differs')
+                if node['id'] not in rendered_pages:
+                    page = RelationProofPage()
+                    page.feed((site / 'dist/맥락' / (node['id'] + '.html')).read_text(encoding='utf-8'))
+                    rendered_pages[node['id']] = page
+                c = cluster_index['atlas/' + node['id']]
+                suffixes = [ident] + [e['id'] for t in [c.get('topology'), *(c.get('views') or [])] if t
+                                        for e in t['edges'] if e['claimId'] == r['reasonClaimId']]
+                check_rendered_relation(rendered_pages[node['id']], claim, evs, suffixes, ident)
             count += 1
         for event in node.get('timeline', []):
             evidence(event['evidence'])
@@ -541,6 +604,11 @@ def verify(site=SITE, atlas=None, graph=None, sources_only=False):
                         'Memory field location was made the active forming material')
             for e in edge['evidence']:
                 evidence(e)
+            if not sources_only:
+                emitted = next(e for e in cluster_index['atlas/'+node['id']]['topology']['edges'] if e['id']==edge['id'])
+                topology_claim = claims[emitted['claimId']]
+                check_rendered_relation(rendered_pages[node['id']], topology_claim,
+                    [proof[e] for e in topology_claim['evidenceIds']], [edge['id']], node['id']+'/'+edge['id'])
             topology_edges += 1
     require(incoming == set(INCOMING), 'Reviewed incoming relation missing')
     require(count == len(REVIEWED), 'Full reviewed relation coverage differs')
@@ -566,9 +634,37 @@ def verify(site=SITE, atlas=None, graph=None, sources_only=False):
             'originalReferences': len(cited_rows), 'originalDocuments': len(docs), 'generatedGraphChecked': not sources_only}
 
 
+
+def rendered_relation_self_test():
+    claim = {'text':'관계 요약'}
+    evidence = [{'quote':'가 > 나, 「원문」','url':'/original.html#row-1'}]
+    html = '<details id="supplemental-edge-relation-0"><summary>근거</summary><p>관계 요약</p><blockquote>가 &gt; 나, 「원문」</blockquote><a href="/original.html#row-1">원문</a></details>'
+    def accepted(value):
+        page = RelationProofPage()
+        page.feed(value)
+        try:
+            result = check_rendered_relation(page, claim, evidence, ['relation-0'], 'self-test')
+        except ValueError:
+            return False
+        return result is not False
+    if not accepted(html):
+        raise ValueError('Valid relation disclosure rejected')
+    mutations = {
+        'HTML_REASON_REMOVED': html.replace('<p>관계 요약</p>', ''),
+        'HTML_REASON_CHANGED': html.replace('관계 요약','변형 요약'),
+        'HTML_QUOTE_CHANGED': html.replace('가 &gt; 나','가 &lt; 나'),
+        'HTML_SOURCE_LINK_CHANGED': html.replace('/original.html#row-1','/foreign.html'),
+        'HTML_RELATION_ID_CHANGED': html.replace('edge-relation-0','edge-foreign'),
+        'HTML_QUOTE_OUTSIDE_PROOF': html.replace('<blockquote>가 &gt; 나, 「원문」</blockquote>','')+'<blockquote>가 &gt; 나, 「원문」</blockquote>'}
+    for name, value in mutations.items():
+        if accepted(value):
+            raise ValueError('Contaminated relation disclosure accepted: '+name)
+    return list(mutations)
+
+
 def self_test(site, sources_only):
     atlas = read(site / 'editorial/context-atlas.json')
-    rejected = []
+    rejected = rendered_relation_self_test()
     for label, mutate in [
         ('INCOMING_REVERSED', lambda a: next(n for n in a['nodes'] if n['id'] == 'swarm-research')['links'][1].update(direction='outgoing')),
         ('OUTGOING_REVERSED', lambda a: a['nodes'][0]['links'][0].update(direction='incoming')),

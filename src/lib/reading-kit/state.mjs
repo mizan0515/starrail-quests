@@ -1,4 +1,5 @@
 // Restore the reader's disclosure and focus state when returning from a source.
+import './relation-layout.mjs';
 const key='reading-state.v1:'+location.pathname+location.search;
 const disclosures=()=>[...document.querySelectorAll('main details')];
 let followed='';

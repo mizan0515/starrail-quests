@@ -11,6 +11,8 @@ export function getStaticPaths(){return atlas.nodes.map(node=>({params:{id:node.
 const {node}=Astro.props;
 const reading=readingCluster(node.id);
 const relationTitle=reading.relations.some(r=>r.claimKind!=='inference')?'관계 한눈에':'함께 읽을 기록';
+const structuralClaims=new Set([reading.topology,...reading.views].filter(Boolean).flatMap(t=>t.edges.map(e=>e.claimId)));
+const supplementalRelations=reading.topology&&!node.relationshipTitle?reading.relations.filter(r=>!structuralClaims.has(r.reasonClaimId)):[];
 const headings=[{depth:2,slug:reading.topology?.id||'structure',text:reading.topology?.title||relationTitle},...(node.timeline.length?[{depth:2,slug:'moments',text:node.axis==='person'?'삶의 전환점':'기록 속 사건 흐름'}]:[]),{depth:2,slug:'perspectives',text:'기록의 관점 비교'},{depth:2,slug:'reading',text:'더 깊이 읽기'},{depth:2,slug:'verified-sources',text:'확인한 원문과 근거'}];
 const essay=topics.find(t=>t.id===node.topic)!;
 const sources=[...(node.topology?.edges.flatMap(e=>e.evidence)||[]),...node.evidence,...node.links.map(l=>l.evidence),...node.timeline.map(m=>m.evidence),...(node.comparison||atlas.comparisons[node.topic]).panels.map(p=>p.evidence)];
@@ -20,7 +22,9 @@ const sources=[...(node.topology?.edges.flatMap(e=>e.evidence)||[]),...node.evid
  <div class="dossier-lead"><p class="dossier-question">{node.question}</p><p class="dossier-intro">{node.intro}</p><span class="kind-badge">원문과 연결해 읽기</span></div>
  <nav class="dossier-jumps" aria-label="이 자료에서 읽기"><a href={'#'+(reading.topology?.id||'structure')}>{reading.topology?'핵심 구조':relationTitle}</a>{node.timeline.length>0&&<a href="#moments">{node.axis==='person'?'행적':'사건'}</a>}{(node.comparison||atlas.comparisons[node.topic]).panels.length>0&&<a href="#perspectives">관점 비교</a>}<a href={node.focusedSources?'#verified-sources':'#reading'}>{node.focusedSources?'원문':'원문·해설'}</a></nav>
  <span id="connections"></span><Fragment set:html={reading.topology?readingKit.topology(reading.topology):readingKit.network(reading.relations,{id:'structure',title:'관계 한눈에',focusId:reading.entityId})} />
+ <Fragment set:html={reading.views.map(readingKit.topology).join('')} />
  {node.relationshipTitle&&<Fragment set:html={readingKit.network(reading.relations,{id:'affiliations',title:node.relationshipTitle,focusId:reading.entityId})} />}
+ {supplementalRelations.length>0&&<Fragment set:html={readingKit.network(supplementalRelations,{id:'supplemental-relations',title:'관련 관계와 함께 읽을 기록',focusId:reading.entityId})} />}
  <Fragment set:html={reading.sections.map(readingKit.section).join('')} />
 
  {node.timeline.length>0&&<section id="moments"><h2>{node.axis==='person'?'삶의 전환점':'기록 속 사건 흐름'}</h2><Fragment set:html={readingKit.timeline(reading.events,{ordered:reading.timeOrdered,note:reading.timeNote})}/></section>}

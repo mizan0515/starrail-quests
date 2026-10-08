@@ -422,3 +422,17 @@ test('large direct hubs reserve one item for the actual center and retain every 
  assert.equal(new Set(byClass(visible,'details','rw-relation-proof').map(p=>attribute(p.attrs,'id'))).size,26);
  assert.equal(JSON.stringify(t),before);
 });
+
+test('three or more direct targets use one side branch with every original statement and proof', () => {
+ for(const direction of ['incoming','outgoing']){
+  const t={id:'side-branch-'+direction,title:'관계',nodes:[{...node('focus'),focus:true},...['a','b','c'].map(node)],edges:['a','b','c'].map((id,i)=>edge('e'+i,direction==='incoming'?id:'focus',direction==='incoming'?'focus':id,'원문 관계 '+i))};
+  const before=JSON.stringify(t),html=kit().topology(t),visible=withoutModels(html);
+  assert.deepEqual(variants(html),['hub']);
+  assert.ok(visible.includes('data-hub-shape="branch"'));
+  assert.ok(visible.includes('--rw-hub-rows:3'));
+  assert.deepEqual(statements(html),expectedStatements(t));
+  assert.equal(byClass(visible,'details','rw-relation-proof').length,3);
+  byClass(visible,'div','rw-relation-band').forEach((row,i)=>assertProofNear(row.inner,t,t.edges[i]));
+  assert.equal(JSON.stringify(t),before);
+ }
+});
