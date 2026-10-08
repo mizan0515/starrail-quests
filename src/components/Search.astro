@@ -1,0 +1,8 @@
+---
+import Default from '@astrojs/starlight/components/Search.astro';
+---
+<Default {...Astro.props} />
+<script>
+  import {installSearchDialog} from '../lib/reading-kit/search-dialog.mjs';
+  for (const root of document.querySelectorAll('site-search')) installSearchDialog(root);
+</script>

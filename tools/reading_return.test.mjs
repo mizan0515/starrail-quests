@@ -26,6 +26,17 @@ test('source → source inherits original location rather than a growing reading
  assert.equal(loop.hash,'#quest-1010203-scene-1-row-3');
 });
 
+test('universe records retain their filtered list and exact reading anchor',()=>{
+ const catalogue=base+'/우주/divergent-universe.html?recordQuery='+encodeURIComponent('소멸파')+'&recordLimit=24#universe-source-divergent-universe-150100';
+ assert.equal(safe(catalogue),resolved(catalogue).pathname+resolved(catalogue).search+resolved(catalogue).hash);
+ const record=base+'/우주/기록/divergent-universe-150100.html?from='+encodeURIComponent(catalogue)+'#divergent-universe-150100-scene-1-row-1';
+ const out=resolved(safe(record));
+ assert.equal(out.searchParams.get('from'),resolved(catalogue).pathname+resolved(catalogue).search+resolved(catalogue).hash);
+ assert.equal(out.hash,'#divergent-universe-150100-scene-1-row-1');
+ assert.equal(safe(base+'/우주/기록/../../outside.html'),null);
+ assert.equal(safe(base+'/우주/기록/a%2fb.html'),null);
+});
+
 test('catalogue allowlist and one-level chain limit',()=>{
  for(const path of ['index.html','versions/early.html','quests/main.html','설정집.html']) {
   const out=resolved(safe(make(reading,base+'/'+path+'?q=abc&from='+encodeURIComponent(reading))));

@@ -1,0 +1,25 @@
+---
+import {href} from '../lib/data';
+const {records,modeName}=Astro.props;
+const excerpt=r=>r.scenes.flatMap(s=>s.rows).find(row=>row.text)?.text||'';
+---
+<div class="universe-source-index not-content" data-universe-records>
+  <label class="universe-source-search"><span>이야기 속 이름과 구절 찾기</span><input type="search" data-source-query placeholder="인물·사건·원문 구절" /></label>
+  <p role="status" aria-live="polite" data-source-count>{records.length}개 기록</p>
+  <div class="universe-source-list">{records.map((r,i)=><a id={'universe-source-'+r.id} class="universe-source-entry" href={href('우주/기록/'+r.id+'.html')} data-reading-link data-source-record={r.id} data-search={r.scenes.flatMap(s=>s.rows.map(row=>row.text)).join(' ')} hidden={i>=12}>
+    <span class="universe-source-number" aria-hidden="true">{String(i+1).padStart(2,'0')}</span>
+    <span class="universe-source-content"><small>{modeName} · {r.scenes.reduce((n,s)=>n+s.rows.length,0)}개 원문 행</small><strong>{r.title}</strong><span class="universe-source-excerpt">{excerpt(r)}</span></span>
+    <span aria-hidden="true">→</span>
+  </a>)}</div>
+  <p data-source-empty hidden>이 구절을 포함한 기록이 없습니다.</p>
+  <button class="record-more" type="button" data-source-more>기록 더 보기</button>
+</div>
+<script>
+  for(const root of document.querySelectorAll<HTMLElement>('[data-universe-records]')){
+    const records=[...root.querySelectorAll<HTMLElement>('[data-source-record]')],input=root.querySelector<HTMLInputElement>('[data-source-query]')!,more=root.querySelector<HTMLButtonElement>('[data-source-more]')!;let limit=12;
+    const update=()=>{const q=input.value.trim().toLocaleLowerCase('ko'),matches=records.filter(r=>r.textContent!.toLocaleLowerCase('ko').includes(q)||(r.dataset.search||'').toLocaleLowerCase('ko').includes(q));records.forEach(r=>r.hidden=true);matches.slice(0,limit).forEach(r=>r.hidden=false);root.querySelector('[data-source-count]')!.textContent=`${matches.length}개 기록 · ${Math.min(limit,matches.length)}개 표시`;(root.querySelector('[data-source-empty]') as HTMLElement).hidden=!!matches.length;more.hidden=matches.length<=limit;};
+    const restore=()=>{const params=new URLSearchParams(location.search);input.value=params.get('recordQuery')||'';const saved=Number(params.get('recordLimit'));limit=Number.isInteger(saved)&&saved>=12?Math.min(saved,Math.ceil(records.length/12)*12):12;update();};
+    const remember=()=>{const url=new URL(location.href);if(input.value)url.searchParams.set('recordQuery',input.value);else url.searchParams.delete('recordQuery');if(limit>12)url.searchParams.set('recordLimit',String(limit));else url.searchParams.delete('recordLimit');history.replaceState(history.state,'',url);};
+    input.addEventListener('input',()=>{limit=12;update();remember();});more.addEventListener('click',()=>{limit+=12;update();remember();});window.addEventListener('popstate',restore);restore();
+  }
+</script>

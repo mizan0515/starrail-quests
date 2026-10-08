@@ -17,6 +17,10 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Universe source catalogue QA failed'}
   & python tools/verify_universe_site.py
   if($LASTEXITCODE -ne 0){throw 'Universe source rendering QA failed'}
+  & python -B tools/verify_universe_reading_clusters.py
+  if($LASTEXITCODE -ne 0){throw 'Universe editorial citation QA failed'}
+  & python -B tools/verify_universe_source_site.py
+  if($LASTEXITCODE -ne 0){throw 'Universe exact record and source link HTML QA failed'}
   & python tools/verify_mission_dialogue_supplements.py
   if($LASTEXITCODE -ne 0){throw 'Mission dialogue source QA failed'}
   & python tools/verify_mission_readers.py

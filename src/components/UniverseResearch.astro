@@ -1,0 +1,16 @@
+---
+import {disclosureAttributes,sourceLinkAttributes} from '../lib/reading-kit/reader.mjs';
+import {doc,docUrl} from '../lib/data';
+const {cluster}=Astro.props;
+const proofUrl=e=>{const d=doc(e.docId),s=d.sections.find(s=>s.anchor===e.anchor);const index=s?.rows.findIndex(r=>e.talkId?r.talk_id===e.talkId:r.text===e.quote);if(index===undefined||index<0)throw Error('Missing cluster source: '+e.docId);return docUrl(e.docId)+'#'+e.anchor+'-row-'+(index+1);};
+---
+<section id="research" class="universe-research not-content" data-universe-cluster={cluster.id}>
+  <header><p class="eyebrow">기록을 함께 읽기 · 원문에 근거한 편집</p><h2>{cluster.title}</h2><p class="universe-research-question">{cluster.question}</p><p>{cluster.intro}</p></header>
+  {cluster.layout==='sequence'&&<p class="universe-research-order-label">함께 읽는 순서 · 연구 임무에서 두 제왕과 기물의 기록으로</p>}
+  <div class:list={['universe-research-panels','universe-research-'+cluster.layout]}>{cluster.panels.map((panel,i)=><article data-cluster-panel={cluster.id+'-'+i}>
+    <p class="universe-research-author">{panel.author}</p><h3>{panel.title}</h3><p>{panel.text}</p>
+    {panel.parts&&<div class="universe-role-split"><p>{panel.partsRelation}</p><div>{panel.parts.map(part=><section><h4>{part.title}</h4><p>{part.text}</p></section>)}</div></div>}
+    <details {...disclosureAttributes({className:'universe-research-evidence'})}><summary>이 설명의 원문 {panel.evidence.length}개</summary>{panel.evidence.map(e=><div><blockquote class="rw-quotation">{e.quote}</blockquote><a {...sourceLinkAttributes({reading:true})} href={proofUrl(e)} data-cluster-evidence>{doc(e.docId).title} · 해당 구절 ↗</a></div>)}</details>
+  </article>)}</div>
+  <nav class="universe-related-reading" aria-label="함께 읽는 원문">{cluster.related.map(ref=><a href={docUrl(ref.docId)} data-reading-link><strong>{doc(ref.docId).title}</strong><span>{ref.reason}</span><span aria-hidden="true">↗</span></a>)}</nav>
+</section>

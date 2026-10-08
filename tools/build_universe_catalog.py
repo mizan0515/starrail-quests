@@ -107,6 +107,13 @@ def build(verify_game=None, skill=None):
         local.verify_unchanged()
         evidence['localVerification']={'method':'current-local-TalkSentenceConfig-and-Korean-TextMap','verifiedDialogueRows':len(selected),'table':{**ts,'file':Path(ts['file']).name},'textMap':{**ks,'file':Path(ks['file']).name},'files':[{**e,'file':Path(p).name} for p,e in local.evidence.items()]}
     result={'schema':'starrail-universe-catalog.v1','modes':modes,'itemCollections':collections,'counts':{'modes':len(modes),'coreDocuments':len({d['id'] for m in modes for d in m['documents']}),'reviewedDialogueRows':len({r['talk_id'] for m in modes for g in m['dialogueGroups'] for r in g['rows']}),'itemRecords':sum(c['count'] for c in collections)},'evidence':evidence}
+    source_records_path=SITE/'data/universe-source-records.json'
+    if source_records_path.exists():
+        source_records=read(source_records_path)
+        assert source_records['schemaVersion']=='starrail-universe-source-records.v1'
+        by_mode={m['id']:m['records'] for m in source_records['modes']}
+        for mode in modes:mode['sourceRecordIds']=[r['id'] for r in by_mode.get(mode['id'],[])]
+        result['sourceRecords']={'url':'universe-source-records.json','sha256':digest(source_records_path),'counts':source_records['counts']}
     write(SITE/'data/universe-catalog.json',result);write(SITE/'public/universe-catalog.json',result)
     print(json.dumps(result['counts'],ensure_ascii=False))
 

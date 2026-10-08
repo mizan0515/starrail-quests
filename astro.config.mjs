@@ -12,7 +12,7 @@ export default defineConfig({
   integrations:[starlight({
     title:'스타레일 · 별의 기록',description:'스타레일 한국어 임무와 설정을 맥락으로 연결한 자료집',
     defaultLocale:'root',locales:{root:{label:'한국어',lang:'ko'}},
-    customCss:['./src/styles/library.css','./src/styles/context.css','./src/styles/complete-library.css','./src/styles/reading-system.css','./src/lib/reading-kit/reading.css','./src/styles/universe.css','./src/styles/mission-reader.css','./src/lib/reading-kit/reader.css'],
+    customCss:['./src/styles/library.css','./src/styles/context.css','./src/styles/complete-library.css','./src/styles/reading-system.css','./src/lib/reading-kit/reading.css','./src/styles/universe.css','./src/styles/mission-reader.css','./src/lib/reading-kit/reader.css','./src/lib/reading-kit/search-dialog.css'],
     tableOfContents:{minHeadingLevel:2,maxHeadingLevel:2},
     sidebar:[
       {label:'자료집',items:[{label:'이야기 찾아보기',link:link('index.html')},{label:'설정집 · 연결해서 읽기',link:link('설정집.html')}]},
@@ -22,7 +22,7 @@ export default defineConfig({
       {label:'설정의 연결',collapsed:true,items:[['paths-and-factions','에이언즈와 파벌'],['xianzhou-immortality','선주 · 영생과 마각'],['borisin-and-foxians','보리인과 여우족'],['belobog-preservation','벨로보그 · 보존의 의미'],['penacony-memory','페나코니 · 꿈과 기록'],['amphoreus-myth-and-life','앰포리어스 · 신화와 일상'],['herta-life-and-knowledge','헤르타 · 생명과 지식']].map(([k,label])=>({label,link:link(`설정/${k}.html`)}))},
       {label:'읽기 안내',items:[{label:'수록 범위와 출처',link:link('자료안내.html')}]}
     ],
-    components:{Sidebar:'./src/components/Sidebar.astro',Footer:'./src/components/Footer.astro'},
+    components:{Sidebar:'./src/components/Sidebar.astro',Footer:'./src/components/Footer.astro',Search:'./src/components/Search.astro'},
     pagination:false,lastUpdated:false
   })]
 });
