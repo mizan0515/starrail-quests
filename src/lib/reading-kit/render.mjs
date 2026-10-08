@@ -3,6 +3,14 @@ import {readerDisclosure} from './reader.mjs';
 export const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function safeHref(value){const s=String(value);if(!/^(?:https?:\/\/|\/|#)/.test(s)||s.startsWith('//'))throw Error('Unsupported reading URL');return escapeHtml(s);}
 export function paragraphRuns(value){return String(value).split(/(\n\s*\n)/).reduce((out,text,i)=>{if(i%2)out[out.length-1].separator=text;else out.push({text,separator:''});return out;},[]);}
+export function readingMedia(items){
+ if(!items.length)return '';
+ return `<section class="rw-media rw-app not-content" aria-label="게임 이미지">${items.map(im=>{
+  if(!im.alt||!im.caption||!im.sourceUrl||!Number.isInteger(im.width)||!Number.isInteger(im.height)||im.width<1||im.height<1)throw Error('Game image requires identity, dimensions and source');
+  const img=`<img src="${safeHref(im.url)}" alt="${escapeHtml(im.alt)}" width="${im.width}" height="${im.height}" loading="lazy" decoding="async">`;
+  return `<figure${im.width/im.height>=1.5?' class="rw-media-wide"':''}>${im.bodyUrl?`<a data-reading-link href="${safeHref(im.bodyUrl)}">${img}</a>`:img}<figcaption><strong>${escapeHtml(im.caption)}</strong>${im.description?`<span>${escapeHtml(im.description)}</span>`:''}<a href="${safeHref(im.sourceUrl)}">이미지 출처 ↗</a></figcaption></figure>`;
+ }).join('')}</section>`;
+}
 export function createReadingKit({inline=escapeHtml,evidence=()=>''}={}){
  const provenance=item=>item.kind==='inference'?'편집자의 해석':item.evidence?.some(e=>e.quote===item.text)?'원문 인용':'원문에 근거한 요약';
  const E=escapeHtml,link=n=>`<a class="rw-target" data-reading-link href="${safeHref(n.url)}"><small>${E(n.kind||'')}</small><strong>${E(n.name)}</strong></a>`;
@@ -17,5 +25,5 @@ export function createReadingKit({inline=escapeHtml,evidence=()=>''}={}){
  const topology=t=>renderTopology(t,{escape:E,href:safeHref,inline,evidence});
  const network=(items,options)=>{const t=topologyFromRelations(items,options);return t?topology(t):'';};
  const directory=items=>`<section class="rw-directory rw-app not-content" aria-label="관련 본문">${items.map((n,i)=>`<a data-reading-link href="${safeHref(n.url)}"><span class="rw-directory-number" aria-hidden="true">${String(i+1).padStart(2,'0')}</span><div><strong>${E(n.name)}</strong><p>${E(n.summary)}</p></div><span aria-hidden="true">↗</span></a>`).join('')}</section>`;
- return {section,relations,timeline,comparison,containment,process,source,topology,network,directory};
+ return {section,relations,timeline,comparison,containment,process,source,topology,network,directory,media:readingMedia};
 }
