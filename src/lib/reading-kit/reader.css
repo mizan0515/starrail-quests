@@ -2,6 +2,12 @@
 :root { --sl-sidebar-width: 240px; --sl-nav-height: 72px; }
 .rw-reader, .rw-app { min-inline-size: 0; }
 .rw-reader { container-type: inline-size; }
+.rw-source-link[data-reading-template="source-link"] { color: var(--brass, var(--sl-color-text-accent)); text-decoration-line: underline; text-decoration-thickness: 1px; text-underline-offset: .2em; white-space: normal; overflow-wrap: anywhere; word-break: keep-all; }
+.rw-source-link[data-reading-template="source-link"]:visited { color: var(--ink, var(--sl-color-text)); }
+.rw-source-link[data-reading-template="source-link"]:hover { color: var(--ink, var(--sl-color-text)); text-decoration-thickness: 2px; }
+.rw-source-link[data-source-link-variant="cta"] { display: inline-flex; align-items: center; box-sizing: border-box; min-block-size: 44px; max-inline-size: 100%; line-height: 1.65; }
+.rw-source-link[data-source-link-variant="inline"] { display: inline; }
+.rw-source-link[data-reading-template="source-link"]:focus-visible { outline: 3px solid var(--brass, var(--sl-color-text-accent)); outline-offset: 3px; border-radius: 2px; }
 .rw-reader[data-reading-variant="scene"] { margin-block: 1.75rem !important; scroll-margin-top: 7rem; }
 .rw-reader :where(div, form, label, nav, li, p, dl, dt, dd), .rw-app :where(article, header, div, li) { min-inline-size: 0; }
 .rw-source-row { margin-block: 1.25rem !important; }

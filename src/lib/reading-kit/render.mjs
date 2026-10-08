@@ -1,5 +1,5 @@
 import {renderTopology,topologyFromRelations} from './topology.mjs';
-import {readerDisclosure} from './reader.mjs';
+import {readerDisclosure,sourceLink} from './reader.mjs';
 export const escapeHtml=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export function safeHref(value){const s=String(value);if(!/^(?:https?:\/\/|\/|#)/.test(s)||s.startsWith('//'))throw Error('Unsupported reading URL');return escapeHtml(s);}
 export function paragraphRuns(value){return String(value).split(/(\n\s*\n)/).reduce((out,text,i)=>{if(i%2)out[out.length-1].separator=text;else out.push({text,separator:''});return out;},[]);}
@@ -8,7 +8,7 @@ export function readingMedia(items){
  return `<section class="rw-media rw-app not-content" aria-label="게임 이미지">${items.map(im=>{
   if(!im.alt||!im.caption||!im.sourceUrl||!Number.isInteger(im.width)||!Number.isInteger(im.height)||im.width<1||im.height<1)throw Error('Game image requires identity, dimensions and source');
   const img=`<img src="${safeHref(im.url)}" alt="${escapeHtml(im.alt)}" width="${im.width}" height="${im.height}" loading="lazy" decoding="async">`;
-  return `<figure${im.width/im.height>=1.5?' class="rw-media-wide"':''}>${im.bodyUrl?`<a data-reading-link href="${safeHref(im.bodyUrl)}">${img}</a>`:img}<figcaption><strong>${escapeHtml(im.caption)}</strong>${im.description?`<span>${escapeHtml(im.description)}</span>`:''}<a href="${safeHref(im.sourceUrl)}">이미지 출처 ↗</a></figcaption></figure>`;
+  return `<figure${im.width/im.height>=1.5?' class="rw-media-wide"':''}>${im.bodyUrl?`<a data-reading-link href="${safeHref(im.bodyUrl)}">${img}</a>`:img}<figcaption><strong>${escapeHtml(im.caption)}</strong>${im.description?`<span>${escapeHtml(im.description)}</span>`:''}${sourceLink(im.sourceUrl,'이미지 출처 ↗')}</figcaption></figure>`;
  }).join('')}</section>`;
 }
 export function createReadingKit({inline=escapeHtml,evidence=()=>''}={}){

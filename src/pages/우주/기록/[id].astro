@@ -1,0 +1,22 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import sources from '../../../../data/universe-source-records.json';
+import universe from '../../../../data/universe-catalog.json';
+import Scene from '../../../components/Scene.astro';
+import {href} from '../../../lib/data';
+export function getStaticPaths(){return sources.modes.flatMap(mode=>mode.records.map(record=>({params:{id:record.id},props:{record,mode}})));}
+const {record,mode}=Astro.props;
+const parent=universe.modes.find(m=>m.id===mode.id);
+const records=mode.records,index=records.findIndex(r=>r.id===record.id);
+const unresolvedOptions=sources.unresolvedScriptTextFields.filter(field=>field.recordId===record.id).length;
+---
+<StarlightPage frontmatter={{title:record.title,editUrl:false,tableOfContents:false}}>
+ <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('우주.html')}>우주 콘텐츠·아이템</a><span>/</span><a href={href('우주/'+mode.id+'.html#source-records')}>{parent.name}</a><span>/</span><span>원문 기록</span></nav>
+ <p class="document-meta"><span class="kind-badge">{parent.name} · 원문</span><span>{record.scenes.reduce((n,s)=>n+s.rows.length,0)}개 원문 행</span></p>
+ {record.titleStatus==='NEUTRAL_RECORD_ID'&&<p class="muted">표시 제목은 자료 종류와 식별자를 사용합니다.</p>}
+ <p class="muted">본문은 자료의 기록 순서로 수록했습니다. 선택지의 진행 경로는 각 문장에 연결합니다.</p>
+ {unresolvedOptions>0&&<p class="editor-note" data-choice-text-pending>이 기록의 선택지 문구 {unresolvedOptions}개는 한국어 연결을 확인 중입니다. 현재 본문에는 확인된 대사를 수록했습니다.</p>}
+ <nav class="shelf-nav" aria-label="이 기록의 원문 장면">{record.scenes.map((s,i)=><a href={'#'+s.anchor}>원문 {i+1}</a>)}</nav>
+ <div class="universe-record-original" id="original">{record.scenes.map(s=><Scene section={s} quest/>)}</div>
+ <nav class="universe-record-neighbours" aria-label="같은 콘텐츠의 다른 기록">{index>0&&<a href={href('우주/기록/'+records[index-1].id+'.html')} data-reading-link><small>앞선 자료</small><strong>{records[index-1].title}</strong></a>}<a href={href('우주/'+mode.id+'.html#source-records')}><small>원문 목록</small><strong>{parent.name}</strong></a>{index+1<records.length&&<a href={href('우주/기록/'+records[index+1].id+'.html')} data-reading-link><small>다음 자료</small><strong>{records[index+1].title}</strong></a>}</nav>
+</StarlightPage>

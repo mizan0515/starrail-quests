@@ -15,3 +15,13 @@ export function disclosureAttributes({className='',id='',open=false,attributes={
 export function htmlAttributes(attributes){return Object.entries(attributes).map(([k,v])=>v===true?k:`${k}="${escape(v)}"`).join(' ');}
 export function readerFrame(body,options={}){return `<div ${htmlAttributes(readerAttributes(options))}>${body}</div>`;}
 export function readerDisclosure(summary,body,options={}){return `<details ${htmlAttributes(disclosureAttributes(options))}><summary>${escape(summary)}</summary>${body}</details>`;}
+export function sourceLinkAttributes({className='',id='',reading=false,variant='cta'}={}){
+ if(typeof reading!=='boolean'||!['cta','inline'].includes(variant))throw Error('Invalid source link options');
+ return {class:['rw-source-link',className].filter(Boolean).join(' '),'data-reading-template':'source-link','data-source-link-variant':variant,...(id?{id}:{}),...(reading?{'data-reading-link':true}:{})};
+}
+export function sourceLink(url,label,options={}){
+ const value=String(url);
+ if(!/^(?:https?:\/\/|\/(?!\/)|#)/.test(value)||/[\u0000-\u0020\\]/.test(value))throw Error('Unsupported source URL');
+ if(options.reading&&!/^(?:\/(?!\/)|#)/.test(value))throw Error('Reading source link must be local');
+ return `<a href="${escape(value)}" ${htmlAttributes(sourceLinkAttributes(options))}>${escape(label)}</a>`;
+}

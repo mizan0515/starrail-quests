@@ -1,5 +1,5 @@
 {
-  "version": "1.6.0",
+  "version": "1.7.0",
   "files": {
     "graph.mjs": "ea21f33061b44341df29d999bb07fd9b93f0face98dc60d1f7b506cb534c7361",
     "graph.test.mjs": "1334a91d1da97ac8501acf4708e412de2ca489ef43e1725a6b4f65c9219bbe3a",
@@ -7,16 +7,19 @@
     "qa.mjs": "351fa3e01cb4dee30d096d8f55e389c6cd818b97eb52babcbbfa27cc8de626c3",
     "qa.test.mjs": "ecbbb61401bdac9886af8c201fd005117d6465eb919bbf47b5c918a10b93a342",
     "reading.css": "c01ad7b9c369d035f5416b6f1b42e11edeb244adf2f29868cffe97750858dabe",
-    "render.mjs": "91010e40f1c7f56003ef5cfb0f3b2056c76ff4afad4f3cd8774adc3de725308c",
+    "render.mjs": "6c76da1abf5a97b9b24fd1ae145b402db7c0284fcc0b83e3e624299ebfc218d5",
     "render.test.mjs": "4d380d6bece7882496ede80ceb5f666c0c59ac639c7b8bbf20aafb68b45f1ea4",
     "state.mjs": "4452dd30d6c59616d79dcaf134cc96e7cb9843c5def2f327febb9c0f5510fe78",
     "topology.mjs": "83b6497deefb892de45dfc856ddc066c324bcbbd655a4fb2c7abb924d9eb5e11",
     "topology.test.mjs": "fc0d20183e337c8a1e0079b44bc3d491ce1ecfc30e0a552e88c91832e6e3878d",
     "write.mjs": "b243bac141f82faa81a86c27246c3d258b7409d5851bb68bf07fc7054e6be979",
-    "reader.mjs": "5114b4a9075e00bb00e3ce609508893dcf5c0e255e2d1565b6d3237d53e7f878",
-    "reader.css": "38355e23e4269a103fb2122db2b28c3337429ead60debb73083d90d46ef54351",
-    "reader.test.mjs": "7b98c4385239ee9951f2f1078efaf173fb32aeef19c5c0ae94207065f9211dd5",
+    "reader.mjs": "010ff7dba55a9ee9e5370d32588a817d30695ec2f05248c3457ff44213eae44c",
+    "reader.css": "7339e1995a4f506ce9724c91ab5b8649326d2357f39a651d163074498424a347",
+    "reader.test.mjs": "8e33c078deaba37fe6004cad0b9422b1499c13992ac8f313fc20035cf04b7072",
     "layout-qa.mjs": "6ad72a094a57e33188aba67876d9365cbff515d6f6ee0444d7d58a93834056d1",
-    "layout-qa.test.mjs": "74550cf35d25827c6a712f05c29f30bb6dcbb5fce3f486e7c946e0190a4ba3de"
+    "layout-qa.test.mjs": "74550cf35d25827c6a712f05c29f30bb6dcbb5fce3f486e7c946e0190a4ba3de",
+    "search-dialog.mjs": "1b7ee1ea311704ca5c160c64ea4106a6979aa8f20a000f6f4dc15c7adee2008d",
+    "search-dialog.test.mjs": "e882c61b27471533205b19d795a1447671ee4b8aa9359b3fdae5eefc014e6578",
+    "search-dialog.css": "88b37caaee760b830cb134221a766784e2b42a50029d35174ae0a8dd255eeeb9"
   }
 }
