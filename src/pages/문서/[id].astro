@@ -1,4 +1,5 @@
 ---
+import {disclosureAttributes} from '../../lib/reading-kit/reader.mjs';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
 import Scene from '../../components/Scene.astro';
@@ -36,7 +37,7 @@ const previous=quest?catalog.filter(x=>x.category==='퀘스트'&&x.kind===d.kind
    {[...new Set(s.steps.map(step=>step.description).filter(Boolean))].map(description=><p class="stage-context">{description}</p>)}
    {s.predecessors.length>0&&<p class="stage-predecessor" data-pagefind-ignore>앞선 조건: {[...new Set(s.predecessors.map(id=>d.stages.find(x=>x.id===id)?.title||'내부 진행 단계 완료'))].join(' · ')}</p>}
    {d.sections.filter(x=>s.steps.some(step=>step.id===x.stage)).length>0&&<nav class="mission-stage-scenes" aria-label="이 목표에 연결된 장면">{d.sections.filter(x=>s.steps.some(step=>step.id===x.stage)).map(section=><a href={'#'+section.anchor}>{missionSectionLinked(d.id,section)?'연결된 대사 장면 읽기 →':'같은 목표 번호의 참고 대화 →'}</a>)}</nav>}
-   <details class="source-details" data-pagefind-ignore><summary>임무 단계 출처{s.steps.length>1&&` · 같은 목표 ${s.steps.length}개 진행 조건 통합`}</summary>{s.steps.map(step=><p>SubMission · {step.id} · 목표 문자열 {step.hash} · 설명 문자열 {step.description_hash}</p>)}<p>진행 조건: MissionInfo 보조 구조</p></details>
+   <details {...disclosureAttributes({className:'source-details'})} data-pagefind-ignore><summary>임무 단계 출처{s.steps.length>1&&` · 같은 목표 ${s.steps.length}개 진행 조건 통합`}</summary>{s.steps.map(step=><p>SubMission · {step.id} · 목표 문자열 {step.hash} · 설명 문자열 {step.description_hash}</p>)}<p>진행 조건: MissionInfo 보조 구조</p></details>
   </details>)}
  </section>}
  {d.topics.length>0&&<section class="related-panel" id="connections" data-pagefind-ignore><h2>관련 설정 읽기</h2><div>{d.topics.map(t=><a href={topicUrl(t.id)} data-reading-link><strong>{t.title}</strong><span>{t.reason}</span><span aria-hidden="true">→</span></a>)}</div></section>}

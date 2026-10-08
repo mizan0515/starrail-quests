@@ -1,17 +1,22 @@
 {
-  "version": "1.3.1",
+  "version": "1.4.0",
   "files": {
     "graph.mjs": "ea21f33061b44341df29d999bb07fd9b93f0face98dc60d1f7b506cb534c7361",
     "graph.test.mjs": "1334a91d1da97ac8501acf4708e412de2ca489ef43e1725a6b4f65c9219bbe3a",
     "integrity.mjs": "4866844ee37c39b2ed35c642a89dc50ff7bbee60baa254f16a2b69126e9d773f",
     "qa.mjs": "ec629e81e312f8355f5eda01c63514fa78dfc2ab581b1af2dfcce74c8b6b31cc",
     "qa.test.mjs": "69065045ad6f5f8df4c1f1898b0540a20d665c721f6e5ff8ba45452d206e43f4",
-    "reading.css": "cbb314e4da87884e7235fce956df45a5d9d6107aca49f9f0424bd7876fa723a4",
-    "render.mjs": "754e254e6d7cb02432bfeb22431764264ad9c8aa0d21ba393dc16341a4294062",
+    "reading.css": "7785bdb3f56868d70cea21e2b8af0f566bfa9cccac56596c105a3f14434aede3",
+    "render.mjs": "c59bf9f7d71a4f06f57bee7dba84d47fc9efee086ee14737179f8eaea7ca6783",
     "render.test.mjs": "9245fa08320ab6895f1d4e8a3d532fef53317b8c4a08872ebaaddb7c3702d9fe",
     "state.mjs": "4452dd30d6c59616d79dcaf134cc96e7cb9843c5def2f327febb9c0f5510fe78",
-    "topology.mjs": "a15bd2026ba852af967f75d8f1d89c45d62eaf1246273e69dca84460c3d1f514",
+    "topology.mjs": "0b74d938e17db4e9d6044e7aaecc713d03553226f069b8eccf863036d9b0390d",
     "topology.test.mjs": "3418c1fe9bc60381e2e8592ecf3ed0a1a5cc51e83672fb272c539ebb8677b96f",
-    "write.mjs": "b243bac141f82faa81a86c27246c3d258b7409d5851bb68bf07fc7054e6be979"
+    "write.mjs": "b243bac141f82faa81a86c27246c3d258b7409d5851bb68bf07fc7054e6be979",
+    "reader.mjs": "5114b4a9075e00bb00e3ce609508893dcf5c0e255e2d1565b6d3237d53e7f878",
+    "reader.css": "38355e23e4269a103fb2122db2b28c3337429ead60debb73083d90d46ef54351",
+    "reader.test.mjs": "7b98c4385239ee9951f2f1078efaf173fb32aeef19c5c0ae94207065f9211dd5",
+    "layout-qa.mjs": "6ad72a094a57e33188aba67876d9365cbff515d6f6ee0444d7d58a93834056d1",
+    "layout-qa.test.mjs": "74550cf35d25827c6a712f05c29f30bb6dcbb5fce3f486e7c946e0190a4ba3de"
   }
 }

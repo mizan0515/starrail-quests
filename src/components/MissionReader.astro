@@ -1,6 +1,7 @@
 ---
 import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
 import Scene from './Scene.astro';
+import {readerAttributes,disclosureAttributes} from '../lib/reading-kit/reader.mjs';
 import {missionPassageKind,missionSectionLinked,missionStructureUrl} from '../lib/data';
 const {document:d,supplements=[],messages=[],reading,coverage}=Astro.props;
 const allScenes=[...d.sections,...supplements,...messages].filter(s=>s.rows.length);
@@ -9,24 +10,24 @@ const isGap=(r:any)=>missionPassageKind(r)==='gap';
 const speakers=[...new Set(scenes.flatMap(s=>s.rows.filter(r=>!isGap(r)).map(r=>r.speaker||'화자 미지정')))].sort((a,b)=>String(a).localeCompare(String(b),'ko'));
 const name=(s:any,i:number)=>{const names=[...new Set(s.rows.filter(r=>r.label!=='선택지'&&r.displayKind!=='choice'&&r.displayKind!=='선택지').map(r=>r.speaker).filter(x=>x&&x!=='화자 미지정'))];return `장면 ${i+1} · ${names.length?names.slice(0,3).join(' · '):s.rows.every(r=>r.label==='선택지'||(r.displayKind==='choice'||r.displayKind==='선택지'))?'선택지':'원문'}`;};
 ---
-<section class="mission-reader" data-mission-reader data-reading-state={reading.state} aria-labelledby="original">
+<section {...readerAttributes({className:'mission-reader'})} data-mission-reader data-reading-state={reading.state} aria-labelledby="original">
  <span id="linked-dialogue" aria-hidden="true"/>
  <AnchorHeading level={2} id="original">대사와 선택지</AnchorHeading>
  <p class="mission-reader-count">대사 <strong>{reading.dialogueCount.toLocaleString()}행</strong><span aria-hidden="true"> · </span>선택지 <strong>{reading.choiceCount.toLocaleString()}개</strong><span aria-hidden="true"> · </span>장면 <strong>{scenes.length.toLocaleString()}개</strong>{reading.gapCount>0&&<><span aria-hidden="true"> · </span>본문 연결 확인 <strong>{reading.gapCount.toLocaleString()}개</strong></>}</p>
  {scenes.length>0?<>
   <p class="muted">임무 설정의 명시 참조로 연결한 한국어 원문입니다. 장면은 자료의 참조 배열로 모았으며, 실제 재생 순서와 분기 조건은 확인한 범위로 표시합니다.</p>
   {coverage?.timelineReferences>0&&<p class="mission-coverage">일부 연출 구간의 전체 대사는 연결 확인 중입니다. 대사·선택지와 메시지의 원문이 확인된 장면을 수록했습니다.</p>}
-  <form class="mission-reader-controls" aria-label="이 임무의 원문 필터">
+  <form class="mission-reader-controls rw-reader-controls not-content" aria-label="이 임무의 원문 필터">
    <label>화자<select name="speaker"><option value="">모든 화자</option>{speakers.map(s=><option value={s}>{s}</option>)}</select></label>
    <label>읽을 항목<select name="passage"><option value="">대사와 선택지</option><option value="dialogue">대사</option><option value="choice">선택지</option></select></label>
    <button type="reset">초기화</button>
   </form>
   <p class="mission-reader-status" role="status" aria-live="polite">한국어 원문 {(reading.dialogueCount+reading.choiceCount).toLocaleString()}개</p>
-  <details class="mission-scene-index"><summary>장면 찾아가기 · {scenes.length}개</summary><nav class="mission-dialogue-outline" aria-label="이 임무의 장면"><ol>{scenes.map((s,i)=><li data-scene-link={s.anchor}><a href={'#'+s.anchor}>{name(s,i)}<span>{s.rows.length}행</span></a></li>)}</ol></nav></details>
+  <details {...disclosureAttributes({className:'mission-scene-index'})}><summary>장면 찾아가기 · {scenes.length}개</summary><nav class="mission-dialogue-outline" aria-label="이 임무의 장면"><ol>{scenes.map((s,i)=><li data-scene-link={s.anchor}><a href={'#'+s.anchor}>{name(s,i)}<span>{s.rows.length}행</span></a></li>)}</ol></nav></details>
   <p class="mission-reader-empty" hidden>이 조건에 해당하는 원문이 없습니다. 화자나 읽을 항목을 바꾸거나 초기화할 수 있습니다.</p>
   <div class="mission-scenes">{scenes.map((s,i)=><Scene section={{...s,title:s.relatedDocument?`장면 ${i+1} · 메시지 · ${s.sourceTitle}`:name(s,i),sourceTitle:s.sourceTitle||s.title,ownership:coverage?.sourceOwnership?.[s.source]||s.ownership,sourceUrl:s.sourceUrl||(coverage?.sourceOwnership?.[s.source]?missionStructureUrl(s.source):undefined)}} quest/>)}</div>
  </>:<aside class="coverage-note"><strong>임무 개요와 진행 목표 수록</strong><p>이 임무의 대사 식별자와 한국어 본문 연결은 확인 중입니다. 아래에서 게임 파일에 기록된 진행 목표를 읽을 수 있습니다.</p></aside>}
- {referenceScenes.length>0&&<details class="mission-reference-scenes" data-reference-scenes id="reference-scenes"><summary>임무 자료의 추가 대화 · {referenceScenes.length}개 묶음</summary><p class="muted">임무 폴더에 수록되었거나 과거 추출본에 연결된 원문입니다. 현재 대조한 임무 설정의 명시 참조에서는 진행 연결이 확인되지 않아 별도로 보존합니다.</p>{referenceScenes.map((s,i)=><Scene section={{...s,title:`참고 자료 ${i+1} · ${s.relatedDocument?'메시지 · '+s.sourceTitle:name(s,i).replace(/^장면 \d+ · /,'')}`,sourceTitle:s.sourceTitle||s.title,ownership:coverage?.sourceOwnership?.[s.source]||s.ownership,sourceUrl:s.sourceUrl||(coverage?.sourceOwnership?.[s.source]?missionStructureUrl(s.source):undefined),referenceOnly:true}} quest/>)}</details>}
+ {referenceScenes.length>0&&<details {...disclosureAttributes({className:'mission-reference-scenes',id:'reference-scenes'})} data-reference-scenes><summary>임무 자료의 추가 대화 · {referenceScenes.length}개 묶음</summary><p class="muted">임무 폴더에 수록되었거나 과거 추출본에 연결된 원문입니다. 현재 대조한 임무 설정의 명시 참조에서는 진행 연결이 확인되지 않아 별도로 보존합니다.</p>{referenceScenes.map((s,i)=><Scene section={{...s,title:`참고 자료 ${i+1} · ${s.relatedDocument?'메시지 · '+s.sourceTitle:name(s,i).replace(/^장면 \d+ · /,'')}`,sourceTitle:s.sourceTitle||s.title,ownership:coverage?.sourceOwnership?.[s.source]||s.ownership,sourceUrl:s.sourceUrl||(coverage?.sourceOwnership?.[s.source]?missionStructureUrl(s.source):undefined),referenceOnly:true}} quest/>)}</details>}
 </section>
 <script>
  for(const root of document.querySelectorAll<HTMLElement>('[data-mission-reader]')){
