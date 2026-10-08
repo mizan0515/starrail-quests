@@ -32,7 +32,9 @@ def main():
         assert 'linked-dialogue' in page.ids,mid
         source=read(ROOT/'data/documents'/(mid+'.json'))
         rows=sum(len(s['rows']) for s in scenes)
-        assert published_catalogue[mid]['count']==source['count']+rows,mid
+        messages={r['id']:r for r in supplements['coverage'][mid].get('relatedDocuments',[])}
+        message_rows=sum(sum(len(s['rows']) for s in read(ROOT/'data/documents'/(id+'.json'))['sections']) for id in messages)
+        assert published_catalogue[mid]['count']==source['count']+rows+message_rows,mid
         assert versions[mid],mid
         for version in versions[mid]:
             assert (ROOT/'dist/versions'/(version+'.html')).exists(),(mid,version)

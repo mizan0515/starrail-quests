@@ -19,5 +19,7 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Universe source rendering QA failed'}
   & python tools/verify_mission_dialogue_supplements.py
   if($LASTEXITCODE -ne 0){throw 'Mission dialogue source QA failed'}
+  & python tools/verify_mission_readers.py
+  if($LASTEXITCODE -ne 0){throw 'Primary reader source and classification QA failed'}
   Write-Output 'RESULT: PASS'
 } finally {Pop-Location}
