@@ -1,0 +1,19 @@
+---
+import {disclosureAttributes} from '../lib/reading-kit/reader.mjs';
+import original from '../../data/official-mission-talks.json';
+const {row}=Astro.props;
+const source=row.officialSource, evidence=original.evidence;
+---
+<details {...disclosureAttributes({className:'source-details'})} data-official-talk-proof={row.talk_id} data-pagefind-ignore>
+  <summary>공식 한국어 원문 · {source.clientVersion.replace('OSPRODWin','')}</summary>
+  <dl>
+    <dt>대사표의 본문과 화자</dt>
+    <dd>TalkSentenceConfig · 대사 {row.talk_id}<br/>본문 문자열 {row.hash}<br/>화자 문자열 {row.speaker_hash}</dd>
+    <dt>대사표 원본 위치</dt>
+    <dd>{evidence.talkTable.file}<br/>엔트리 {evidence.talkTable.key} · 팩 오프셋 {evidence.talkTable.offset}<br/>엔트리 내부 {source.tableOffset}–{source.tableEnd}<br/>SHA-256 · {evidence.talkTable.sha256}</dd>
+    <dt>한국어 문자열 원본 위치</dt>
+    <dd>{evidence.koreanPack.file}<br/>엔트리 {evidence.entry.key} · 팩 오프셋 {evidence.entry.offset}<br/>본문 {row.offset}–{row.end}<br/>SHA-256 · {evidence.koreanPack.sha256}</dd>
+    <dt>게임 파일의 한국어 문자열</dt>
+    <dd><pre>{row.raw}</pre></dd>
+  </dl>
+</details>

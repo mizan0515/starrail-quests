@@ -1,0 +1,30 @@
+---
+import {disclosureAttributes,sourceLinkAttributes} from '../lib/reading-kit/reader.mjs';
+import original from '../../data/official-video-captions.json';
+import MissionOwnershipProof from './MissionOwnershipProof.astro';
+const {section:s}=Astro.props;
+const source=s.rows[0].officialCaptionSource,textmap=s.rows[0].officialTextMapSource;
+const conditionLabel=(c:any)=>c.predicate?.$type==='RPG.GameCore.ByCurrentAudioLanguage'
+ ?`음성 언어 ${c.predicate.AudioLanguage} 조건 · ${c.branch==='SuccessTaskList'?'충족':'미충족'} 경로`
+ :c.predicate?`파일의 조건 · ${c.branch==='SuccessTaskList'?'충족':'미충족'} 경로`:'파일에 기록된 이벤트 호출';
+const url=(path:string)=>`https://github.com/${original.evidence.metadataRepository}/blob/${original.evidence.metadataCommit}/${path}`;
+---
+<p class="caption-context">게임 파일의 영상 자막 · {original.evidence.clientVersion.replace('OSPRODWin','')}<br/>각 행에 자막 본문과 영상 안의 재생 시각을 표시합니다. 화자 · 자막 파일에 미수록</p>
+{s.conditions.length>0&&<ul class="caption-conditions" aria-label="자막의 재생 조건">{s.conditions.map((condition,index)=><li data-caption-condition={index}>{conditionLabel(condition)}</li>)}</ul>}
+<details {...disclosureAttributes({className:'source-details'})} data-official-caption-proof={s.anchor} data-pagefind-ignore>
+ <summary>영상 자막의 원문과 임무 연결 근거</summary>
+ <dl>
+  <dt>영상과 자막의 연결</dt><dd>영상 {s.videoId} · {s.captionReference.kind==='EXPLICIT_OVERRIDE_CAPTION_PATH'?'조건 분기에 지정된 자막':'영상 표에 지정된 자막'}<br/><a href={url(s.captionPath)} {...sourceLinkAttributes({variant:'inline'})}>{s.captionPath} ↗</a><br/>{s.captionReference.pointer}</dd>
+  <dt>자막 원본 위치</dt><dd>{source.packFile}<br/>엔트리 {source.entryKey} · 팩 오프셋 {source.entryOffset} · 길이 {source.entryLength}<br/>SHA-256 · {source.packSha256}</dd>
+  <dt>한국어 문자열 원본 위치</dt><dd>{textmap.packFile}<br/>엔트리 {textmap.entryKey} · 팩 오프셋 {textmap.entryOffset}<br/>SHA-256 · {textmap.packSha256}</dd>
+  <dt>소유 관계와 재생 조건의 자료</dt><dd>고정 버전의 구조 자료 · {original.evidence.metadataCommit}<br/><a href={s.sourceUrl} {...sourceLinkAttributes({variant:'inline'})}>{s.source} ↗</a><br/>SHA-256 · {s.sourceSha256}</dd>
+ </dl>
+ <p>임무 파일의 명시 참조</p><ol>{[s.ownership.ownershipSeed,...s.ownership.chain].map(edge=><MissionOwnershipProof edge={edge}/>)}</ol>
+ {s.conditions.length>0&&<><p>파일에 기록된 조건</p><ul>{s.conditions.map((condition,index)=><li data-caption-condition-proof={index}>{conditionLabel(condition)} · <a href={url(condition.source)} {...sourceLinkAttributes({variant:'inline'})}>{condition.source} ↗</a> · {condition.branchPointer}<pre>{JSON.stringify(condition.predicate||condition.event,null,2)}</pre></li>)}</ul></>}
+ <ol class="caption-source-rows">{s.rows.map((row,index)=><li data-caption-row-proof={index}><dl><dt>한국어 문자열과 재생 시각</dt><dd>문자열 {row.hash} · {row.startTime}–{row.endTime}초<br/>자막 엔트리 내부 {row.officialCaptionSource.rowOffset}–{row.officialCaptionSource.rowEnd}<br/>한국어 엔트리 내부 {row.officialTextMapSource.rowOffset}–{row.officialTextMapSource.rowEnd}</dd><dt>게임 파일의 한국어 문자열</dt><dd><pre>{row.raw}</pre></dd></dl></li>)}</ol>
+</details>
+<style>
+ .caption-context{font-size:.85rem;line-height:1.75;color:var(--sl-color-gray-2)}
+ .caption-conditions{padding-inline-start:1.25rem;font-size:.85rem;line-height:1.75;color:var(--sl-color-gray-2)}
+ .caption-source-rows{padding-inline-start:1.3rem}
+</style>

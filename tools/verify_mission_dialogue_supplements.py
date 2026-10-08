@@ -212,6 +212,14 @@ def main(archive=None):
     local={r['talk_id']:r for p in (SITE/'data/dialogues').glob('*.json') for r in read(p)['section']['rows']}
     local_pages={r['talk_id']:p.stem for p in (SITE/'data/dialogues').glob('*.json') for r in read(p)['section']['rows']}
     assert len(local)==240078
+    official_path=SITE/'data/official-mission-talks.json'
+    official_data=read(official_path) if official_path.exists() else None
+    official={r['talk_id']:r for r in official_data['rows']} if official_data else {}
+    if official_data:
+        from verify_official_mission_talks import row_check
+        assert out['evidence']['officialTalkAdditions']=={'path':'data/official-mission-talks.json','sha256':sha(official_path.read_bytes()),'clientVersion':official_data['evidence']['clientVersion']}
+        assert out['counts']['officialKoreanRows']==len(official)
+        assert not set(official).intersection(local)
     scenes=defaultdict(list)
     for mid,ss in out['missions'].items():
         for s in ss:scenes[s['source']].append((mid,s))
@@ -244,20 +252,28 @@ def main(archive=None):
             assert current==s['source']
             assert s['sourceSha256']==evidence['structureFiles'][s['source']]
             assert s['sourceUrl']==f"https://github.com/{evidence['repository']}/blob/{evidence['commit']}/{s['source']}"
-            assert s['mapping']=='EXACT_PUBLIC_STRUCTURE_REFERENCE_TO_PRESERVED_LOCAL_TALK'
+            official_count=sum(bool(r.get('officialSource')) for r in s['rows'])
+            expected_mapping='EXACT_PUBLIC_STRUCTURE_REFERENCE_TO_OFFICIAL_KOREAN_TALK' if official_count==len(s['rows']) else 'EXACT_PUBLIC_STRUCTURE_REFERENCE_TO_MIXED_KOREAN_TALK' if official_count else 'EXACT_PUBLIC_STRUCTURE_REFERENCE_TO_PRESERVED_LOCAL_TALK'
+            assert s['mapping']==expected_mapping
             old={r.get('talk_id') for sec in doc['sections'] if sec.get('source')==s['source'] for r in sec['rows']}
             assert not old.intersection(r['talk_id'] for r in s['rows'])
             assert len({r['talk_id'] for r in s['rows']})==len(s['rows'])
             for r in s['rows']:
-                orig=local[r['talk_id']]
-                for k,v in orig.items(): assert r[k]==v,(s['source'],r['talk_id'],k)
+                orig=local.get(r['talk_id']) or official[r['talk_id']]
+                for k,v in orig.items():
+                    if k!='references':assert r[k]==v,(s['source'],r['talk_id'],k)
                 assert r['anchor']=='talk-'+str(r['talk_id'])
-                assert r['pageId']==local_pages[r['talk_id']]
-                assert r['url']=='대사/'+r['pageId']+'.html#'+r['anchor']
-                assert (SITE/'data/dialogues'/(r['pageId']+'.json')).exists()
+                if r.get('officialSource'):
+                    assert r['talk_id'] not in local and r['talk_id'] in official
+                    row_check(r,official_data['evidence'])
+                    assert 'pageId' not in r and 'url' not in r
+                else:
+                    assert r['pageId']==local_pages[r['talk_id']]
+                    assert r['url']=='대사/'+r['pageId']+'.html#'+r['anchor']
+                    assert (SITE/'data/dialogues'/(r['pageId']+'.json')).exists()
                 assert r['references']
                 assert r['displayKind'] in ('선택지','대사')
-                assert r['classification']==('EXPLICIT_OPTION_TASK' if r['displayKind']=='선택지' else 'PRESERVED_TALK_ROW')
+                assert r['classification']==('EXPLICIT_OPTION_TASK' if r['displayKind']=='선택지' else 'OFFICIAL_KOREAN_TALK_ROW' if r.get('officialSource') else 'PRESERVED_TALK_ROW')
                 for ref in r['references']:
                     assert ref['pointer'].startswith('/')
                     assert ref['kind'] in ('TalkSentenceID','TalkSentenceIDList','TalkSentence event reference')
@@ -493,6 +509,16 @@ def main(archive=None):
                     assert producers[edge['event']][0]=={'source':edge['target'],'pointer':edge['producerPointer']}
                     assert consumers[edge['event']][0]=={'source':edge['source'],'pointer':edge['pointer']}
             for r in s['rows']:
+                for condition in r.get('sourceConditions',[]):
+                    assert condition['kind']=='GRAPH_DYNAMIC_STRING_CASE'
+                    switch=at(obj,condition['switchPointer']);case=at(obj,condition['casePointer'])
+                    assert switch['$type']=='RPG.GameCore.GenericSwitchCase'
+                    assert switch['SwitchRef']['$type']=='RPG.GameCore.SwitchRefGraphDynamicString'
+                    assert case['$type']=='RPG.GameCore.StringCaseContainer'
+                    assert at(obj,condition['namePointer'])==condition['name']
+                    assert at(obj,condition['valuePointer'])==condition['value']
+                    assert condition['referencePointer'].startswith(condition['casePointer']+'/OnSuccess/')
+                    assert condition['referencePointer'] in {ref['pointer'] for ref in r['references']}
                 for ref in r['references']:
                     x=at(obj,ref['pointer'])
                     assert x==r['talk_id'] or x=='TalkSentence_'+str(r['talk_id'])
