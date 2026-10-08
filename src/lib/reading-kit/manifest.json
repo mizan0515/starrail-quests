@@ -1,5 +1,5 @@
 {
-  "version": "1.10.0",
+  "version": "1.10.1",
   "files": {
     "cva/provenance.json": "c8937a7c16d08c9217075505e105c51b553242057d7327326e7b550bc02dcad8",
     "cva/vendor/components.js": "5dde607bfcbcb797a75ad25bb196ccf1c9eab0bae7676363559693fa7e685dd0",
@@ -10,7 +10,7 @@
     "cva/vendor/scene-catalog.js": "4753bd318ea7f10e3e341755d694efe2e104c2fe7636aee1ac4a360479a56351",
     "cva/vendor/scene-renderer.js": "7f0bf10fb449000dec0a4507b1ce16e0c5209ec8e0bd6321412833b063d0f598",
     "cva/vendor/scene-styles.css": "f4ec720a733df8844c280e3c5cc3472defad333067a9878bfecdbc4f4e1b9f0c",
-    "cva.css": "1f2356b250266ddafe33b2b18eb6040ab3c7d46104da7db7cb9a81d3aa8138ca",
+    "cva.css": "2b4fc637a7e83cf0b4b15a2cd1c53aeb6624659451a023ee90558324da23e37b",
     "cva.mjs": "fcc17c9b42b8bc06382ff802bab3af8def9c4685b7dfb05758df36bebc7b0be4",
     "cva.test.mjs": "d76c2c4c3344e3bdcc41fe4cc4a567bd34dea91b4f3a8cada89a8f713df02826",
     "graph.mjs": "ea21f33061b44341df29d999bb07fd9b93f0face98dc60d1f7b506cb534c7361",
@@ -30,8 +30,8 @@
     "search-dialog.mjs": "1b7ee1ea311704ca5c160c64ea4106a6979aa8f20a000f6f4dc15c7adee2008d",
     "search-dialog.test.mjs": "e882c61b27471533205b19d795a1447671ee4b8aa9359b3fdae5eefc014e6578",
     "state.mjs": "4452dd30d6c59616d79dcaf134cc96e7cb9843c5def2f327febb9c0f5510fe78",
-    "topology.mjs": "7fca026409531b134d942ead178a5f08c47bad7bef7590354466ec34122ca34e",
-    "topology.test.mjs": "80fffd02a7c781c44c6782e80b5aee8fee31b81d9acfc8bd1e46516a28f704d6",
+    "topology.mjs": "c8b6f4bb32d3cba731d514ad797886a027b19128850046655e99dc4871a3b652",
+    "topology.test.mjs": "5cd0ad87b4a806629c370a59d2e705c353bea16d448702236b196e7188f25d09",
     "write.mjs": "b243bac141f82faa81a86c27246c3d258b7409d5851bb68bf07fc7054e6be979"
   }
 }
