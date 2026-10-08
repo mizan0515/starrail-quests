@@ -185,6 +185,8 @@ test('only an explicit complete sequence chooses the canonical quest-route and o
   const t = {id: 'journey', title: '확인된 순서', nodes: [node('c'), node('a'), node('b')], edges: [edge('ab', 'a', 'b', '먼저 이동한다', 'sequence'), edge('bc', 'b', 'c', '다음에 도착한다', 'sequence')]};
   const before = JSON.stringify(t), html = kit().topology(t), visible = withoutModels(html);
   assert.deepEqual(variants(html), ['quest-route']);
+  assert.ok(visible.includes('data-process-kind="sequence"'));
+  assert.equal(byClass(visible,'p','rw-process-return').length,0);
   assert.deepEqual(models(html)[0].props.items.map(item => item.title), ['A', 'B', 'C']);
   assert.equal(models(html)[0].props.relationLabel, '원문에 명시된 과정의 순서');
   assert.deepEqual(statements(html), expectedStatements(t));
@@ -212,11 +214,13 @@ test('explicit cycle layout plus a source return edge chooses feedback-ring and 
   assert.deepEqual(variants(html), ['feedback-ring']);
   assert.deepEqual(models(html)[0].props.items.map(item => item.title), ['A', 'B', 'C']);
   assert.equal(models(html)[0].props.relationLabel, '원문에 설명된 순환 · 각 연결의 발언 주체와 근거');
-  // Incoming edges belong at their destination; C → A remains the closing action.
-  assert.deepEqual(statements(html), [expectedStatements(t)[2], expectedStatements(t)[0], expectedStatements(t)[1]]);
+  // Each cycle stage shows its outgoing action; the original C → A return closes it.
+  assert.deepEqual(statements(html), expectedStatements(t));
+  assert.ok(visible.includes('data-process-kind="cycle"'));
+  assert.equal(visibleText(byClass(visible,'p','rw-process-return')[0].inner),'↶ C → 처음으로 돌아온다 → A');
   const bands = byClass(visible, 'div', 'rw-structure-edge');
   assert.equal(bands.length, 3);
-  [t.edges[2], t.edges[0], t.edges[1]].forEach((e, i) => assertProofNear(bands[i].inner, t, e));
+  t.edges.forEach((e, i) => assertProofNear(bands[i].inner, t, e));
 });
 
 test('return edges and mutually directed relations alone do not declare a cycle', () => {
@@ -246,7 +250,7 @@ test('one explicit cycle with direct incoming sources preserves the core and eac
   const before = JSON.stringify(t), html = kit().topology(t), visible = withoutModels(html);
   assert.deepEqual(variants(html), ['feedback-ring', 'list']);
   assert.deepEqual(models(html)[0].props.items.map(item => item.title), ['A', 'B', 'C']);
-  const core = [t.edges[4], t.edges[1], t.edges[3]], feeders = [t.edges[0], t.edges[2]];
+  const core = [t.edges[1], t.edges[3], t.edges[4]], feeders = [t.edges[0], t.edges[2]];
   assert.deepEqual(statements(html), [...core, ...feeders].map(e => ({
     subject: t.nodes.find(n => n.id === e.from).name, predicate: e.label,
     object: t.nodes.find(n => n.id === e.to).name})));

@@ -181,3 +181,27 @@
  .rw-source-scope .cva-page[data-cva] .sc-common-scope{padding:1rem}
 }
 @media(prefers-reduced-motion:reduce){.cva-page[data-cva] *, .cva-page[data-cva] *::before,.cva-page[data-cva] *::after{scroll-behavior:auto;transition:none;animation:none}}
+
+/* Confirmed source processes: readable stages and the actual closing relation. */
+.rw-source-process{min-inline-size:0;margin-block:1.5rem}
+.rw-source-process .cva-page[data-cva] .rw-structure-edge{margin-block-start:1rem}
+.rw-source-process .cva-page[data-cva] .rw-edge-statement{display:block;font-size:.9rem;line-height:1.8}
+.rw-source-process .cva-page[data-cva] :is(.rw-edge-subject,.rw-edge-object,.rw-edge-predicate){display:inline;background:none;border:0;padding:0;min-inline-size:0}
+.rw-source-process .cva-page[data-cva] .rw-edge-arrow{display:inline;transform:none;margin-inline:.2em}
+.rw-source-process .cva-page[data-cva] .rw-edge-statement .rw-node-kind{display:none}
+.rw-source-process .cva-page[data-cva] .sc-feedback.has-cycle{padding:1.25rem;border:1px solid var(--cva-border);border-radius:1rem;background:var(--cva-surface)}
+.rw-source-process .cva-page[data-cva] .sc-ring-members{grid-template-columns:repeat(var(--rw-process-columns),minmax(0,1fr));gap:2rem}
+.rw-source-process .cva-page[data-cva] .sc-ring-members>li{position:relative;min-inline-size:0}
+.rw-source-process .cva-page[data-cva] .sc-ring-members>li:not(:last-child)::after{content:'→';position:absolute;inset-inline-end:-1.5rem;inset-block-start:3.5rem;font-size:1.35rem;color:var(--cva-axis)}
+.rw-source-process .cva-page[data-cva] .sc-ring-members .sc-card{padding:1rem;border-radius:.5rem}
+.rw-source-process .cva-page[data-cva] .sc-ring-members .sc-item-title{font-size:1.2rem;line-height:1.5}
+.rw-process-return{display:flex;align-items:center;gap:.85rem;margin-block:.75rem 0;padding:.8rem 1.25rem;border:1px solid var(--sl-color-hairline-light);border-radius:.5rem;font-size:.9rem;line-height:1.8}
+.rw-process-return>span:first-child{flex:0 0 auto;font-size:1.75rem;color:var(--sl-color-text-accent)}
+@media(max-width:700px){
+ .rw-source-process .cva-page[data-cva] .sc-ring-members{grid-template-columns:minmax(0,1fr);gap:1.25rem}
+ .rw-source-process .cva-page[data-cva] .sc-ring-members>li::after{display:none}
+}
+@container(max-width:34rem){
+ .rw-source-process .cva-page[data-cva] .sc-ring-members{grid-template-columns:minmax(0,1fr);gap:1.25rem}
+ .rw-source-process .cva-page[data-cva] .sc-ring-members>li::after{display:none}
+}
