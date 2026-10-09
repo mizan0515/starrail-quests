@@ -1,5 +1,5 @@
 {
-  "version": "1.12.0",
+  "version": "1.12.1",
   "files": {
     "body-slots.test.mjs": "efbef8846e0b7d85056100d96e5042ff2c6cf39d54e4ffb8f2ce518e6d9a737e",
     "cva/provenance.json": "c8937a7c16d08c9217075505e105c51b553242057d7327326e7b550bc02dcad8",
@@ -11,7 +11,7 @@
     "cva/vendor/scene-catalog.js": "4753bd318ea7f10e3e341755d694efe2e104c2fe7636aee1ac4a360479a56351",
     "cva/vendor/scene-renderer.js": "7f0bf10fb449000dec0a4507b1ce16e0c5209ec8e0bd6321412833b063d0f598",
     "cva/vendor/scene-styles.css": "f4ec720a733df8844c280e3c5cc3472defad333067a9878bfecdbc4f4e1b9f0c",
-    "cva.css": "0406f72fa7f7a294fa775364732cf2b46352269b70be0d85b9c56154679e0e76",
+    "cva.css": "28f1da0e13d5a79b3a9aa3b707914cf3453b2a36fe8ccf65eb5e1daaf239ce9a",
     "cva.mjs": "00576d0adac99098e89e6ad2230892f0f2ed47c754bd24b0732f249d58215c46",
     "cva.test.mjs": "d76c2c4c3344e3bdcc41fe4cc4a567bd34dea91b4f3a8cada89a8f713df02826",
     "graph.mjs": "ea21f33061b44341df29d999bb07fd9b93f0face98dc60d1f7b506cb534c7361",
