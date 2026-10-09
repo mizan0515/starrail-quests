@@ -48,8 +48,7 @@ const headings=[...t.sections.map((s,i)=>({depth:2,slug:'reading-'+i,text:s.titl
   <details class="editor-note"><summary>편집자 해설 · 근거는 원문에서 확인하세요</summary><p>아래 글은 기록을 함께 읽은 편집자의 해석입니다. 게임 원문은 근거 카드와 추천 목록에서 직접 확인할 수 있습니다. 이야기의 주요 설정이 포함되어 있습니다.</p></details>
   {t.sections.map((s,i)=><div class="essay-section"><Fragment set:html={kit.section({id:'reading-'+i,title:s.title,items:[{text:s.text,kind:'inference',evidence:s.evidence}]})}/></div>)}
   <Perspectives topic={t.id}/>
-  <AnchorHeading level={2} id="relations">관계 한눈에 보기</AnchorHeading>
-  <div class="named-relations" data-topic-relations={t.id}><Fragment set:html={kit.network(relations,{id:'topic-'+t.id,title:'관계 한눈에 보기'})}/></div>
+  <div id="relations" class="named-relations" data-topic-relations={t.id}><Fragment set:html={kit.network(relations,{id:'topic-'+t.id,title:'관계 한눈에 보기'})}/></div>
   <aside class="interpretation-note"><strong>읽을 때 구분할 점</strong><p>{t.caution}</p></aside>
   <AnchorHeading level={2} id="sources">추천 읽기 순서</AnchorHeading>
   <div class="reading-list"><Fragment set:html={kit.directory(t.reading.map(r=>({name:r.title,url:docUrl(r.id),summary:r.why,kind:'추천 원문'})))}/></div>

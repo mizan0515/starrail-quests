@@ -76,6 +76,10 @@ def verify(dist):
         boundary = page.selected('data-topic-relations', t['id'])
         require(len(boundary) == 1, 'Missing/duplicate topic relation boundary')
         boundary = boundary[0]
+        relation_headings = [n for n in page.nodes if n['tag'] == 'h2' and n['text'].strip() == '관계 한눈에 보기']
+        require(len(relation_headings) == 1 and inside(relation_headings[0], boundary),
+                'Topic relationship heading missing/duplicated')
+        require(boundary['attrs'].get('id') == 'relations', 'Topic relationship jump anchor changed')
         for i, (relation, proof) in enumerate(zip(t['relations'], t['relationEvidence'])):
             details = page.selected('id', f"topic-{t['id']}-edge-relation-{i}")
             require(len(details) == 1 and inside(details[0], boundary), 'Missing/duplicate relation proof')
@@ -125,6 +129,64 @@ def verify(dist):
         counts['topics'] += 1
 
     atlas = read(SITE / 'editorial/context-atlas.json')
+    def comparison_page(source, comparison):
+        page = Page(source.read_text('utf8'))
+        sections = page.selected('id', 'perspectives')
+        if not comparison['panels']:
+            require(not sections, 'Empty comparison unexpectedly rendered: ' + source.name)
+            return
+        require(len(sections) == 1, 'Missing/duplicate selected comparison: ' + source.name)
+        section = sections[0]
+        require(comparison['title'] in section['text'] and comparison['scope'] in section['text'],
+                'Comparison selected outside its explicit reader scope: ' + source.name)
+        quotes = [n['text'] for n in page.nodes if n['tag'] == 'blockquote' and inside(n, section)]
+        require(quotes == [p['evidence']['quote'] for p in comparison['panels']],
+                'Comparison original quotes/sequence differ: ' + source.name)
+        expected_links = []
+        for panel in comparison['panels']:
+            require(panel['label'] in section['text'] and panel['text'] in section['text'],
+                    'Comparison visible label/body differs: ' + source.name)
+            e = panel['evidence']
+            original = read(SITE / 'data/documents' / (e['id'] + '.json'))
+            rows = next(s['rows'] for s in original['sections'] if s['anchor'] == e['anchor'])
+            indexes = [i for i, row in enumerate(rows) if str(row.get('hash')) == str(e['hash'])
+                       and e['quote'] in row['text']]
+            require(len(indexes) == 1, 'Comparison lacks a unique exact original row')
+            expected_links.append(f"/starrail-quests/문서/{e['id']}.html#{e['anchor']}-row-{indexes[0]+1}")
+        actual_links = [n['attrs'].get('href') for n in page.nodes if n['tag'] == 'a' and inside(n, section)
+                        and 'data-reading-link' in n['attrs']
+                        and 'setting-entity-link' not in n['attrs'].get('class', '').split()]
+        require(actual_links == expected_links, 'Comparison original source CTAs differ: ' + source.name)
+        counts['comparisonPanels'] += len(comparison['panels'])
+
+    for node in atlas['nodes']:
+        require(('comparison' in node) != ('comparisonTopic' in node), 'Implicit/ambiguous reader comparison')
+        comparison = node.get('comparison') or atlas['comparisons'][node['comparisonTopic']]
+        comparison_page(dist / '맥락' / (node['id'] + '.html'), comparison)
+        page = Page((dist / '맥락' / (node['id'] + '.html')).read_text('utf8'))
+        registers = page.selected('id', 'verified-sources')
+        require(len(registers) == 1, 'Individual source register missing')
+        entries = [e for edge in node.get('topology', {}).get('edges', []) for e in edge['evidence']]
+        entries += node['evidence'] + [r['evidence'] for r in node['links']]
+        entries += [event['evidence'] for event in node['timeline']]
+        entries += [p['evidence'] for p in comparison['panels']]
+        unique = {(e['id'], str(e.get('hash')), e.get('quote') or e.get('needle')): e for e in entries}
+        identities = list(dict.fromkeys(e['id'] for e in unique.values()))
+        expected = [(e.get('quote') or e.get('needle'), f"/starrail-quests/문서/{e['id']}.html#{e['anchor']}")
+                    for ident in identities for e in unique.values() if e['id'] == ident]
+        quote_links = [n for n in page.nodes if n['tag'] == 'a' and inside(n, registers[0])
+                       and 'source-quote-link' in n['attrs'].get('class', '').split()]
+        actual = []
+        for link in quote_links:
+            quotes = [n['text'] for n in page.nodes if n['tag'] == 'q' and inside(n, link)]
+            require(len(quotes) == 1, 'Source register quote boundary differs')
+            actual.append((quotes[0], link['attrs'].get('href')))
+        require(actual == expected, 'Source register differs from explicit comparison/reader scope: ' + node['id'])
+        counts['sourceRegisterQuotes'] += len(actual)
+        counts['explicitComparisonReaders'] += 1
+    for topic, comparison in atlas['comparisons'].items():
+        comparison_page(dist / '설정' / (topic + '.html'), comparison)
+        counts['topicComparisonReaders'] += 1
     page = Page((dist / '설정집.html').read_text('utf8'))
     hubs = page.selected('data-atlas-hub')
     require(len(hubs) == 1, 'Curated catalogue boundary missing')

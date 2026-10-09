@@ -2,7 +2,31 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {relationEndpoints,claimAttribution} from './build_reading_graph.mjs';
+import {atlasComparison,comparisonReaderNode} from '../src/lib/atlas-comparison.mjs';
 const atlas=JSON.parse(fs.readFileSync(new URL('../editorial/context-atlas.json',import.meta.url),'utf8'));
+test('Preservation uses its own definition and records instead of a homonymous memory policy',()=>{
+ const node=atlas.nodes.find(n=>n.id==='preservation');
+ const comparison=atlasComparison(atlas,node);
+ assert.deepEqual(comparison.panels.map(p=>p.evidence.id),['lore-10008','book-46','book-245']);
+ assert.notEqual(comparison,atlas.comparisons['paths-and-factions']);
+ for(const panel of comparison.panels)assert.equal(panel.text,panel.evidence.quote);
+});
+test('all individual comparisons have an explicit owner and missing selections stop generation',()=>{
+ for(const node of atlas.nodes){
+  assert.ok(Boolean(node.comparison)!==Boolean(node.comparisonTopic),node.id);
+  const comparison=atlasComparison(atlas,node);
+  assert.equal(comparison,node.comparison||atlas.comparisons[node.comparisonTopic]);
+ }
+ assert.throws(()=>atlasComparison(atlas,{id:'new-reader',topic:'paths-and-factions'}),/Unspecified comparison scope/);
+});
+test('broad essays keep their reviewed comparison after a first reader overrides it',()=>{
+ for(const topic of Object.keys(atlas.comparisons)){
+  const owner=comparisonReaderNode(atlas,null,topic);
+  assert.equal(owner.comparisonTopic,topic);
+  assert.equal(atlasComparison(atlas,owner),atlas.comparisons[topic]);
+ }
+ assert.notEqual(comparisonReaderNode(atlas,null,'paths-and-factions').id,'preservation');
+});
 test('incoming has the actual actor on the left while the reading context stays the destination',()=>{
  for(const [id,index,actor] of [['swarm-research',1,'ruan-mei'],['swarm-research',2,'person-1013'],['unknowable-research',1,'person-1013'],['ruan-mei',0,'person-1013'],['stellaron-hunters',0,'person-1005'],['genius-society',0,'lore-10222'],['memory-garden',0,'aeon-aeon-2'],['cremators',1,'memory-garden'],['mourning-actors',0,'aeon-aeon-7']]){
   const relation=atlas.nodes.find(n=>n.id===id).links[index];

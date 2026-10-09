@@ -147,7 +147,8 @@
           "status": "원문 서술"
         }
       ],
-      "timeNote": "「벨로보그 주요 사건 일대기·한파 직전」에 기록된 근사 연대다. 철위대 보고서와 하층 전단지의 작성일은 미상이다."
+      "timeNote": "「벨로보그 주요 사건 일대기·한파 직전」에 기록된 근사 연대다. 철위대 보고서와 하층 전단지의 작성일은 미상이다.",
+      "comparisonTopic": "belobog-preservation"
     },
     {
       "id": "bronya",
@@ -276,7 +277,8 @@
           "status": "원문 서술"
         }
       ],
-      "timeNote": "인물 이야기의 어린 시절·장례식과 인물 소개의 하층 방문 기록이다. 장례식과 하층 방문의 정확한 선후·시간 간격은 미상이다."
+      "timeNote": "인물 이야기의 어린 시절·장례식과 인물 소개의 하층 방문 기록이다. 장례식과 하층 방문의 정확한 선후·시간 간격은 미상이다.",
+      "comparisonTopic": "belobog-preservation"
     },
     {
       "id": "preservation",
@@ -363,7 +365,52 @@
           "direction": "outgoing"
         }
       ],
-      "timeline": []
+      "timeline": [],
+      "comparison": {
+        "title": "보존의 정의와 장벽·신앙의 기록",
+        "scope": "운명의 길 도움말·열차 아카이브·선주 신앙사의 기록",
+        "panels": [
+          {
+            "label": "운명의 길 도움말 · 보존의 정의",
+            "text": "에이언즈 「클리포트」가 관장하는 운명의 길\n기다림, 희생, 보호의 행위는 「보존」 운명의 길의 특징이다",
+            "evidence": {
+              "id": "lore-10008",
+              "title": "보존",
+              "anchor": "section-1",
+              "quote": "에이언즈 「클리포트」가 관장하는 운명의 길\n기다림, 희생, 보호의 행위는 「보존」 운명의 길의 특징이다",
+              "hash": "9805532519366455531",
+              "status": "원문 서술"
+            }
+          },
+          {
+            "label": "열차 아카이브 · 클리포트의 장벽",
+            "text": "광년의 단위로 장벽을 구축해 아직 생기가 남아 있는 세계를 단절시켜 보호했다.",
+            "evidence": {
+              "id": "book-46",
+              "title": "에이언즈",
+              "anchor": "section-9",
+              "quote": "광년의 단위로 장벽을 구축해 아직 생기가 남아 있는 세계를 단절시켜 보호했다.",
+              "hash": "8929133551343006502",
+              "status": "열차 아카이브의 서술"
+            }
+          },
+          {
+            "label": "선주 신앙사 · 보천의 사명",
+            "text": "보천의 사명은 한동안 선주 연맹의 주류 신앙이었다.",
+            "evidence": {
+              "id": "book-245",
+              "title": "선주 연맹의 신앙 위기 간략사",
+              "anchor": "section-2",
+              "quote": "보천의 사명은 한동안 선주 연맹의 주류 신앙이었다.",
+              "hash": "17683701999888280905",
+              "status": "역사 글의 서술"
+            }
+          }
+        ],
+        "same": "세 기록은 클리포트가 관장하는 「보존」의 특징과 보호·신앙을 다룬다.",
+        "different": "도움말은 기다림·희생·보호라는 특징을 정의한다. 열차 아카이브는 장벽을 통한 세계의 보호를 서술하고, 선주 신앙사는 보천의 사명이 주류 신앙이던 시기를 기록한다.",
+        "reading": "운명의 길의 정의, 클리포트의 행적, 선주 사회의 신앙사는 각각 다른 자료에 수록되어 있다."
+      }
     },
     {
       "id": "xianzhou",
@@ -493,7 +540,8 @@
           "status": "원문 서술"
         }
       ],
-      "timeNote": "단정사 논문과 선주 신앙사에 기록된 시대다. 신앙사의 신앙 위기는 성력 3400~4000년으로 명시되어 있다."
+      "timeNote": "단정사 논문과 선주 신앙사에 기록된 시대다. 신앙사의 신앙 위기는 성력 3400~4000년으로 명시되어 있다.",
+      "comparisonTopic": "xianzhou-immortality"
     },
     {
       "id": "immortality",
@@ -558,7 +606,8 @@
           "direction": "outgoing"
         }
       ],
-      "timeline": []
+      "timeline": [],
+      "comparisonTopic": "xianzhou-immortality"
     },
     {
       "id": "jingliu",
@@ -678,7 +727,8 @@
           "status": "원문 서술"
         }
       ],
-      "timeNote": "인물 이야기 2~5에 기록된 사건이다. 장인·용존·제자는 이 인용 구간에서 직함으로 등장한다."
+      "timeNote": "인물 이야기 2~5에 기록된 사건이다. 장인·용존·제자는 이 인용 구간에서 직함으로 등장한다.",
+      "comparisonTopic": "xianzhou-immortality"
     },
     {
       "id": "borisin",
@@ -745,7 +795,8 @@
       ],
       "timeline": [],
       "directoryKind": "종족",
-      "directorySummary": "보리인 사냥단에는 여우족이 이끄는 백랑도 포함된다. 단륜사는 비살생 신조를 지키는 집단으로 군 교재에 기록된다."
+      "directorySummary": "보리인 사냥단에는 여우족이 이끄는 백랑도 포함된다. 단륜사는 비살생 신조를 지키는 집단으로 군 교재에 기록된다.",
+      "comparisonTopic": "borisin-and-foxians"
     },
     {
       "id": "penacony",
@@ -883,7 +934,8 @@
           "status": "원문 서술"
         }
       ],
-      "timeNote": "「기밀: 꿈세계 대형 사건 기록」이 전한 박물관 습격·복구·재개관 과정이다. 복구에는 10 시스템 시간 이내가 소요되었다."
+      "timeNote": "「기밀: 꿈세계 대형 사건 기록」이 전한 박물관 습격·복구·재개관 과정이다. 복구에는 10 시스템 시간 이내가 소요되었다.",
+      "comparisonTopic": "penacony-memory"
     },
     {
       "id": "memory",
@@ -1166,7 +1218,8 @@
           "direction": "outgoing"
         }
       ],
-      "timeline": []
+      "timeline": [],
+      "comparisonTopic": "penacony-memory"
     },
     {
       "id": "herta",
@@ -1254,7 +1307,8 @@
           "direction": "outgoing"
         }
       ],
-      "timeline": []
+      "timeline": [],
+      "comparisonTopic": "herta-life-and-knowledge"
     },
     {
       "id": "ruan-mei",
@@ -1385,7 +1439,8 @@
           "status": "원문 서술"
         }
       ],
-      "timeNote": "인물 이야기 2~5에 수록된 생애 사건이다. 실험 일지는 별도의 실험 번호를 사용하며 각 실험의 날짜는 미상이다."
+      "timeNote": "인물 이야기 2~5에 수록된 생애 사건이다. 실험 일지는 별도의 실험 번호를 사용하며 각 실험의 날짜는 미상이다.",
+      "comparisonTopic": "herta-life-and-knowledge"
     },
     {
       "id": "life",
@@ -1464,7 +1519,8 @@
           "direction": "outgoing"
         }
       ],
-      "timeline": []
+      "timeline": [],
+      "comparisonTopic": "herta-life-and-knowledge"
     },
     {
       "id": "amphoreus",
@@ -1527,7 +1583,8 @@
           "direction": "outgoing"
         }
       ],
-      "timeline": []
+      "timeline": [],
+      "comparisonTopic": "amphoreus-myth-and-life"
     },
     {
       "id": "titans",
@@ -1598,7 +1655,8 @@
           "direction": "outgoing"
         }
       ],
-      "timeline": []
+      "timeline": [],
+      "comparisonTopic": "amphoreus-myth-and-life"
     },
     {
       "id": "paths",
@@ -1663,7 +1721,8 @@
           "direction": "outgoing"
         }
       ],
-      "timeline": []
+      "timeline": [],
+      "comparisonTopic": "paths-and-factions"
     },
     {
       "id": "seele",
@@ -1763,7 +1822,8 @@
           "status": "원문 서술"
         }
       ],
-      "timeNote": "인물 이야기 2에 수록된 배급소와 진료소의 사건이다. 두 사건 사이의 간격은 3일로 명시되어 있다."
+      "timeNote": "인물 이야기 2에 수록된 배급소와 진료소의 사건이다. 두 사건 사이의 간격은 3일로 명시되어 있다.",
+      "comparisonTopic": "belobog-preservation"
     },
     {
       "id": "natasha",
@@ -1863,7 +1923,8 @@
           "status": "원문 서술"
         }
       ],
-      "timeNote": "인물 이야기 3의 진로 선택과 이야기 4의 편지다. 편지는 봉쇄 계획을 소문으로 전하며 작성일은 미상이다."
+      "timeNote": "인물 이야기 3의 진로 선택과 이야기 4의 편지다. 편지는 봉쇄 계획을 소문으로 전하며 작성일은 미상이다.",
+      "comparisonTopic": "belobog-preservation"
     },
     {
       "id": "antimatter-legion",
