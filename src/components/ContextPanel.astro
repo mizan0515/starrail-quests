@@ -32,7 +32,7 @@ import {href} from '../lib/data';
  // A source CTA returns to the link that was followed, including links in
  // expanded evidence. Editorial dossiers do not all have an #original block.
  document.querySelectorAll<HTMLAnchorElement>('a[data-reading-link]').forEach((a,index)=>{if(!a.id)a.id='reading-link-'+index;const origin=currentReadingOrigin('#'+a.id);if(origin)a.href=withReturn(a.href,origin);});
- const restoreReadingLink=()=>{if(!/^#reading-link-\d+$/.test(location.hash))return;const link=document.getElementById(location.hash.slice(1));if(!link)return;for(let parent=link.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;requestAnimationFrame(()=>{link.scrollIntoView({block:'center'});link.focus({preventScroll:true});});};
+ const restoreReadingLink=()=>{let id:string;try{id=decodeURIComponent(location.hash.slice(1));}catch{return;}const link=document.getElementById(id);if(!(link instanceof HTMLAnchorElement)||!link.hasAttribute('data-reading-link'))return;for(let parent=link.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;requestAnimationFrame(()=>{link.scrollIntoView({block:'center'});link.focus({preventScroll:true});});};
  restoreReadingLink();window.addEventListener('hashchange',restoreReadingLink);
  const close=()=>{dialog.close();trigger?.focus({preventScroll:true});};
  dialog.querySelector('.context-close')!.addEventListener('click',close);

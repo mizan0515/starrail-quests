@@ -9,6 +9,7 @@ import editedTopics from '../../editorial/topics.json';
 import stats from '../../data/stats.json';
 import dialogueSupplements from '../../data/mission-dialogue-supplements.json';
 import videoCaptions from '../../data/official-video-captions.json';
+import timelineDialogue from '../../data/timeline-mission-dialogue.json';
 import {partitionMissionSections,missionRowLinked} from './mission-scope.mjs';
 const missionPartIds=Object.fromEntries(originalCatalog.filter(d=>d.category==='퀘스트').map(d=>{const original=JSON.parse(fs.readFileSync(path.resolve('data/documents',d.id+'.json'),'utf8'));return [d.id,(original.missionParts||[d.id]).map(id=>id.replace(/^quest-/,''))];})) as Record<string,string[]>;
 const captionScenes:Record<string,any[]>={};
@@ -17,7 +18,7 @@ for(const [id,scenes] of Object.entries(videoCaptions.missions)){
  if(!missionPartIds[target]?.includes(id.replace(/^quest-/,'')))throw Error('Caption owner is not a preserved mission part: '+id);
  (captionScenes[target]??=[]).push(...scenes);
 }
-export const missionDialogue=Object.fromEntries([...new Set([...Object.keys(dialogueSupplements.missions),...Object.keys(captionScenes)])].map(id=>[id,[...(dialogueSupplements.missions[id]||[]),...(captionScenes[id]||[])]])) as Record<string,any[]>;
+export const missionDialogue=Object.fromEntries([...new Set([...Object.keys(dialogueSupplements.missions),...Object.keys(captionScenes),...Object.keys(timelineDialogue.missions)])].map(id=>[id,[...(dialogueSupplements.missions[id]||[]),...(captionScenes[id]||[]),...(timelineDialogue.missions[id]||[])]])) as Record<string,any[]>;
 export const missionCoverage=(dialogueSupplements as any).coverage as Record<string,any>;
 export const missionStructureUrl=(source:string)=>`https://github.com/${dialogueSupplements.evidence.repository}/blob/${dialogueSupplements.evidence.commit}/${source}`;
 export const missionPassageKind=(row:any):'gap'|'choice'|'dialogue'|'caption'=>row.label==='대사 누락'||typeof row.text!=='string'||!row.text.trim()||(row.text==='한국어 본문 미수록'&&row.hash===''&&/^MessageItemConfig:\d+\.(?:MainText|OptionText)$/.test(row.source||''))?'gap':row.officialCaptionSource?'caption':row.label==='선택지'||row.displayKind==='choice'||row.displayKind==='선택지'?'choice':'dialogue';
