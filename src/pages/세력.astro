@@ -1,11 +1,28 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import {atlas,atlasUrl} from '../lib/atlas';
+import {atlas,atlasUrl,readingInline} from '../lib/atlas';
 import {createReadingKit} from '../lib/reading-kit/render.mjs';
-import {href} from '../lib/data';
+import {href,doc,docUrl} from '../lib/data';
+const kit=createReadingKit({inline:readingInline});
+const entries=atlas.nodes.filter(n=>n.axis==='bridge');
+const directory=(items)=>kit.directory(items.map(n=>({name:n.name,summary:n.directorySummary||n.intro,kind:n.directoryKind||'',url:atlasUrl(n.id)})));
+const originalFactions=doc('book-47').sections.slice(2);
 ---
 <StarlightPage frontmatter={{title:'세력',description:'군대·조직·단체의 목적, 신앙과 소속 인물',editUrl:false,tableOfContents:false}}>
 <p class="page-deck">나누크의 군대, 약사를 따르는 반란 조직, 클리포트를 지원하는 회사 등 세력별 목적과 구성원을 살펴봅니다.</p>
-<Fragment set:html={createReadingKit().directory(atlas.nodes.filter(n=>n.axis==='bridge').map(n=>({name:n.name,summary:n.directorySummary||n.intro,kind:n.directoryKind||'',url:atlasUrl(n.id)})))}/>
+<section aria-labelledby="organizations"><h2 id="organizations">조직과 단체</h2>
+<Fragment set:html={directory(entries.filter(n=>n.directoryKind!=='종족'))}/></section>
+<section aria-labelledby="peoples"><h2 id="peoples">종족과 문화</h2>
+<p>보리인 사냥단과 여우족의 관계를 군 교재와 문화 고찰에서 살펴봅니다.</p>
+<Fragment set:html={directory(entries.filter(n=>n.directoryKind==='종족'))}/></section>
+<section aria-labelledby="archive-factions"><h2 id="archive-factions">파벌 아카이브 원문</h2>
+<p>열차 아카이브에 수록된 각 파벌의 기록입니다. 자료명을 누르면 해당 원문으로 이동합니다.</p>
+<nav class="faction-original-index" aria-label="파벌별 원문">{originalFactions.map(section=><a data-reading-link href={docUrl('book-47')+'#'+section.anchor+'-row-1'}>{section.title}<span aria-hidden="true">↗</span></a>)}</nav></section>
 <p><a href={href('맥락/stellaron.html')}>스텔라론과 열계, 우주정거장의 수용체 →</a></p>
 </StarlightPage>
+<style>
+ .faction-original-index{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,17rem),1fr));gap:0 1.5rem;margin-block:1rem 2rem}
+ .faction-original-index a{display:flex;align-items:center;justify-content:space-between;gap:1rem;min-block-size:3.5rem;border-block-end:1px solid var(--sl-color-hairline);color:var(--sl-color-text);text-decoration:none;font-size:.9375rem}
+ .faction-original-index a:hover{text-decoration:underline;text-underline-offset:.2em}
+ .faction-original-index a span{color:var(--sl-color-text-accent);flex:none}
+</style>

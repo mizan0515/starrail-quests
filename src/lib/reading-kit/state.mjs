@@ -20,10 +20,11 @@ document.addEventListener('click',event=>{
  const link=event.target instanceof Element?event.target.closest('main a'):null;
  if(link){followed=link.href;save();const url=new URL(link.href);if(url.origin===location.origin&&url.pathname===location.pathname&&url.search===location.search)requestAnimationFrame(()=>revealRelation(url.hash));}
 });
-function revealRelation(hash=location.hash){try{const target=document.getElementById(decodeURIComponent(hash.slice(1)));if(target?.matches('details.rw-map-evidence')){target.open=true;target.querySelector('summary')?.focus({preventScroll:true});}}catch{}}
+function revealRelation(hash=location.hash){try{const target=document.getElementById(decodeURIComponent(hash.slice(1)));if(target?.matches('details.rw-map-evidence,details.rw-relation-proof')){target.open=true;target.querySelector('summary')?.focus({preventScroll:true});}}catch{}}
 window.addEventListener('hashchange',()=>revealRelation());
 revealRelation();
 window.addEventListener('pagehide',save);
 window.addEventListener('pageshow',event=>{
  if(event.persisted||performance.getEntriesByType('navigation')[0]?.type==='back_forward')restore();
+ else requestAnimationFrame(()=>revealRelation());
 });

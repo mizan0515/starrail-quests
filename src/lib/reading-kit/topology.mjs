@@ -60,17 +60,19 @@ export function focusRelationLayout(nodes,edges){
 // A connected source tree is shown as local hubs. Each hub contains only its
 // direct edges; neither a shared outcome nor a time sequence is added.
 export function sourceRelationHubs(nodes,edges){
- if(nodes.some(n=>n.focus)||edges.length<3||edges.some(e=>(e.kind||'relation')!=='relation'||e.claimKind==='inference'||e.from===e.to))return null;
+ if(edges.length<2||edges.some(e=>(e.kind||'relation')!=='relation'||e.claimKind==='inference'||e.from===e.to))return null;
  const used=new Set(edges.flatMap(e=>[e.from,e.to])),incoming=new Map([...used].map(id=>[id,0])),groups=new Map();
  for(const e of edges){incoming.set(e.to,incoming.get(e.to)+1);if(!groups.has(e.from))groups.set(e.from,[]);groups.get(e.from).push(e);}
- if(groups.size<2||![...groups.values()].some(es=>es.length>1)||[...incoming.values()].some(v=>v>1))return null;
+ if(groups.size<2||[...incoming.values()].some(v=>v>1))return null;
  const roots=[...used].filter(id=>!incoming.get(id));if(roots.length!==1)return null;
+ const focus=nodes.filter(n=>n.focus);if(focus.length>1||focus.length===1&&focus[0].id!==roots[0])return null;
  const visited=new Set(),queue=[roots[0]];
  for(let i=0;i<queue.length;i++){if(visited.has(queue[i]))return null;visited.add(queue[i]);queue.push(...(groups.get(queue[i])||[]).map(e=>e.to));}
  if(visited.size!==used.size)return null;
  return [...groups].map(([parent,edges])=>({parent,edges}));
 }
 export function renderTopology(t,{escape:E,href,inline,evidence}){
+ const renderItems=spec=>renderCvaModule({...spec,itemBodies:spec.items.map(item=>item.body?inline(item.body):'')});
  validateTopology(t);
  const nodes=new Map(t.nodes.map(n=>[n.id,n]));
  const name=id=>nodes.get(id).name;
@@ -81,18 +83,18 @@ export function renderTopology(t,{escape:E,href,inline,evidence}){
  const explicit=t.edges.filter(e=>e.claimKind!=='inference'),connections=t.edges.filter(e=>e.claimKind==='inference');
  const relationModules=edges=>Array.from({length:Math.ceil(edges.length/24)},(_,i)=>{
  const batch=edges.slice(i*24,(i+1)*24);
- return renderCvaModule({id:moduleId(t.id,batch),type:'cards',variant:'list',props:{title:'',body:''},items:batch.map((e,j)=>({id:'relation-'+j,title:name(e.from)+' → '+name(e.to),body:e.reason||e.text||e.label,label:attribution(e)})),itemTitles:batch.map(statement),itemExtras:batch.map(e=>`<div class="rw-relation-band" aria-label="${E(name(e.from)+' → '+e.label+' → '+name(e.to))}" data-relation-from="${E(e.from)}" data-relation-to="${E(e.to)}">${proof(e)}</div>`)});
+ return renderItems({id:moduleId(t.id,batch),type:'cards',variant:'list',props:{title:'',body:''},items:batch.map((e,j)=>({id:'relation-'+j,title:name(e.from)+' → '+name(e.to),body:e.reason||e.text||e.label,label:attribution(e)})),itemTitles:batch.map(statement),itemExtras:batch.map(e=>`<div class="rw-relation-band" aria-label="${E(name(e.from)+' → '+e.label+' → '+name(e.to))}" data-relation-from="${E(e.from)}" data-relation-to="${E(e.to)}">${proof(e)}</div>`)});
  }).join('');
  const structuredRelations=edges=>{
   const groups=relationStructureGroups(edges),grouped=new Set(groups.flatMap(g=>g.edges));
   let html=groups.flatMap(group=>Array.from({length:Math.ceil(group.edges.length/24)},(_,i)=>({...group,edges:group.edges.slice(i*24,(i+1)*24)}))).map(g=>{
    const member=e=>nodes.get(g.structure==='membership'?e.from:e.to);
-   const module=renderCvaModule({id:moduleId(t.id+'-scope',g),type:'scene-composition',variant:'nested-world',orientation:'horizontal',props:{title:name(g.parent),body:'',relationLabel:'',caption:''},items:g.edges.map((e,i)=>({id:'member-'+i,title:member(e).name,body:e.reason||e.text||e.label,label:e.label})),itemTitles:g.edges.map(e=>endpoint(member(e))),itemExtras:g.edges.map(e=>`<div class="rw-relation-band" data-relation-from="${E(e.from)}" data-relation-to="${E(e.to)}">${statement(e)}${proof(e)}</div>`)});
+   const module=renderItems({id:moduleId(t.id+'-scope',g),type:'scene-composition',variant:'nested-world',orientation:'horizontal',props:{title:name(g.parent),body:'',relationLabel:'',caption:''},items:g.edges.map((e,i)=>({id:'member-'+i,title:member(e).name,body:e.reason||e.text||e.label,label:e.label})),itemTitles:g.edges.map(e=>endpoint(member(e))),itemExtras:g.edges.map(e=>`<div class="rw-relation-band" data-relation-from="${E(e.from)}" data-relation-to="${E(e.to)}">${statement(e)}${proof(e)}</div>`)});
    return `<div class="rw-source-scope" data-relationship-structure="${E(g.structure)}">${module.replace(`<h2 class="cva-title">${E(name(g.parent))}</h2>`,`<h3 class="cva-title">${endpoint(nodes.get(g.parent))}</h3>`).replace('모든 항목이 함께 속하는 하나의 범위',g.structure==='membership'?'소속과 구성':'포함된 대상')}</div>`;
   }).join('');
   const rest=edges.filter(e=>!grouped.has(e)),hubs=sourceRelationHubs(t.nodes,rest);
   if(hubs){
-   html+=hubs.flatMap(g=>Array.from({length:Math.ceil(g.edges.length/23)},(_,i)=>({...g,edges:g.edges.slice(i*23,(i+1)*23)}))).map(g=>`<div class="rw-focus-relations" data-relationship-structure="directed-hub" data-focus-id="${E(g.parent)}" data-hub-shape="${g.edges.length===1?'pair':g.edges.length===2?'fan':'branch'}" style="--rw-hub-rows:${g.edges.length}">${renderCvaModule({id:moduleId(t.id+'-direct',g),type:'flow',variant:'hub',orientation:'horizontal',props:{title:'',body:'',relationLabel:''},items:[{id:'focus',title:name(g.parent),body:'',label:nodes.get(g.parent).kind||''},...g.edges.map((e,i)=>({id:'relation-'+i,title:name(e.to),body:'',label:attribution(e)}))],itemTitles:[endpoint(nodes.get(g.parent)),...g.edges.map(e=>endpoint(nodes.get(e.to)))],itemExtras:['',...g.edges.map(e=>`<div class="rw-relation-band" data-relation-from="${E(e.from)}" data-relation-to="${E(e.to)}">${statement(e)}${proof(e)}</div>`)]})}</div>`).join('');
+   html+=hubs.flatMap(g=>Array.from({length:Math.ceil(g.edges.length/23)},(_,i)=>({...g,edges:g.edges.slice(i*23,(i+1)*23)}))).map(g=>`<div class="rw-focus-relations" data-relationship-structure="directed-hub" data-focus-id="${E(g.parent)}" data-hub-shape="${g.edges.length===1?'pair':g.edges.length===2?'fan':'branch'}" style="--rw-hub-rows:${g.edges.length}">${renderItems({id:moduleId(t.id+'-direct',g),type:'flow',variant:'hub',orientation:'horizontal',props:{title:'',body:'',relationLabel:''},items:[{id:'focus',title:name(g.parent),body:'',label:nodes.get(g.parent).kind||''},...g.edges.map((e,i)=>({id:'relation-'+i,title:name(e.to),body:'',label:attribution(e)}))],itemTitles:[endpoint(nodes.get(g.parent)),...g.edges.map(e=>endpoint(nodes.get(e.to)))],itemExtras:['',...g.edges.map(e=>`<div class="rw-relation-band" data-relation-from="${E(e.from)}" data-relation-to="${E(e.to)}">${statement(e)}${proof(e)}</div>`)]})}</div>`).join('');
    return html;
   }
   const focusLayout=focusRelationLayout(t.nodes,rest);
@@ -104,10 +106,10 @@ export function renderTopology(t,{escape:E,href,inline,evidence}){
   const relationRow=e=>sides[direction(e)].indexOf(e)+1+Math.floor((Math.max(sides.incoming.length,sides.outgoing.length)-sides[direction(e)].length)/2);
   const extra=e=>`<div class="rw-relation-band" data-relation-direction="${direction(e)}" data-relation-row="${relationRow(e)}" data-relation-from="${E(e.from)}" data-relation-to="${E(e.to)}">${statement(e)}${proof(e)}</div>`;
   if(focusLayout.variant==='character-orbit'){
-   const orbit=renderCvaModule({id:moduleId(t.id+'-focus',rest),type:'scene-composition',variant:'character-orbit',orientation:'original',props:{title:'',body:'',relationLabel:'',caption:''},items:rest.map((e,i)=>({id:'relation-'+i,title:other(e).name,body:'',label:direction(e)==='incoming'?name(focus.id)+'에게 향하는 행동':name(focus.id)+'의 행동'})),itemTitles:rest.map(e=>endpoint(other(e))),itemExtras:rest.map(e=>`${extra(e)}<p class="rw-relation-attribution">${E(attribution(e))}</p>`)});
+   const orbit=renderItems({id:moduleId(t.id+'-focus',rest),type:'scene-composition',variant:'character-orbit',orientation:'original',props:{title:'',body:'',relationLabel:'',caption:''},items:rest.map((e,i)=>({id:'relation-'+i,title:other(e).name,body:'',label:direction(e)==='incoming'?'행동 주체':'행동 대상'})),itemTitles:rest.map(e=>endpoint(other(e))),itemExtras:rest.map(e=>`${extra(e)}<p class="rw-relation-attribution">${E(attribution(e))}</p>`)});
    html+=`<div class="rw-focus-relations" data-relationship-structure="directed-orbit" data-focus-id="${E(focus.id)}">${orbit.replace('<div class="sc-orbit-placeholder"><span>중심 인물</span></div>',`<div class="sc-orbit-placeholder"><span class="rw-focus-name">${endpoint(focus)}</span></div>`)}</div>`;
   }else{
-   html+=`<div class="rw-focus-relations" data-relationship-structure="directed-hub" data-focus-id="${E(focus.id)}" data-hub-shape="${rest.length===2?'fan':'branch'}" style="--rw-hub-rows:${rest.length}">${renderCvaModule({id:moduleId(t.id+'-focus',rest),type:'flow',variant:'hub',orientation:'horizontal',props:{title:'',body:'',relationLabel:''},items:[{id:'focus',title:focus.name,body:'',label:focus.kind||''},...rest.map((e,i)=>({id:'relation-'+i,title:other(e).name,body:'',label:attribution(e)}))],itemTitles:[endpoint(focus),...rest.map(e=>endpoint(other(e)))],itemExtras:['',...rest.map(extra)]})}</div>`;
+   html+=`<div class="rw-focus-relations" data-relationship-structure="directed-hub" data-focus-id="${E(focus.id)}" data-hub-shape="${rest.length===2?'fan':'branch'}" style="--rw-hub-rows:${rest.length}">${renderItems({id:moduleId(t.id+'-focus',rest),type:'flow',variant:'hub',orientation:'horizontal',props:{title:'',body:'',relationLabel:''},items:[{id:'focus',title:focus.name,body:'',label:focus.kind||''},...rest.map((e,i)=>({id:'relation-'+i,title:other(e).name,body:'',label:attribution(e)}))],itemTitles:[endpoint(focus),...rest.map(e=>endpoint(other(e)))],itemExtras:['',...rest.map(extra)]})}</div>`;
   }
   return html+scopeHtml;
  };
@@ -115,11 +117,11 @@ export function renderTopology(t,{escape:E,href,inline,evidence}){
  let diagram='';
  if(ordered&&ordered.length<=24&&!connections.length){
  const stageEdges=n=>cycle?cycle.edges.filter(e=>e.from===n.id):t.edges.filter(e=>e.to===n.id);
- diagram=renderCvaModule({id:moduleId(t.id+'-structure',ordered),type:'scene-composition',variant:cycle?'feedback-ring':'quest-route',props:{title:'',body:t.note||'',relationLabel:cycle?'원문에 설명된 순환 · 각 연결의 발언 주체와 근거':'원문에 명시된 과정의 순서',caption:t.scaleNote||''},items:ordered.map((n,i)=>({id:'node-'+i,title:n.name,body:n.detail||'',label:n.kind||''})),itemTitles:ordered.map(endpoint),itemExtras:ordered.map(n=>stageEdges(n).map(e=>`<div class="rw-structure-edge">${statement(e)}${proof(e)}</div>`).join(''))});
+ diagram=renderItems({id:moduleId(t.id+'-structure',ordered),type:'scene-composition',variant:cycle?'feedback-ring':'quest-route',props:{title:'',body:t.note||'',relationLabel:cycle?'원문에 설명된 순환 · 각 연결의 발언 주체와 근거':'원문에 명시된 과정의 순서',caption:t.scaleNote||''},items:ordered.map((n,i)=>({id:'node-'+i,title:n.name,body:n.detail||'',label:n.kind||''})),itemTitles:ordered.map(endpoint),itemExtras:ordered.map(n=>stageEdges(n).map(e=>`<div class="rw-structure-edge">${statement(e)}${proof(e)}</div>`).join(''))});
  const returning=cycle?.edges.find(e=>e.kind==='return');
  diagram=`<div class="rw-source-process" data-process-kind="${cycle?'cycle':'sequence'}" style="--rw-process-columns:${Math.min(ordered.length,3)}">${diagram}${returning?`<p class="rw-process-return"><span aria-hidden="true">↶</span> <span>${E(name(returning.from))} → ${E(returning.label)} → ${E(name(returning.to))}</span></p>`:''}</div>`;
  if(cycle?.external.length)diagram+=structuredRelations(cycle.external);
  } else diagram=structuredRelations(explicit);
- const editorial=connections.length?`<div class="rw-reading-connections rw-cva-bridge">${explicit.length?'<h3 class="rw-reading-connections-title">함께 읽을 기록</h3>':''}${Array.from({length:Math.ceil(connections.length/24)},(_,i)=>{const batch=connections.slice(i*24,(i+1)*24);return renderCvaModule({id:moduleId(t.id+'-reading',batch),type:'cards',variant:'grid',orientation:'horizontal',props:{title:'',body:''},items:batch.map((e,j)=>({id:'connection-'+j,title:name(e.to),body:e.reason||e.text||e.label,label:'편집자의 연결 · '+name(e.from)+'에서 이어 읽기'})),itemTitles:batch.map(e=>endpoint(nodes.get(e.to))),itemExtras:batch.map(e=>`<div class="rw-reading-connection"><p class="rw-reading-topic">${E(e.label)}</p>${proof(e)}</div>`)});}).join('')}</div>`:'';
+ const editorial=connections.length?`<div class="rw-reading-connections rw-cva-bridge">${explicit.length?'<h3 class="rw-reading-connections-title">함께 읽을 기록</h3>':''}${Array.from({length:Math.ceil(connections.length/24)},(_,i)=>{const batch=connections.slice(i*24,(i+1)*24);return renderItems({id:moduleId(t.id+'-reading',batch),type:'cards',variant:'grid',orientation:'horizontal',props:{title:'',body:''},items:batch.map((e,j)=>({id:'connection-'+j,title:name(e.to),body:e.reason||e.text||e.label,label:'편집자의 연결 · '+name(e.from)+'에서 이어 읽기'})),itemTitles:batch.map(e=>endpoint(nodes.get(e.to))),itemExtras:batch.map(e=>`<div class="rw-reading-connection"><p class="rw-reading-topic">${E(e.label)}</p>${proof(e)}</div>`)});}).join('')}</div>`:'';
  return `<section class="rw-map rw-cva-atlas rw-app not-content" id="${E(t.id)}"><header><h2>${E(t.title==='관계 한눈에'&&!explicit.length?'함께 읽을 기록':t.title)}</h2>${!ordered&&t.note?`<p class="rw-deck">${E(t.note)}</p>`:''}</header>${diagram}${editorial}</section>`;
 }

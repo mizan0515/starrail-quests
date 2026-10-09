@@ -410,7 +410,9 @@ test('source trees use direct hubs without adding a join, containment, cycle or 
  assert.equal(byClass(visible,'details','rw-relation-proof').length,3);
  assert.ok(!visible.includes('sc-number'));assert.ok(!visible.includes('sc-common-scope'));assert.equal(JSON.stringify(t),before);
  assert.deepEqual(sourceRelationHubs(t.nodes,t.edges).map(g=>g.parent),['material','field']);
- for(const change of [x=>x.edges.push(edge('join','bubble','meme','별도 연결')),x=>x.edges.push(edge('return','meme','material','귀환')),x=>x.edges[0].claimKind='inference',x=>x.edges[0].kind='sequence',x=>x.nodes[0].focus=true]){const x=structuredClone(t);change(x);assert.equal(sourceRelationHubs(x.nodes,x.edges),null);}
+ const focused=structuredClone(t);focused.nodes.find(n=>n.id==='material').focus=true;
+ assert.deepEqual(sourceRelationHubs(focused.nodes,focused.edges).map(g=>g.parent),['material','field']);
+ for(const change of [x=>x.edges.push(edge('join','bubble','meme','별도 연결')),x=>x.edges.push(edge('return','meme','material','귀환')),x=>x.edges[0].claimKind='inference',x=>x.edges[0].kind='sequence',x=>x.nodes.find(n=>n.id==='field').focus=true]){const x=structuredClone(t);change(x);assert.equal(sourceRelationHubs(x.nodes,x.edges),null);}
 });
 
 test('large direct hubs reserve one item for the actual center and retain every branch proof', () => {

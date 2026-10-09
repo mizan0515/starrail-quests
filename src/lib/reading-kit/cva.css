@@ -31,6 +31,7 @@
 .cva-page[data-cva] .cva-item-extra{margin-block-start:1rem;line-height:1.8;color:var(--cva-copy);overflow-wrap:anywhere}
 .cva-page[data-cva] .cva-item-extra>:first-child{margin-block-start:0}
 .cva-page[data-cva] .cva-item-extra a{color:var(--cva-text);text-decoration-thickness:1px}
+.cva-page[data-cva] :is(.cva-item-body,.sc-item-body) a[data-reading-link]{color:inherit;text-decoration:underline;text-decoration-color:var(--cva-accent);text-decoration-thickness:1px;text-underline-offset:.2em}
 .cva-page[data-cva] :is(.cva-image-source,.sc-spotlight-nav a){min-block-size:44px;display:inline-flex;align-items:center}
 .cva-page[data-cva] :is(.cva-title,.cva-item-title,.sc-item-title) a{color:inherit;text-decoration:none}
 .cva-page[data-cva] :is(.cva-title,.cva-item-title,.sc-item-title) a:hover{text-decoration:underline;text-decoration-color:var(--cva-accent)}

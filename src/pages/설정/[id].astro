@@ -4,7 +4,7 @@ import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
 import guides from '../../../editorial/reading-guides.json';
 import Perspectives from '../../components/Perspectives.astro';
 import SourceRegister from '../../components/SourceRegister.astro';
-import {atlas,atlasUrl,axisName} from '../../lib/atlas';
+import {atlas,atlasUrl,axisName,readingInline} from '../../lib/atlas';
 import {topics,doc,docUrl,href,topicUrl} from '../../lib/data';
 import {readingGraph} from '../../lib/reading-data';
 import {createReadingKit,escapeHtml as E,cvaId} from '../../lib/reading-kit/render.mjs';
@@ -26,7 +26,7 @@ const originalUrl=e=>{
  if(matches.length!==1)throw Error('Topic original citation differs: '+e.id);
  return docUrl(e.id)+'#'+e.anchor+'-row-'+(matches[0].i+1);
 };
-const kit=createReadingKit({evidence:items=>items.map(e=>`<div data-topic-evidence="${E(e.id)}"><blockquote class="rw-quotation">${E(e.quote)}</blockquote>${sourceLink(originalUrl(e),e.title+' · 해당 구절 ↗',{reading:true})}</div>`).join('')});
+const kit=createReadingKit({inline:readingInline,evidence:items=>items.map(e=>`<div data-topic-evidence="${E(e.id)}"><blockquote class="rw-quotation">${E(e.quote)}</blockquote>${sourceLink(originalUrl(e),e.title+' · 해당 구절 ↗',{reading:true})}</div>`).join('')});
 const endpoint=name=>{
  const candidates=readingGraph.entities.filter(n=>n.name===name);
  const node=candidates.length===1?candidates[0]:null;

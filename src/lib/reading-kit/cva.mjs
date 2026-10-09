@@ -116,7 +116,7 @@ function replaceRanges(html,ranges){
  return html;
 }
 
-function annotateItems(html,block,extras,titles){
+function annotateItems(html,block,extras,titles,bodies){
  const count=block.props.items?.length??0;if(!count)return html;
  const {nodes}=tree(html),ranges=[];
  const titleFor=(node,index)=>{
@@ -134,9 +134,13 @@ function annotateItems(html,block,extras,titles){
  const itemRoot=(node,index)=>{
   ranges.push({start:node.openEnd-1,end:node.openEnd-1,value:' data-cva-item-index="'+index+'"'});
   titleFor(node,index);
-  if(!extras[index])return;
   const descendants=nodes.filter(child=>inside(child,node));
   const body=descendants.find(child=>child.classes.has('sc-item-body')||child.classes.has('cva-item-body'));
+  if(bodies[index]){
+   if(!body||html.slice(body.openEnd,body.closeStart)!==escape(block.props.items[index].body))throw new Error('Canonical CVA body differs from the normalized item');
+   ranges.push({start:body.openEnd,end:body.closeStart,value:bodies[index]});
+  }
+  if(!extras[index])return;
   const copy=descendants.find(child=>child.classes.has('sc-copy')||child.classes.has('cva-item-copy')||child.classes.has('cva-caption'));
   const where=body?(body.tag==='td'?body.closeStart:body.end):(copy?.closeStart??node.closeStart);
   ranges.push({start:where,end:where,value:'<div class="cva-item-extra" data-cva-item-extra="'+index+'">'+extras[index]+'</div>'});
@@ -158,6 +162,10 @@ function annotateItems(html,block,extras,titles){
     ranges.push({start:title.openEnd,end:title.closeStart,value:titles[index]});
    }
    ranges.push({start:body.openEnd-1,end:body.openEnd-1,value:' data-cva-item-index="'+index+'"'});
+   if(bodies[index]){
+    if(html.slice(body.openEnd,body.closeStart)!==escape(block.props.items[index].body))throw new Error('Canonical comparison body differs from the normalized item');
+    ranges.push({start:body.openEnd,end:body.closeStart,value:bodies[index]});
+   }
    if(extras[index])ranges.push({start:body.closeStart,end:body.closeStart,value:'<div class="cva-item-extra" data-cva-item-extra="'+index+'">'+extras[index]+'</div>'});
   }
  }else{
@@ -189,7 +197,7 @@ function annotateMedia(html,registry){
  return replaceRanges(html,ranges);
 }
 
-export function renderCvaModule({id,type,variant,profile='forma',orientation='vertical',props={},items,media=[],itemExtras=[],itemTitles=[]}={}){
+export function renderCvaModule({id,type,variant,profile='forma',orientation='vertical',props={},items,media=[],itemExtras=[],itemTitles=[],itemBodies=[]}={}){
  if(typeof id!=='string'||!idPattern.test(id))throw new Error('An explicit safe CVA module ID is required');
  if(type==='forma-pattern')throw new Error('Original Forma engines are outside the vendored authored subset');
  const registry=mediaRegistry(media),context=runtime(registry);
@@ -205,7 +213,7 @@ export function renderCvaModule({id,type,variant,profile='forma',orientation='ve
   if(!Array.isArray(actual.items)||actual.items.length>24)throw new Error('Split module items into batches of at most 24');
   for(const entry of actual.items)plain(entry,'item');
  }
- const count=actual.items?.length??0,extras=approvedHTML(itemExtras,count,'itemExtras'),titles=approvedHTML(itemTitles,count,'itemTitles');
+ const count=actual.items?.length??0,extras=approvedHTML(itemExtras,count,'itemExtras'),titles=approvedHTML(itemTitles,count,'itemTitles'),bodies=approvedHTML(itemBodies,count,'itemBodies');
  context.__input=JSON.stringify({id,type,variant,orientation,profile,actual});
  const result=new vm.Script(`
   const input=JSON.parse(__input);
@@ -223,7 +231,7 @@ export function renderCvaModule({id,type,variant,profile='forma',orientation='ve
  html=html.replace(/<p class="(?:cva-empty|sc-empty|sc-image-empty|sc-fallback)">[^<]*<\/p>/g,'');
  if(block.type==='scene-composition'&&!block.props.relationLabel&&!block.props.caption)html=html.replace(/<footer class="sc-semantic-footer">[\s\S]*?<\/footer>/,'');
  else if(block.type==='scene-composition'&&!block.props.relationLabel)html=html.replace(/<p class="sc-relation-label">[\s\S]*?<\/p>/,'');
- html=annotateItems(html,block,extras,titles);
+ html=annotateItems(html,block,extras,titles,bodies);
  html=annotateMedia(html,registry);
  const json=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
  return '<div class="cva-page cva-reader-fragment" data-cva data-cva-profile="'+escape(doc.profile)+'">'+html+
