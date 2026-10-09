@@ -1,0 +1,21 @@
+---
+const {section:s}=Astro.props;
+const proof=s.nativeOwnership;
+const labels={EXPLICIT_NATIVE_MAIN_MISSION_ID:'실행 그룹의 임무 소유',EXPLICIT_OWNED_NPC_DIALOG_GRAPH:'이 그룹의 NPC 대화 경로',EXACT_NATIVE_TRIGGER_PERFORMANCE:'NPC 대화에서 호출한 연출',EXPLICIT_PERFORMANCE_LOOKUP:'연출 식별자와 등록된 대화 표',EXACT_NATIVE_FULL_FIELD_SOURCE:'장면과 선택지를 담은 연출 설정'};
+---
+<div data-native-timeline-owner={s.anchor}>
+ <p>공식 4.6 설정의 임무 소유 참조와 NPC 대화 경로를 따라 연결한 원문입니다.</p>
+ <dl>{proof.edges.map(edge=><>
+  <dt>{labels[edge.kind]}</dt>
+  <dd>{edge.source||edge.tableSource}<br/>{edge.pointer||edge.rowPointer}
+   {edge.value!==undefined&&<><br/>{String(edge.value)}</>}
+   {edge.target&&<><br/>{edge.target}</>}
+   {edge.PerformanceID&&<><br/>연출 {edge.PerformanceID} · {edge.PerformanceTypeLabel}</>}
+   {edge.sourceUrl&&<><br/><a href={edge.sourceUrl}>{edge.packFile?'공식 설정 팩 원문':'연출 표 원문'} ↗</a></>}
+   {edge.packFile&&<><br/>{edge.packFile} · {edge.packOffset}–{edge.packOffset+edge.packLength}<br/>엔트리 SHA-256 · {edge.sourceSha256}<br/>팩 SHA-256 · {edge.packSha256}</>}
+   {edge.fieldSpan&&<><br/>필드 위치 {edge.fieldSpan.start}–{edge.fieldSpan.end}</>}
+   {edge.tableSha256&&<><br/>표 SHA-256 · {edge.tableSha256}<br/>등록된 표 · {edge.registeredShards.join(' · ')}</>}
+  </dd>
+ </>)}</dl>
+</div>
+<style>dd{overflow-wrap:anywhere}</style>

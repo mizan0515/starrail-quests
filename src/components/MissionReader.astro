@@ -1,6 +1,8 @@
 ---
 import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
 import Scene from './Scene.astro';
+import NativeMissionRelatedMessage from './NativeMissionRelatedMessage.astro';
+import nativeTimelineDialogue from '../../data/native-timeline-mission-dialogue.json';
 import {readerAttributes,disclosureAttributes} from '../lib/reading-kit/reader.mjs';
 import {missionPassageKind,missionSections,missionStructureUrl} from '../lib/data';
 const {document:d,supplements=[],messages=[],reading,coverage}=Astro.props;
@@ -28,6 +30,7 @@ const name=(s:any,i:number)=>{if(s.recordType==='CUTSCENE_CAPTION')return `장�
   <div class="mission-scenes">{scenes.map((s,i)=><Scene section={{...s,title:s.relatedDocument?`장면 ${i+1} · 메시지 · ${s.sourceTitle}`:name(s,i),sourceTitle:s.sourceTitle||s.title,ownership:s.recordType==='CUTSCENE_CAPTION'?s.ownership:coverage?.sourceOwnership?.[s.source]||s.ownership,sourceUrl:s.sourceUrl||(coverage?.sourceOwnership?.[s.source]?missionStructureUrl(s.source):undefined)}} quest/>)}</div>
  </>:<aside class="coverage-note"><strong>임무 개요와 진행 목표 수록</strong><p>이 임무의 대사 식별자와 한국어 본문 연결은 확인 중입니다. 아래에서 게임 파일에 기록된 진행 목표를 읽을 수 있습니다.</p></aside>}
  {referenceScenes.length>0&&<details {...disclosureAttributes({className:'mission-reference-scenes',id:'reference-scenes'})} data-reference-scenes><summary>임무 자료의 추가 대화 · {referenceScenes.length}개 묶음</summary><p class="muted">임무 폴더에 수록되었거나 과거 추출본에 연결된 원문입니다. 현재 대조한 임무 설정의 명시 참조에서는 진행 연결이 확인되지 않아 별도로 보존합니다.</p>{referenceScenes.map((s,i)=><Scene section={{...s,title:`참고 자료 ${i+1} · ${s.relatedDocument?'메시지 · '+s.sourceTitle:name(s,i).replace(/^장면 \d+ · /,'')}`,sourceTitle:s.sourceTitle||s.title,ownership:s.recordType==='CUTSCENE_CAPTION'?s.ownership:coverage?.sourceOwnership?.[s.source]||s.ownership,sourceUrl:s.sourceUrl||(coverage?.sourceOwnership?.[s.source]?missionStructureUrl(s.source):undefined),referenceOnly:true}} quest/>)}</details>}
+ <NativeMissionRelatedMessage links={nativeTimelineDialogue.relatedDocuments[d.id]||[]}/>
 </section>
 <script>
  for(const root of document.querySelectorAll<HTMLElement>('[data-mission-reader]')){

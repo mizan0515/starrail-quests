@@ -275,6 +275,8 @@ def main(dist):
         assert owner in original.get('missionParts',[target]),'Caption owner missing from preserved mission parts: '+owner
         captions.setdefault(target,[]).extend(scenes)
     timelines=read(root/'data/timeline-mission-dialogue.json')['missions']
+    for owner,scenes in read(root/'data/native-timeline-mission-dialogue.json')['missions'].items():
+        timelines.setdefault(owner,[]).extend(scenes)
     supplement={mid:[*supplements_data['missions'].get(mid,[]),*captions.get(mid,[]),*timelines.get(mid,[])] for mid in set(supplements_data['missions'])|set(captions)|set(timelines)}
     coverage=supplements_data.get('coverage',{})
     built_catalog=read(dist/'reading-catalog.json')
@@ -364,6 +366,9 @@ def main(dist):
             if section.get('recordType')=='CUTSCENE_CAPTION':
                 return caption_owned(doc,section)
             chain=section['_messageOwnership'] if '_messageOwnership' in section else ownership.get(section.get('source'),section.get('ownership',[]))
+            if chain and chain[0].get('kind')=='EXPLICIT_NATIVE_MAIN_MISSION_ID':
+                seed=chain[0]
+                return section.get('recordType') in ('TIMELINE_DIALOGUE','NATIVE_TIMELINE_CHOICES') and seed.get('pointer')=='/OwnerMainMissionID' and seed.get('value')==seed.get('missionId')==seed.get('canonicalMissionId') and 'quest-'+str(seed['missionId']) in doc.get('missionParts',[doc['id']]) and len(section.get('nativeOwnership',{}).get('edges',[]))==5
             return explicitly_owned(chain)
         scopes=mission_coverage.get('sourceTalkScopes',{})
         for source,chain in ownership.items():

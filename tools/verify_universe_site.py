@@ -67,6 +67,9 @@ def reading_counts(document,scenes,coverage,message_sections):
         else:
             chain=section.get('_messageOwnership',owners.get(section.get('source'),section.get('ownership',[])))
             linked=explicitly_owned(chain)
+            if chain and chain[0].get('kind')=='EXPLICIT_NATIVE_MAIN_MISSION_ID':
+                seed=chain[0]
+                linked=section.get('recordType') in ('TIMELINE_DIALOGUE','NATIVE_TIMELINE_CHOICES') and seed.get('pointer')=='/OwnerMainMissionID' and seed.get('value')==seed.get('missionId')==seed.get('canonicalMissionId') and 'quest-'+str(seed['missionId']) in document.get('missionParts',[document['id']]) and len(section.get('nativeOwnership',{}).get('edges',[]))==5
             scope=scopes.get(section.get('source')) if '_messageOwnership' not in section else None
             if linked and any(edge.get('kind')=='EXPLICIT_SUBMISSION_FINISH_SCOPE' and edge.get('target')==section.get('source') for edge in chain):
                 assert scope and isinstance(scope.get('talkIds'),list),(document['id'],'missing explicit talk scope',section['source'])
@@ -101,6 +104,11 @@ def main():
     assert count==catalogue['counts']['reviewedDialogueRows']
     supplements=read(ROOT/'data/mission-dialogue-supplements.json');mission_rows=caption_rows=timeline_rows=message_rows_checked=0
     timelines=read(ROOT/'data/timeline-mission-dialogue.json')
+    native_timelines=read(ROOT/'data/native-timeline-mission-dialogue.json')
+    for owner,scenes in native_timelines['missions'].items():
+        timelines['missions'].setdefault(owner,[]).extend(scenes)
+    for field in ('scenes','rows'):
+        timelines['counts'][field]+=native_timelines['counts'][field]
     caption_source=read(ROOT/'data/official-video-captions.json');aliases=read(ROOT/'data/aliases.json')
     native_captions=read(ROOT/'data/native-video-captions.json')
     for owner,scenes in native_captions['missions'].items():

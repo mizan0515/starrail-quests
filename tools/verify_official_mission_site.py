@@ -60,7 +60,7 @@ def check(html,rows,e):
     for p in proof.proofs:
         r=expected[p['id']];a=p['attrs'];owner=p['owner']
         assert p['tag']=='details' and a['data-reading-template']=='disclosure' and 'rw-disclosure' in a['class'].split()
-        assert owner and owner['data-speaker']==r['speaker'] and owner['data-passage']=='dialogue'
+        assert owner and owner['data-speaker']==r['speaker'] and owner['data-passage']==('choice' if r['label']=='선택지' else 'dialogue')
         assert [''.join(x) for x in p['summaries']]==['공식 한국어 원문 · '+r['officialSource']['clientVersion'].removeprefix('OSPRODWin')]
         assert list(zip([''.join(x) for x in p['terms']],[''.join(x) for x in p['values']]))==expected_fields(r,e)
         assert len(p['terms'])==len(p['values'])==4
@@ -78,6 +78,9 @@ def main(dist):
     original=json.loads((SITE/'data/official-mission-talks.json').read_text('utf8'))
     supplements=json.loads((SITE/'data/mission-dialogue-supplements.json').read_text('utf8'))
     timelines=json.loads((SITE/'data/timeline-mission-dialogue.json').read_text('utf8'))
+    native_timelines=json.loads((SITE/'data/native-timeline-mission-dialogue.json').read_text('utf8'))
+    for owner,scenes in native_timelines['missions'].items():
+        timelines['missions'].setdefault(owner,[]).extend(scenes)
     assert timelines['evidence']['officialKorean']['talkTable']==original['evidence']['talkTable']
     assert timelines['evidence']['officialKorean']['entry']==original['evidence']['entry']
     missions={mid:[*supplements['missions'].get(mid,[]),*timelines['missions'].get(mid,[])]

@@ -20,7 +20,7 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def project(evidence, joins, contexts):
+def project(evidence, joins, contexts, owner_kind='EXPLICIT_MAIN_MISSION_ID'):
     assert evidence['status'] == 'TYPED_DIALOGUE_ROUTE_FULL_FIELD_EOF_PASS'
     assert evidence['counts']['multiOwnerTimelines'] == 0
     assert evidence['counts']['malformedAccepted'] == 0
@@ -67,7 +67,7 @@ def project(evidence, joins, contexts):
         document = read(SITE / 'data/documents' / (target + '.json'))
         assert mid in document.get('missionParts', [document['id']])
         seed = owner['ownerChain'][0]
-        assert seed['kind'] == 'EXPLICIT_MAIN_MISSION_ID'
+        assert seed['kind'] == owner_kind
         assert seed['canonicalMissionId'] == int(mid.removeprefix('quest-'))
         assert 'quest-' + str(seed['missionId']) in document.get('missionParts', [document['id']])
         anchor = 'timeline-' + hashlib.sha256(timeline['timelineName'].encode()).hexdigest()[:16]
