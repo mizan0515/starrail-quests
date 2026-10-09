@@ -1,4 +1,5 @@
 ---
+import {sourceDescription} from '../../../lib/seo.mjs';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import sources from '../../../../data/universe-source-records.json';
 import universe from '../../../../data/universe-catalog.json';
@@ -13,7 +14,7 @@ const records=mode.records,index=records.findIndex(r=>r.id===record.id);
 const unresolvedOptions=sources.unresolvedScriptTextFields.filter(field=>field.recordId===record.id).length;
 const settingTexts=official.records.filter(item=>item.linkedSourceRecordIds.includes(record.id));
 ---
-<StarlightPage frontmatter={{title:record.title,editUrl:false,tableOfContents:false}}>
+<StarlightPage frontmatter={{title:record.title,description:sourceDescription([record.title,parent.name,'한국어 기록 원문'],record.scenes.flatMap(scene=>scene.rows).find(row=>row.text)?.text),editUrl:false,tableOfContents:false}}>
  <CatalogReturn/>
  <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('우주.html')}>우주 콘텐츠·아이템</a><span>/</span><a href={href('우주/'+mode.id+'.html#source-records')}>{parent.name}</a><span>/</span><span>원문 기록</span></nav>
  <p class="document-meta"><span class="kind-badge">{parent.name} · 원문</span><span>{record.scenes.reduce((n,s)=>n+s.rows.length,0)}개 원문 행</span></p>

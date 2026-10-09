@@ -1,4 +1,5 @@
 ---
+import {sourceDescription} from '../../../lib/seo.mjs';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import official from '../../../../data/official-universe-texts.json';
 import sources from '../../../../data/universe-source-records.json';
@@ -17,7 +18,7 @@ const metaUrl=path=>`https://github.com/DimbreathBot/TurnBasedGameData/blob/${of
 const fields=[...record.fields].sort((a,b)=>Number(b.role==='story')-Number(a.role==='story'));
 const fieldAnchor=field=>record.id+'-'+field.fieldKey;
 ---
-<StarlightPage frontmatter={{title:record.title,editUrl:false,tableOfContents:false}}>
+<StarlightPage frontmatter={{title:record.title,description:sourceDescription([record.title,mode.name,record.kindLabel,'한국어 수록본 4.6'],fields.find(field=>field.role==='story')?.text||fields[0]?.text),editUrl:false,tableOfContents:false}}>
  <CatalogReturn/>
  <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('우주.html')}>우주 콘텐츠·아이템</a><span>/</span><a href={href('우주/'+record.modeId+'.html#setting-texts')}>{mode.name}</a><span>/</span><span>{record.kindLabel}</span></nav>
  <p class="document-meta"><span class="kind-badge">{record.kindLabel} · 원문</span><span>한국어 수록본 4.6</span></p>

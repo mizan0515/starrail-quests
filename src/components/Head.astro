@@ -1,0 +1,12 @@
+---
+const route=Astro.locals.starlightRoute;
+const isMissing=/\/(?:404|500)(?:\.html)?$/.test(Astro.url.pathname);
+const isHomeAlias=decodeURIComponent(Astro.url.pathname).replace(/\.html$/,'').endsWith('/시작');
+const homeUrl=new URL(import.meta.env.BASE_URL.replace(/\/$/,'')+'/index.html',Astro.site).href;
+const head=route.head.filter(entry=>!(isMissing&&entry.tag==='meta'&&entry.attrs?.name==='robots')).map(entry=>
+  isHomeAlias&&entry.tag==='link'&&entry.attrs?.rel==='canonical'?{...entry,attrs:{...entry.attrs,href:homeUrl}}:
+  isHomeAlias&&entry.tag==='meta'&&entry.attrs?.property==='og:url'?{...entry,attrs:{...entry.attrs,content:homeUrl}}:entry
+);
+if(isMissing)head.push({tag:'meta',attrs:{name:'robots',content:'noindex, follow'}});
+---
+{head.map(({tag:Tag,attrs,content})=><Tag {...attrs} set:html={content}/>)}

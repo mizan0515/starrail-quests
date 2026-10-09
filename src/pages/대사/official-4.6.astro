@@ -7,7 +7,7 @@ const rows=library.rows;
 const records=rows.map(row=>({id:'official-4.6-'+row.talk_id,title:`${row.speaker} · 대사 ${row.talk_id}`,kind:row.changeKind,kindLabel:row.changeKind==='changed'?'4.5·4.6 표기 대조':'추가 원문',fields:[{role:'story',text:row.text}],url:href('대사/official-4.6-'+row.talk_id+'.html')}));
 const changed=rows.filter(row=>row.changeKind==='changed').length;
 ---
-<StarlightPage frontmatter={{title:'4.6 한국어 대사',editUrl:false,tableOfContents:false}}>
+<StarlightPage frontmatter={{title:'4.6 한국어 대사',description:`붕괴: 스타레일 한국어 수록본 4.6의 추가·변경 대사 ${rows.length.toLocaleString('ko-KR')}행. 화자·대사 ID·구절을 찾아 원문과 4.5 보존본 표기를 대조합니다.`,editUrl:false,tableOfContents:false}}>
  <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('대사.html')}>대사 원문 자료실</a><span>/</span><span>한국어 수록본 4.6</span></nav>
  <p class="page-deck">4.5 보존본과 대조한 추가·변경 원문 {rows.length.toLocaleString('ko-KR')}행. 화자와 구절을 찾아 개별 원문과 출처를 읽습니다.</p>
  <p class="muted">추가 원문 {(rows.length-changed).toLocaleString('ko-KR')}행 · 본문·화자 표기 대조 {changed}행. 수록본은 자료를 확인한 버전이며, 임무의 출시 버전과 작중 시점은 각각의 근거에 따릅니다.</p>

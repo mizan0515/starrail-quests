@@ -1,4 +1,5 @@
 ---
+import {documentDescription} from '../../lib/seo.mjs';
 import {disclosureAttributes} from '../../lib/reading-kit/reader.mjs';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
@@ -19,7 +20,7 @@ const peers=d.collection?catalog.filter(x=>x.collection===d.collection&&x.id!==d
 const next=d.next?catalog.find(x=>x.id==='quest-'+d.next):null;
 const previous=quest?catalog.filter(x=>x.category==='퀘스트'&&x.kind===d.kind&&x.world===d.world&&x.chapter===d.chapter&&x.rank<d.rank).sort((a,b)=>b.rank-a.rank)[0]:null;
 ---
-<StarlightPage headings={headings} frontmatter={{title:d.title,description:`${d.kind||d.category} · ${d.world} · 한국어 원문과 관련 설정`,editUrl:false}}>
+<StarlightPage headings={headings} frontmatter={{title:d.title,description:documentDescription(d,reading),editUrl:false}}>
  <CatalogReturn/>
  <nav class="breadcrumbs" aria-label="현재 위치" data-pagefind-ignore><a href={href(quest?'index.html':'설정집.html')}>{quest?'임무':'설정집'}</a><span>/</span><span>{d.kind||d.category}</span>{d.world!=='분류 미확인'&&<><span>/</span><span>{d.world}</span></>}</nav>
  {quest&&d.chapter!=='챕터 미지정'&&<p class="chapter-name">{d.chapter}</p>}

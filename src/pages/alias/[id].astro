@@ -1,7 +1,8 @@
 ---
 import aliases from '../../../data/aliases.json';
 import {docUrl} from '../../lib/data';
+import {canonicalPageUrl} from '../../lib/seo.mjs';
 export function getStaticPaths(){return Object.entries(aliases).map(([id,target])=>({params:{id},props:{target}}));}
 const url=docUrl(Astro.props.target);
 ---
-<!doctype html><html lang="ko"><head><meta charset="utf-8"/><title>통합 원문으로 이동</title><meta http-equiv="refresh" content={'0;url='+url}/><link rel="canonical" href={url}/></head><body><a href={url}>동일 본문을 통합한 원문으로 이동합니다.</a></body></html>
+<!doctype html><html lang="ko"><head><meta charset="utf-8"/><title>통합 원문으로 이동</title><meta http-equiv="refresh" content={'0;url='+url}/><link rel="canonical" href={canonicalPageUrl(url,Astro.site)}/></head><body><a href={url}>동일 본문을 통합한 원문으로 이동합니다.</a></body></html>

@@ -1,4 +1,5 @@
 ---
+import {sourceDescription} from '../lib/seo.mjs';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import library from '../../data/official-talk-library.json';
 import SourceParagraphs from './SourceParagraphs.astro';
@@ -18,7 +19,7 @@ const titles=Object.fromEntries(catalog.filter(d=>d.category==='퀘스트').map(
 const anchor='talk-'+row.talk_id;
 const comparison=previous?renderCvaModule({id:'cva-talk-compare-'+row.talk_id,type:'comparison',variant:'columns',orientation:'horizontal',props:{title:'',body:''},items:[{id:'baseline',title:'4.5 보존본',body:'',label:previous.speaker},{id:'current',title:'4.6 수록본',body:'',label:row.speaker}],itemExtras:[`<div data-talk-baseline><span class="speaker">${E(previous.speaker)}</span>${sourceParagraphs(previous.text,anchor+'-baseline')}${previousUrl?`<a data-reading-link href="${safeHref(previousUrl)}">보존된 대사표 원문 ↗</a>`:''}</div>`,`<div data-talk-current><span class="speaker">${E(row.speaker)}</span>${sourceParagraphs(row.text,anchor+'-current')}<a href="#${E(anchor)}">현재 원문의 출처 확인 ↑</a></div>`]}):'';
 ---
-<StarlightPage frontmatter={{title:`${row.speaker} · 대사 ${row.talk_id}`,editUrl:false,tableOfContents:false}}>
+<StarlightPage frontmatter={{title:`${row.speaker} · 대사 ${row.talk_id}`,description:sourceDescription([row.speaker,`대사 ${row.talk_id}`,'한국어 수록본 4.6'],row.text),editUrl:false,tableOfContents:false}}>
  <CatalogReturn/>
  <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('대사.html')}>대사 원문 자료실</a><span>/</span><a href={href('대사/official-4.6.html')}>4.6 한국어 수록본</a></nav>
  <p class="document-meta"><span class="kind-badge">대사표 원문</span><span>한국어 수록본 4.6</span><span>{previous?'4.5·4.6 표기 대조':'4.5 보존본에 없는 대사 ID'}</span></p>

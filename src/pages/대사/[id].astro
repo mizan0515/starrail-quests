@@ -1,4 +1,5 @@
 ---
+import {sourceDescription} from '../../lib/seo.mjs';
 import {disclosureAttributes} from '../../lib/reading-kit/reader.mjs';
 import fs from 'node:fs';import path from 'node:path';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
@@ -13,7 +14,7 @@ const peers=p?dialogueData.pages.filter(x=>x.version===p.version):[];const pos=p
 const proof=dialogueData.evidence;const snap=p?proof.snapshots.find(s=>s.version===(p.version==='early'?proof.firstSnapshotBaseline:p.version)):null;
 ---
 {officialRow?<OfficialTalkReader row={officialRow}/>:
-<StarlightPage frontmatter={{title:`${versionLabel(p.version)} · 한국어 대사 ${p.part}`,editUrl:false,tableOfContents:false}}>
+<StarlightPage frontmatter={{title:`${versionLabel(p.version)} · 한국어 대사 ${p.part}`,description:sourceDescription([`${versionLabel(p.version)} 한국어 수록본`, `대사 묶음 ${p.part}`, `${p.count}개 대사`, p.speakers.slice(0,4).join(' · ')],p.preview),editUrl:false,tableOfContents:false}}>
  <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('versions/'+p.version+'.html')}>{versionLabel(p.version)} 버전</a><span>/</span><span>대사 묶음 {p.part}</span></nav>
  <p class="page-deck">{p.count}개 실제 대사 · 임무 연결 확인 {p.linked}개</p>
  <p class="muted">한국어 대사 표의 행 순서입니다. 컷신·분기 실행 순서는 복원되지 않았으며, 인접한 문장을 같은 사건으로 단정하지 않습니다. 아래 연결은 원문 장면에 같은 대사 ID가 있을 때만 표시합니다.</p>

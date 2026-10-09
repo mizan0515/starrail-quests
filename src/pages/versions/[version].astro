@@ -1,4 +1,5 @@
 ---
+import {sourceDescription} from '../../lib/seo.mjs';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import Browse from '../../components/Browse.astro';
 import DialogueBrowse from '../../components/DialogueBrowse.astro';
@@ -9,7 +10,7 @@ const snapshot=versionEvidence.snapshots.find(s=>s.version===v);
 const releases=Object.entries(versionEvidence.releaseEvidence).filter(([id,e])=>!v||e.version===v);
 const releaseGroups=Array.from(Map.groupBy(releases,([id,e])=>`${e.version}:${e.title}`).values());
 ---
-<StarlightPage frontmatter={{title:v?`${versionLabel(v)} · 임무 목록`:'버전별 임무 목록',editUrl:false,tableOfContents:false}}>
+<StarlightPage frontmatter={{title:v?`${versionLabel(v)} · 임무 목록`:'버전별 임무 목록',description:sourceDescription(['붕괴: 스타레일',v?`${versionLabel(v)} 버전별 임무`:'버전별 임무 목록','임무 원문·대사·선택지와 수록 시점']),editUrl:false,tableOfContents:false}}>
  <p class="page-deck">다시 읽을 임무를 찾아 대화와 선택지를 확인하세요.</p>
  {v==='early'?<p class="early-records-entry"><strong>1.0~2.6 임무</strong><span>1.0~2.6 공개 임무 표에 수록된 자료를 함께 읽습니다. 버전 메뉴에서 1.x와 2.x를 개별로 선택할 수 있습니다.</span></p>:v&&<p class="early-records-entry"><a href={href('versions/index.html')}>버전별 임무 전체 →</a></p>}
  {v&&v!=="early"&&<p class="page-deck">{v} 임무 자료에서 처음 확인한 항목과 출시가 확인된 임무를 함께 수록합니다. 표에 수록된 시점과 플레이 개방 시점은 각 근거로 구분합니다.</p>}
