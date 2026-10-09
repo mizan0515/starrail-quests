@@ -35,6 +35,10 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Official Korean universe text binding QA failed'}
   & python -B -X utf8 tools/verify_official_universe_site.py
   if($LASTEXITCODE -ne 0){throw 'Official Korean universe source HTML QA failed'}
+  & python -B -X utf8 tools/verify_relic_backgrounds.py
+  if($LASTEXITCODE -ne 0){throw 'Whole relic background original and source binding QA failed'}
+  & python -B -X utf8 tools/verify_discovery.py --self-test
+  if($LASTEXITCODE -ne 0){throw 'Whole discovery membership, source classification and SSR QA failed'}
   & python tools/verify_mission_dialogue_supplements.py
   if($LASTEXITCODE -ne 0){throw 'Mission dialogue source QA failed'}
   & python -B -X utf8 tools/verify_official_mission_talks.py

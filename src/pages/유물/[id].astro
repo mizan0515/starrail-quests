@@ -1,0 +1,25 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import SourceParagraphs from '../../components/SourceParagraphs.astro';
+import CatalogReturn from '../../components/CatalogReturn.astro';
+import records from '../../../data/relic-backgrounds.json';
+import {href,doc} from '../../lib/data';
+import {sourceDescription} from '../../lib/seo.mjs';
+import {disclosureAttributes} from '../../lib/reading-kit/reader.mjs';
+import {createReadingKit} from '../../lib/reading-kit/render.mjs';
+export function getStaticPaths(){return records.records.map(record=>({params:{id:record.id},props:{record}}));}
+const {record}=Astro.props;
+const peers=records.records.filter(r=>r.sourceRowId.setId===record.sourceRowId.setId&&r.id!==record.id);
+const collection=records.collections.find(c=>c.setId===record.sourceRowId.setId)!;
+const kit=createReadingKit();
+const metaUrl='https://github.com/DimbreathBot/TurnBasedGameData/blob/'+records.evidence.metadataCommit+'/'+record.source.table;
+---
+<StarlightPage frontmatter={{title:record.title+' · 배경 이야기',description:sourceDescription([record.title,'유물 배경 이야기',record.storyTitle],record.text),editUrl:false,tableOfContents:false}}>
+ <CatalogReturn/>
+ <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('우주.html#item-library')}>우주 콘텐츠·아이템</a><span>/</span><a href={href('유물.html?relicSet='+collection.id+'#relic-library-group-'+collection.id)}>{collection.name}</a><span>/</span><span>{record.title}</span></nav>
+ <p class="document-meta"><span class="kind-badge">유물 배경 이야기 · 원문</span><span>한국어 수록본 4.6</span></p>
+ <section class="universe-record-original" id="original" data-relic-background={record.id}><h2>{record.storyTitle}</h2><SourceParagraphs text={record.text} anchor={record.id+'-body'}/></section>
+ {record.relatedItemIds.length>0&&<section><h2>이 유물의 짧은 설명</h2><Fragment set:html={kit.directory(record.relatedItemIds.map(id=>({id,name:doc(id).title,kind:'유물 설명 · 원문',summary:record.fields.ItemBGDesc.text,url:href('문서/'+id+'.html#original')})))}/></section>}
+ <section id="same-set"><h2>{collection.name}</h2><p class="muted">같은 세트에 수록된 다른 부위의 배경 이야기입니다.</p><Fragment set:html={kit.directory(peers.map(r=>({name:r.title,kind:'유물 배경 이야기 · 원문',summary:r.text.slice(0,180),url:href('유물/'+r.id+'.html')})))}/></section>
+ <details {...disclosureAttributes({className:'source-details'})} data-pagefind-ignore><summary>원문 출처와 식별자</summary><dl><dt>한국어 원자료</dt><dd>4.6 공식 게임 패치 · TextMap 한국어</dd><dt>배경 이야기의 참조</dt><dd><a href={metaUrl}>{record.source.table} ↗</a> · {record.source.pointer} · {record.source.stringKey}</dd><dt>한국어 문자열</dt><dd>{record.hash} · TextMap {record.fields.BGStoryContent.offset}–{record.fields.BGStoryContent.end}</dd><dt>한국어 자료 SHA-256</dt><dd>{records.evidence.koreanPack.sha256}</dd><dt>유물 세트와 부위</dt><dd>{record.sourceRowId.setId} · {record.sourceRowId.type}</dd></dl><pre class="official-source-raw"><code>{record.raw}</code></pre></details>
+</StarlightPage>

@@ -1,0 +1,12 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import GroupedDirectory from '../../components/GroupedDirectory.astro';
+import relics from '../../../data/relic-backgrounds.json';
+import {href} from '../../lib/data';
+const byId=new Map(relics.records.map(r=>[r.id,r]));
+const groups=relics.collections.map(c=>({id:c.id,title:c.name,summary:'같은 유물 세트에 수록된 각 부위의 배경 이야기입니다.',items:c.recordIds.map(id=>{const r=byId.get(id)!;return {id:r.id,name:r.title,kind:'유물 배경 이야기 · 원문',summary:r.text.slice(0,220),searchText:[r.title,r.storyTitle,r.text].join(' '),url:href('유물/'+r.id+'.html')};})}));
+---
+<StarlightPage frontmatter={{title:'유물의 배경 이야기',description:'유물 62세트의 배경 이야기 192개. 각 부위의 기록을 원문으로 읽습니다.',editUrl:false,tableOfContents:false}}>
+ <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('우주.html')}>우주 콘텐츠·아이템</a><span>/</span><span>유물 배경 이야기</span></nav>
+ <GroupedDirectory id="relic-library" title="세트별로 함께 읽는 이야기" lead="물건에 남은 인물의 과거와 문명의 기록을 읽습니다. 세트 이름을 고르면 해당 세트의 배경 이야기가 모입니다." groups={groups} queryKey="relicQuery" groupKey="relicSet" limitKey="relicLimit" placeholder="세트 이름, 인물, 원문 구절" note="세트 이름과 부위별 포함 관계는 게임 표에 수록된 내용입니다. 한국어 원문은 공식 4.6 수록본입니다."/>
+</StarlightPage>

@@ -11,25 +11,25 @@ import {href} from '../lib/data';
  <p class="context-error" role="status" hidden>맥락 정보를 불러오지 못했습니다. 연결된 설정 페이지에서 계속 읽을 수 있습니다.</p>
 </dialog>
 <script>
- import {safeReadingReturn} from '../lib/reading-return.mjs';
+ import {safeReadingReturn,isReadingCatalogue,sourceReadingOrigin} from '../lib/reading-return.mjs';
  const dialog=document.querySelector<HTMLDialogElement>('[data-context-dialog]')!;
  let cached:Promise<Record<string,any>>|undefined;
  let trigger:HTMLElement|null=null;
  const base=new URL(dialog.dataset.endpoint!,location.href).pathname.replace(/\/atlas-data\.json$/,'');
  const safeReturn=(value:string|null)=>safeReadingReturn(value,{origin:location.origin,base});
  const inherited=safeReturn(new URLSearchParams(location.search).get('from'));
- // A universe list is the parent catalogue of its individual source records.
+ // A directory is the parent catalogue of its individual source records.
  // Once inside a record, related settings return to that record and retain the list.
- const catalogueParent=!!inherited&&/^우주\/(?:기록|설정)\//.test(decodeURIComponent(location.pathname).slice(base.length+1))&&/^우주\/[a-z][a-z0-9-]*\.html$/.test(decodeURIComponent(new URL(inherited,location.origin).pathname).slice(base.length+1));
+ const returnOptions={origin:location.origin,base};
+ const catalogueParent=!!inherited&&isReadingCatalogue(inherited,returnOptions);
  const returnNav=document.querySelector<HTMLElement>('[data-reading-return]')!;
  // Starlight's main and right sidebar have separate stacking contexts. Keep
  // the fixed return control outside main so the transparent sidebar cannot
  // intercept its pointer events.
- if(inherited&&!catalogueParent){document.body.append(returnNav);returnNav.hidden=false;returnNav.querySelector('a')!.setAttribute('href',inherited);}
+ if(inherited&&(!catalogueParent||!document.querySelector('[data-catalog-return]'))){document.body.append(returnNav);returnNav.hidden=false;returnNav.querySelector('a')!.setAttribute('href',inherited);}
  const withReturn=(href:string,from:string|null)=>{const url=new URL(href,location.href);if(from){const origin=new URL(from,location.origin);if(url.origin===origin.origin&&url.pathname===origin.pathname)return origin.href;url.searchParams.set('from',from);}return url.href;};
- const currentReadingOrigin=(anchor=location.hash||'#original')=>(catalogueParent?null:inherited)||safeReturn(location.pathname+location.search+anchor);
- const readingOrigin=currentReadingOrigin();
- if(readingOrigin)document.querySelectorAll<HTMLAnchorElement>('a[data-reading-link]').forEach(a=>a.href=withReturn(a.href,readingOrigin));
+ const currentReadingOrigin=(anchor=location.hash||'#original')=>sourceReadingOrigin(location.pathname+location.search+anchor,inherited,returnOptions);
+ document.querySelectorAll<HTMLAnchorElement>('a[data-reading-link]').forEach(a=>{const origin=currentReadingOrigin(a.id?'#'+a.id:location.hash||'#original');if(origin)a.href=withReturn(a.href,origin);});
  const close=()=>{dialog.close();trigger?.focus({preventScroll:true});};
  dialog.querySelector('.context-close')!.addEventListener('click',close);
  dialog.addEventListener('cancel',()=>trigger?.focus({preventScroll:true}));

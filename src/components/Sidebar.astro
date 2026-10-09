@@ -1,10 +1,44 @@
 ---
 import MobileMenuFooter from '@astrojs/starlight/components/MobileMenuFooter.astro';
-import {href,versions} from '../lib/data';
-const pathname=Astro.url.pathname;
-const main=[['index.html','퀘스트 목록'],['설정집.html','설정집'],['관점/region.html','지역'],['관점/person.html','인물'],['세력.html','세력'],['관점/concept.html','세계관의 큰 설정'],['자료안내.html','자료 안내']];
+import '../styles/discovery.css';
+import catalog from '../../data/catalog.json';
+import explorer from '../../data/explorer.json';
+import atlas from '../../editorial/context-atlas.json';
+import discovery from '../../editorial/directory-discovery.json';
+import versionEvidence from '../../editorial/mission-versions.json';
+import aliases from '../../data/aliases.json';
+const base=import.meta.env.BASE_URL.replace(/\/$/,'');
+const href=(path:string)=>`${base}/${path}`;
+const decodePath=(path:string)=>{try{return decodeURIComponent(path);}catch{return path;}};
+const pathname=decodePath(Astro.url.pathname),localRoute=pathname.startsWith(base+'/')?pathname.slice(base.length):pathname,route=localRoute==='/'?'/index.html':localRoute;
+const sourceId=route.match(/^\/(?:대상|맥락|문서)\/([^/]+)\.html$/)?.[1];
+const directoryAxes=new Map(discovery.rows.map(row=>[row.id,row.kind==='person'?(row.subjectType==='aeon'?'aeon':'person'):row.kind==='mechanic'||row.kind==='reading-instruction'?'reference':row.kind]));
+const entry=sourceId?explorer.entries.find(entry=>entry.id===sourceId):undefined;
+const node=sourceId?atlas.nodes.find(node=>node.id===sourceId):undefined;
+const currentAxis=sourceId?directoryAxes.get(sourceId)||entry?.axis||(node?.directoryKind==='종족'?'concept':node?.axis==='bridge'?'faction':node?.axis):undefined;
+const original=sourceId?catalog.find(document=>document.id===sourceId):undefined;
+const itemCategories=new Set(['아이템 설정','시뮬레이션 우주 설정','유물 이야기','광추 이야기']);
+const universeRoute=route==='/유물.html'||route.startsWith('/우주/')||route.startsWith('/유물/')||!!original&&itemCategories.has(original.category);
+const referenceAxis=currentAxis==='reference';
+const axisFor=(axis:string)=>currentAxis===axis||route===`/관점/${axis}.html`;
+const current=(page:string,ancestor=false)=>route==='/'+page?'page':ancestor?'location':undefined;
+const questIds=new Set(catalog.filter(document=>document.category==='퀘스트').map(document=>document.id));
+const versionMap=versionEvidence.missions as Record<string,string>;
+const availableVersions=[...questIds].map(id=>versionMap[id]).filter(Boolean);
+for(const [id,parent] of Object.entries(aliases))if(questIds.has(parent)&&versionMap[id])availableVersions.push(versionMap[id]);
+const versions=[...new Set(availableVersions)].filter(version=>/^\d+\.\d+$/.test(version)).sort((a,b)=>b.localeCompare(a,undefined,{numeric:true}));
+const main=[
+ {url:'index.html',title:'퀘스트 목록',ancestor:route.startsWith('/quests/')||original?.category==='퀘스트'},
+ {url:'설정집.html',title:'설정집',ancestor:route.startsWith('/설정/')},
+ {url:'관점/region.html',title:'지역',ancestor:axisFor('region')},
+ {url:'관점/person.html',title:'인물',ancestor:axisFor('person')||original?.category==='캐릭터 이야기'},
+ {url:'세력.html',title:'세력',ancestor:axisFor('faction')||sourceId==='book-47'},
+ {url:'관점/concept.html',title:'세계관의 큰 설정',ancestor:axisFor('concept')},
+ {url:'관점/reference.html',title:'게임 안내',ancestor:referenceAxis},
+ {url:'자료안내.html',title:'자료 안내',ancestor:false},
+];
 ---
-<div class="archive-sidebar"><p class="sidebar-caption">이야기 자료집</p><nav class="site-global-nav" aria-label="주요 탐색">{main.map(([url,title])=><a class="archive-nav-link" href={href(url)} aria-current={decodeURI(pathname)===decodeURI(href(url))?'page':undefined}>{title}</a>)}</nav>
-<div class="sidebar-section"><a class="archive-nav-link" href={href('versions/index.html')} aria-current={pathname.endsWith('/versions/index.html')?'page':undefined}>버전별 임무</a><a class="archive-nav-link" href={href('우주.html')} aria-current={decodeURI(pathname).endsWith('/우주.html')?'page':undefined}>우주 콘텐츠·아이템</a></div><details class="sidebar-section" open={pathname.includes('/versions/')||pathname.includes('/quests/')}><summary class="sidebar-caption">버전으로 찾기</summary><a class="archive-nav-link" href={href('versions/index.html')}>모든 버전</a>{[4,3,2,1].map(era=><div class="version-era"><span class="era-label">{era}.x</span><div class="version-grid">{versions.filter(v=>v.startsWith(`${era}.`)).map(v=><a href={href('versions/'+v+'.html')} aria-current={pathname.endsWith('/'+v+'.html')?'page':undefined}>{v}</a>)}</div></div>)}</details>
-<details class="sidebar-section"><summary class="sidebar-caption">임무 종류</summary>{[['main','개척 임무'],['continuance','개척 후문'],['companion','동행 임무'],['adventure','모험 임무'],['daily','일일 임무']].map(([id,title])=><a class="archive-nav-link" href={href('quests/'+id+'.html')}>{title}</a>)}</details>
-<div class="sidebar-section"><a class="archive-nav-link" href={href('관점/aeon.html')}>에이언즈 · 운명의 길</a><a class="archive-nav-link" href={href('대사.html')} aria-current={decodeURI(pathname).endsWith('/대사.html')?'page':undefined}>대사 원문 자료실</a></div><div class="md:sl-hidden"><MobileMenuFooter /></div></div>
+<div class="archive-sidebar"><p class="sidebar-caption">이야기 자료집</p><nav class="site-global-nav" aria-label="주요 탐색">{main.map(({url,title,ancestor})=><a class="archive-nav-link" href={href(url)} aria-current={current(url,ancestor)}>{title}</a>)}</nav>
+<div class="sidebar-section"><a class="archive-nav-link" href={href('versions/index.html')} aria-current={current('versions/index.html',route.startsWith('/versions/'))}>버전별 임무</a><a class="archive-nav-link" href={href('우주.html')} aria-current={current('우주.html',universeRoute)}>우주 콘텐츠·아이템</a></div><details class="sidebar-section" open={route.startsWith('/versions/')||route.startsWith('/quests/')}><summary class="sidebar-caption">버전으로 찾기</summary><a class="archive-nav-link" href={href('versions/index.html')}>모든 버전</a>{[4,3,2,1].map(era=><div class="version-era"><span class="era-label">{era}.x</span><div class="version-grid">{versions.filter(v=>v.startsWith(`${era}.`)).map(v=><a href={href('versions/'+v+'.html')} aria-current={current('versions/'+v+'.html')}>{v}</a>)}</div></div>)}</details>
+<details class="sidebar-section" open={route.startsWith('/quests/')}><summary class="sidebar-caption">임무 종류</summary>{[['main','개척 임무'],['continuance','개척 후문'],['companion','동행 임무'],['adventure','모험 임무'],['daily','일일 임무']].map(([id,title])=><a class="archive-nav-link" href={href('quests/'+id+'.html')} aria-current={current('quests/'+id+'.html')}>{title}</a>)}</details>
+<div class="sidebar-section"><a class="archive-nav-link" href={href('관점/aeon.html')} aria-current={current('관점/aeon.html',axisFor('aeon'))}>에이언즈 · 운명의 길</a><a class="archive-nav-link" href={href('대사.html')} aria-current={current('대사.html',route.startsWith('/대사/'))}>대사 원문 자료실</a></div><div class="md:sl-hidden"><MobileMenuFooter /></div></div>

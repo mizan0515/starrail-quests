@@ -2,28 +2,46 @@
 import {href} from '../lib/data';
 const {records,modeName,queryKey='recordQuery',limitKey='recordLimit',kindKey='recordKind',searchLabel='이야기 속 이름과 구절 찾기',searchPlaceholder='인물·사건·원문 구절'}=Astro.props;
 const body=r=>r.fields?r.fields.map(field=>field.text):r.scenes.flatMap(scene=>scene.rows.map(row=>row.text));
-const excerpt=r=>r.fields?(r.fields.find(field=>field.role==='story')||r.fields.find(field=>field.role!=='name'))?.text||'':body(r).find(Boolean)||'';
+const preview=r=>{
+  if(!r.fields)return {text:body(r).find(Boolean)||'',nameOnly:false};
+  const field=r.fields.find(field=>field.role==='story'&&field.text)||r.fields.find(field=>field.role!=='name'&&field.text)||r.fields.find(field=>field.role==='name'&&field.text);
+  return {text:field?.text||'',nameOnly:field?.role==='name',condition:field?.role==='condition'};
+};
 const count=r=>r.fields?r.fields.length:r.scenes.reduce((n,scene)=>n+scene.rows.length,0);
 const categories=[...new Map(records.filter(record=>record.kind).map(record=>[record.kind,record.kindLabel||record.kind])).entries()];
 ---
 <div class="universe-source-index not-content" data-universe-records data-query-key={queryKey} data-limit-key={limitKey} data-kind-key={kindKey}>
   <div class="universe-source-controls"><label class="universe-source-search"><span>{searchLabel}</span><input type="search" data-source-query placeholder={searchPlaceholder} /></label>{categories.length>1&&<label class="universe-source-search"><span>자료 종류</span><select data-source-kind><option value="">모든 자료</option>{categories.map(([kind,label])=><option value={kind}>{label}</option>)}</select></label>}</div>
-  <p role="status" aria-live="polite" data-source-count>{records.length}개 기록</p>
+  <p role="status" aria-live="polite" aria-atomic="true" data-source-count>{records.length}개 기록</p>
   <div class="universe-source-list">{records.map((r,i)=><a id={'universe-source-'+r.id} class="universe-source-entry" href={r.url||href('우주/'+(r.fields?'설정/':'기록/')+r.id+'.html')} data-reading-link data-source-record={r.id} data-source-kind-value={r.kind||''} data-search={body(r).join(' ')} hidden={i>=12}>
     <span class="universe-source-number" aria-hidden="true">{String(i+1).padStart(2,'0')}</span>
-    <span class="universe-source-content"><small>{r.kindLabel||modeName} · {count(r)}개 원문 {r.fields?'항목':'행'}</small><strong>{r.title}</strong><span class="universe-source-excerpt">{excerpt(r)}</span></span>
+    <span class="universe-source-content"><small>{r.kindLabel||modeName} · {count(r)}개 원문 {r.fields?'항목':'행'}</small><strong>{r.title}</strong><span class="universe-source-excerpt" data-source-preview-role={preview(r).nameOnly?'name':'body'}>{preview(r).nameOnly&&<small>명칭 원문 · </small>}{preview(r).condition&&<small>조건 원문 · 매개변수 포함 · </small>}{preview(r).text}</span></span>
     <span aria-hidden="true">→</span>
   </a>)}</div>
   <p data-source-empty hidden>이 구절을 포함한 기록이 없습니다.</p>
   <button class="record-more" type="button" data-source-more>기록 더 보기</button>
 </div>
 <script>
+  import {normalizeDirectoryText,readDirectoryState,writeDirectoryState} from '../lib/directory-state.mjs';
   for(const root of document.querySelectorAll<HTMLElement>('[data-universe-records]')){
-    const records=[...root.querySelectorAll<HTMLElement>('[data-source-record]')],input=root.querySelector<HTMLInputElement>('[data-source-query]')!,more=root.querySelector<HTMLButtonElement>('[data-source-more]')!,kind=root.querySelector<HTMLSelectElement>('[data-source-kind]');let limit=12;
-    const queryKey=root.dataset.queryKey!,limitKey=root.dataset.limitKey!,kindKey=root.dataset.kindKey!;
-    const update=()=>{const q=input.value.trim().toLocaleLowerCase('ko'),matches=records.filter(r=>(!kind?.value||r.dataset.sourceKindValue===kind.value)&&(r.textContent!.toLocaleLowerCase('ko').includes(q)||(r.dataset.search||'').toLocaleLowerCase('ko').includes(q)));records.forEach(r=>r.hidden=true);matches.slice(0,limit).forEach(r=>r.hidden=false);root.querySelector('[data-source-count]')!.textContent=`${matches.length}개 기록 · ${Math.min(limit,matches.length)}개 표시`;(root.querySelector('[data-source-empty]') as HTMLElement).hidden=!!matches.length;more.hidden=matches.length<=limit;};
-    const restore=()=>{const params=new URLSearchParams(location.search);input.value=params.get(queryKey)||'';if(kind)kind.value=params.get(kindKey)||'';const saved=Number(params.get(limitKey));limit=Number.isInteger(saved)&&saved>=12?Math.min(saved,Math.ceil(records.length/12)*12):12;update();};
-    const remember=()=>{const url=new URL(location.href);if(input.value)url.searchParams.set(queryKey,input.value);else url.searchParams.delete(queryKey);if(kind?.value)url.searchParams.set(kindKey,kind.value);else url.searchParams.delete(kindKey);if(limit>12)url.searchParams.set(limitKey,String(limit));else url.searchParams.delete(limitKey);history.replaceState(history.state,'',url);};
-    input.addEventListener('input',()=>{limit=12;update();remember();});kind?.addEventListener('change',()=>{limit=12;update();remember();});more.addEventListener('click',()=>{limit+=12;update();remember();});window.addEventListener('popstate',restore);restore();
+    const records=[...root.querySelectorAll<HTMLElement>('[data-source-record]')],input=root.querySelector<HTMLInputElement>('[data-source-query]')!,more=root.querySelector<HTMLButtonElement>('[data-source-more]')!,kind=root.querySelector<HTMLSelectElement>('[data-source-kind]');
+    const options={queryKey:root.dataset.queryKey!,groupKey:root.dataset.kindKey!,limitKey:root.dataset.limitKey!,defaultLimit:12};
+    const search=new Map(records.map(record=>[record,normalizeDirectoryText((record.textContent||'')+' '+(record.dataset.search||''))]));
+    const kinds=new Set(kind?[...kind.options].map(option=>option.value):['']);
+    let state=readDirectoryState(location.search,options);
+    const update=()=>{
+      const tokens=normalizeDirectoryText(state.query).split(' ').filter(Boolean),matches=records.filter(record=>(!state.group||record.dataset.sourceKindValue===state.group)&&tokens.every(token=>search.get(record)!.includes(token)));
+      state.limit=Math.min(Math.max(12,state.limit),Math.max(12,Math.ceil(records.length/12)*12));
+      records.forEach(record=>record.hidden=true);matches.slice(0,state.limit).forEach(record=>record.hidden=false);
+      root.querySelector('[data-source-count]')!.textContent=`${matches.length}개 기록 · ${Math.min(state.limit,matches.length)}개 표시`;
+      (root.querySelector('[data-source-empty]') as HTMLElement).hidden=!!matches.length;
+      more.hidden=matches.length<=state.limit;more.textContent=`기록 더 보기 · ${Math.max(0,Math.min(12,matches.length-state.limit))}개`;
+    };
+    const restore=()=>{state=readDirectoryState(location.search,options);if(!kinds.has(state.group))state.group='';input.value=state.query;if(kind)kind.value=state.group;update();};
+    const remember=()=>history.replaceState(history.state,'',writeDirectoryState(new URL(location.href),state,options));
+    input.addEventListener('input',()=>{state.query=input.value.trim();state.limit=12;update();remember();});
+    kind?.addEventListener('change',()=>{state.group=kind.value;state.limit=12;update();remember();});
+    more.addEventListener('click',()=>{state.limit+=12;update();remember();});
+    window.addEventListener('popstate',restore);window.addEventListener('pageshow',restore);restore();
   }
 </script>

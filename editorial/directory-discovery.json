@@ -1,0 +1,4320 @@
+{
+  "schema": "starrail-directory-discovery.v1",
+  "groups": [
+    {
+      "id": "train",
+      "title": "은하열차와 개척",
+      "summary": "열차, 탑승자, 항법사와 개척의 여정을 설명하는 기록을 함께 읽는다."
+    },
+    {
+      "id": "station",
+      "title": "우주정거장 「헤르타」",
+      "summary": "우주정거장의 책임자·방위과·소유자를 설명하는 원문이다."
+    },
+    {
+      "id": "belobog",
+      "title": "벨로보그와 야릴로-Ⅵ",
+      "summary": "피난 도시, 상층·하층 구역, 수호자와 주민들의 기록이다."
+    },
+    {
+      "id": "xianzhou",
+      "title": "선주의 인물·제도·전쟁",
+      "summary": "선주의 장군과 기관, 영생, 종족, 전쟁을 설명하는 기록이다."
+    },
+    {
+      "id": "penacony",
+      "title": "페나코니의 꿈과 기록",
+      "summary": "좋은꿈의 공간, 가족의 인물, 기억과 축제에 관한 기록이다."
+    },
+    {
+      "id": "amphoreus",
+      "title": "앰포리어스의 신화와 연산",
+      "summary": "황금의 후예, 티탄, 도시와 재창기를 서로 다른 상태에서 설명하는 기록이다."
+    },
+    {
+      "id": "planarcadia",
+      "title": "이상 낙원과 환월",
+      "summary": "그림 속 세계, 환조, 환월 게임과 도시의 인물·조직에 관한 기록이다."
+    },
+    {
+      "id": "astropolis",
+      "title": "아스트로폴리스의 도시와 인물",
+      "summary": "도시, 관리 업무, 연구와 축제에 관한 기록이다."
+    },
+    {
+      "id": "paths",
+      "title": "에이언즈와 운명의 길",
+      "summary": "각 에이언즈와 운명의 길, 그 힘을 받는 존재에 관한 원문을 모은다."
+    },
+    {
+      "id": "factions",
+      "title": "별바다의 파벌과 활동",
+      "summary": "신앙·탐사·경제·의술 등 서로 다른 목적을 가진 집단의 소개 기록이다."
+    },
+    {
+      "id": "hunters",
+      "title": "스텔라론 헌터의 기록",
+      "summary": "원문에서 스텔라론 헌터로 소개된 인물의 기록을 모은다."
+    },
+    {
+      "id": "research",
+      "title": "연구자와 지식 단체",
+      "summary": "지니어스 클럽, 지식학회, 연구자와 제왕 전쟁의 기록을 함께 읽는다."
+    },
+    {
+      "id": "memory",
+      "title": "기억·공허와 존재",
+      "summary": "기억 물질, 기억의 영역, 기억을 모으는 집단과 존재의 의미에 관한 기록이다."
+    },
+    {
+      "id": "civilizations",
+      "title": "별바다의 문명과 인물",
+      "summary": "행성·원주민·여행자와 여러 세계에 걸친 개인의 원문 기록이다."
+    },
+    {
+      "id": "equipment",
+      "title": "장비와 에너지",
+      "summary": "광추·성혼·유물 등 사물과 힘을 설명하는 원문 정의이다."
+    },
+    {
+      "id": "mechanics",
+      "title": "전투와 성장 안내",
+      "summary": "공격·스킬·효과·약점 격파 등 게임 조작과 전투 규칙을 설명한다."
+    },
+    {
+      "id": "instructions",
+      "title": "시점과 장면 안내",
+      "summary": "읽는 시점의 전환과 진행 중인 장면을 안내하는 원문을 모은다."
+    }
+  ],
+  "rows": [
+    {
+      "id": "lore-10001",
+      "name": "운명의 길",
+      "kind": "concept",
+      "group": "paths",
+      "source": "LoadingDesc:10001.DescTextmapID",
+      "hash": "4472936415286069643",
+      "url": "/starrail-quests/문서/lore-10001.html#section-1-row-1",
+      "quote": "에이언즈가 행하는 길\n함께하는 자는 필히 그 은혜를 받을지어다"
+    },
+    {
+      "id": "lore-10002",
+      "name": "행적",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10002.DescTextmapID",
+      "hash": "10830150178126763008",
+      "url": "/starrail-quests/문서/lore-10002.html#section-1-row-1",
+      "quote": "「운명의 길」에 남긴 캐릭터의 발자취, 먼 길을 갈수록 기적은 더 선명해진다"
+    },
+    {
+      "id": "lore-10003",
+      "name": "파멸",
+      "kind": "concept",
+      "group": "paths",
+      "source": "LoadingDesc:10003.DescTextmapID",
+      "hash": "2005288414134999374",
+      "url": "/starrail-quests/문서/lore-10003.html#section-1-row-1",
+      "quote": "에이언즈 「나누크」가 관장하는 운명의 길\n충동, 분노, 파괴의 행위는 「파멸」 운명의 길의 특징이다"
+    },
+    {
+      "id": "lore-10004",
+      "name": "수렵",
+      "kind": "concept",
+      "group": "paths",
+      "source": "LoadingDesc:10004.DescTextmapID",
+      "hash": "10854757539416201658",
+      "url": "/starrail-quests/문서/lore-10004.html#section-1-row-1",
+      "quote": "에이언즈 「란」이 주관하는 운명의 길\n결단, 냉혹, 복수의 행위는 「수렵」 운명의 길의 특징이다"
+    },
+    {
+      "id": "lore-10005",
+      "name": "지식",
+      "kind": "concept",
+      "group": "paths",
+      "source": "LoadingDesc:10005.DescTextmapID",
+      "hash": "5768503038418222671",
+      "url": "/starrail-quests/문서/lore-10005.html#section-1-row-1",
+      "quote": "에이언즈 「누스」가 관장하는 운명의 길\n사고, 논리, 전략적인 행위는 「지식」 운명의 길의 특징이다"
+    },
+    {
+      "id": "lore-10006",
+      "name": "화합",
+      "kind": "concept",
+      "group": "paths",
+      "source": "LoadingDesc:10006.DescTextmapID",
+      "hash": "10664292937177918563",
+      "url": "/starrail-quests/문서/lore-10006.html#section-1-row-1",
+      "quote": "에이언즈 「시페」가 관장하는 운명의 길\n이해, 지지, 협동의 행위는「화합」 운명의 길의 특징이다"
+    },
+    {
+      "id": "lore-10007",
+      "name": "공허",
+      "kind": "concept",
+      "group": "paths",
+      "source": "LoadingDesc:10007.DescTextmapID",
+      "hash": "11569411684516988222",
+      "url": "/starrail-quests/문서/lore-10007.html#section-1-row-1",
+      "quote": "에이언즈 「IX」가 관장하는 운명의 길\n나태, 피로, 무의미한 행위는 「공허」 운명의 길의 특징이다"
+    },
+    {
+      "id": "lore-10008",
+      "name": "보존",
+      "kind": "concept",
+      "group": "paths",
+      "source": "LoadingDesc:10008.DescTextmapID",
+      "hash": "9805532519366455531",
+      "url": "/starrail-quests/문서/lore-10008.html#section-1-row-1",
+      "quote": "에이언즈 「클리포트」가 관장하는 운명의 길\n기다림, 희생, 보호의 행위는 「보존」 운명의 길의 특징이다"
+    },
+    {
+      "id": "lore-10009",
+      "name": "풍요",
+      "kind": "concept",
+      "group": "paths",
+      "source": "LoadingDesc:10009.DescTextmapID",
+      "hash": "16434539084017688260",
+      "url": "/starrail-quests/문서/lore-10009.html#section-1-row-1",
+      "quote": "에이언즈 「약사」가 관장하는 운명의 길\n사심 없고 이타적이며 치유적인 행위는 「풍요」 운명의 길의 특징이다"
+    },
+    {
+      "id": "lore-10010",
+      "name": "광추",
+      "kind": "concept",
+      "group": "equipment",
+      "source": "LoadingDesc:10010.DescTextmapID",
+      "hash": "15918940202782394368",
+      "url": "/starrail-quests/문서/lore-10010.html#section-1-row-1",
+      "quote": "밀봉된 굳은 사상(事象)\n그 힘 또한 빛의 절편에 봉인되어 있다"
+    },
+    {
+      "id": "lore-10011",
+      "name": "성혼",
+      "kind": "concept",
+      "group": "equipment",
+      "source": "LoadingDesc:10011.DescTextmapID",
+      "hash": "13847097052157251165",
+      "url": "/starrail-quests/문서/lore-10011.html#section-1-row-1",
+      "quote": "관측자의 존재 가능성\n사람들이 정해진 길을 걷자 결국엔 하나로 무너져내린다"
+    },
+    {
+      "id": "lore-10012",
+      "name": "유물",
+      "kind": "concept",
+      "group": "equipment",
+      "source": "LoadingDesc:10012.DescTextmapID",
+      "hash": "3455676872859113648",
+      "url": "/starrail-quests/문서/lore-10012.html#section-1-row-1",
+      "quote": "데이터로 얼룩진 스타더스트로 만들어진 환상의 장비\n깊고 깊은 열계에는 각 세계의 유물이 모인다"
+    },
+    {
+      "id": "lore-10013",
+      "name": "{NICKNAME}",
+      "kind": "person",
+      "group": "train",
+      "source": "LoadingDesc:10013.DescTextmapID",
+      "hash": "15675719901538096027",
+      "url": "/starrail-quests/문서/lore-10013.html#section-1-row-1",
+      "quote": "은하열차에 탑승한 {F#소녀}{M#소년}.\n스텔라론이 가져온 위기를 해결하기 위해, 은하열차와의 동행을 선택한다"
+    },
+    {
+      "id": "lore-10014",
+      "name": "Mar. 7th",
+      "kind": "person",
+      "group": "train",
+      "source": "LoadingDesc:10014.DescTextmapID",
+      "hash": "3458191724563723756",
+      "url": "/starrail-quests/문서/lore-10014.html#section-1-row-1",
+      "quote": "얼음 속에 깊이 잠들어 있던 기억을 잃은 소녀\n출생의 진실을 찾기 위해 은하열차에 올랐다\n본인을 위해 약 67가지의 「출생 스토리」를 준비해뒀다"
+    },
+    {
+      "id": "lore-10015",
+      "name": "단항",
+      "kind": "person",
+      "group": "train",
+      "source": "LoadingDesc:10015.DescTextmapID",
+      "hash": "2520171771174682185",
+      "url": "/starrail-quests/문서/lore-10015.html#section-1-row-1",
+      "quote": "자신의 과거를 깊이 숨긴, 차가운 분위기의 과묵한 청년\n혈예 동족을 피하기 위해 은하열차에 올랐다"
+    },
+    {
+      "id": "lore-10016",
+      "name": "히메코",
+      "kind": "person",
+      "group": "train",
+      "source": "LoadingDesc:10016.DescTextmapID",
+      "hash": "5234493422007207067",
+      "url": "/starrail-quests/문서/lore-10016.html#section-1-row-1",
+      "quote": "은하열차의 복원가\n광활한 별하늘을 보기 위해 은하열차와 함께하는 것을 택했다\n취미는 핸드메이드 커피 만들기"
+    },
+    {
+      "id": "lore-10017",
+      "name": "웰트•양",
+      "kind": "person",
+      "group": "train",
+      "source": "LoadingDesc:10017.DescTextmapID",
+      "hash": "3321104309214016231",
+      "url": "/starrail-quests/문서/lore-10017.html#section-1-row-1",
+      "quote": "의젓하고 진중한 열차팀의 선배\n오랜만에 모험을 즐기면서 가슴 깊은 곳의 뜨거운 피가 다시금 끓어오른다\n가끔 공책에 모험 여정을 그린다"
+    },
+    {
+      "id": "lore-10018",
+      "name": "아스타",
+      "kind": "person",
+      "group": "station",
+      "source": "LoadingDesc:10018.DescTextmapID",
+      "hash": "9890067241664441802",
+      "url": "/starrail-quests/문서/lore-10018.html#section-1-row-1",
+      "quote": "우주정거장 「헤르타」의 책임자, 명문가 출신의 아가씨\n호기심 넘치는 천문학 연구자로 자기주장이 강한 연구원을 다루는데 능하다"
+    },
+    {
+      "id": "lore-10019",
+      "name": "아를란",
+      "kind": "person",
+      "group": "station",
+      "source": "LoadingDesc:10019.DescTextmapID",
+      "hash": "8024019887700129215",
+      "url": "/starrail-quests/문서/lore-10019.html#section-1-row-1",
+      "quote": "우주정거장 「헤르타」 방위과 책임자\n말주변이 없으며, 연구를 사랑하는 사람들이 편히 연구할 수 있도록 보호하고자 한다"
+    },
+    {
+      "id": "lore-10020",
+      "name": "카프카",
+      "kind": "person",
+      "group": "hunters",
+      "source": "LoadingDesc:10020.DescTextmapID",
+      "hash": "6885133754606840269",
+      "url": "/starrail-quests/문서/lore-10020.html#section-1-row-1",
+      "quote": "「스텔라론 헌터」의 멤버, 시크하고 차분한 분위기의 오피스룩 미녀.\n언령술을 사용해 {NICKNAME}이(가) 스텔라론을 흡수할 수 있도록 계책을 꾸몄다.\n취미는 코트 구매 및 정리하기"
+    },
+    {
+      "id": "lore-10021",
+      "name": "은랑",
+      "kind": "person",
+      "group": "hunters",
+      "source": "LoadingDesc:10021.DescTextmapID",
+      "hash": "14562951342498353498",
+      "url": "/starrail-quests/문서/lore-10021.html#section-1-row-1",
+      "quote": "「스텔라론 헌터」의 멤버, 프로 해커.\n우주를 몰입감 넘치는 대형 시뮬레이션 게임으로 여기며 즐기고 있다.\n현실 데이터를 수정할 수 있는 「에테르 편집」을 마스터했다"
+    },
+    {
+      "id": "lore-10022",
+      "name": "블레이드",
+      "kind": "person",
+      "group": "hunters",
+      "source": "LoadingDesc:10022.DescTextmapID",
+      "hash": "5283593817727675108",
+      "url": "/starrail-quests/문서/lore-10022.html#section-1-row-1",
+      "quote": "「스텔라론 헌터」의 멤버, 전장에 몸을 내던지는 검객\n「운명의 노예」에 충성을 다하며 무서운 자가 치유 능력을 가지고 있다"
+    },
+    {
+      "id": "lore-10023",
+      "name": "엘리오",
+      "kind": "person",
+      "group": "hunters",
+      "source": "LoadingDesc:10023.DescTextmapID",
+      "hash": "1343501224899969973",
+      "url": "/starrail-quests/문서/lore-10023.html#section-1-row-1",
+      "quote": "「운명의 노예」라고 불리는 「스텔라론 헌터」의 수장\n미래의 가능성을 예견할 수 있는 능력/저주가 있다"
+    },
+    {
+      "id": "lore-10024",
+      "name": "헤르타",
+      "kind": "person",
+      "group": "station",
+      "source": "LoadingDesc:10024.DescTextmapID",
+      "hash": "13842503866837331194",
+      "url": "/starrail-quests/문서/lore-10024.html#section-1-row-1",
+      "quote": "「지니어스 클럽」 #83 회원, 우주정거장의 진짜 주인.\n지혜롭지만 공감 능력이 전혀 없는 과학자다"
+    },
+    {
+      "id": "lore-10025",
+      "name": "브로냐•랜드",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10025.DescTextmapID",
+      "hash": "16323657775554252862",
+      "url": "/starrail-quests/문서/lore-10025.html#section-1-row-1",
+      "quote": "벨로보그 「수호자」의 계승자.\n공주의 고고함과 군인의 꿋꿋함이 공존한다"
+    },
+    {
+      "id": "lore-10026",
+      "name": "제레",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10026.DescTextmapID",
+      "hash": "12226044410915320533",
+      "url": "/starrail-quests/문서/lore-10026.html#section-1-row-1",
+      "quote": "지하 대항 조직 「와일드 파이어」의 핵심 인물, 별칭 「나비」\n솔직하고 시원시원하지만, 내면에 섬세함과 예리함을 숨기고 있다"
+    },
+    {
+      "id": "lore-10027",
+      "name": "게파드•랜도",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10027.DescTextmapID",
+      "hash": "15923296057425660031",
+      "url": "/starrail-quests/문서/lore-10027.html#section-1-row-1",
+      "quote": "실버메인 철위대의 방위관, 벨로보그 최고의 전사 중 하나\n겉과 속이 같고 빈틈없이 항상 성실하다"
+    },
+    {
+      "id": "lore-10028",
+      "name": "서벌•랜도",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10028.DescTextmapID",
+      "hash": "11579873503279229934",
+      "url": "/starrail-quests/문서/lore-10028.html#section-1-row-1",
+      "quote": "축성가 기술 부서의 연구원이었던 벨로보그의 엔지니어\n게파드•랜도의 누나지만 남동생과 전혀 다른 성격을 가졌다\n한파 이전에 있던 「로큰롤」이라는 고대 음악에 빠져있다"
+    },
+    {
+      "id": "lore-10029",
+      "name": "쿠쿠리아•랜드",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10029.DescTextmapID",
+      "hash": "17792151428260461429",
+      "url": "/starrail-quests/문서/lore-10029.html#section-1-row-1",
+      "quote": "벨로보그의 현임 수호자\n욕망이 없고 냉철하며 자신이 굳게 믿는 방식으로 이 추운 세계를 지키고 있다"
+    },
+    {
+      "id": "lore-10030",
+      "name": "삼포•코스키",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10030.DescTextmapID",
+      "hash": "3992641121503629450",
+      "url": "/starrail-quests/문서/lore-10030.html#section-1-row-1",
+      "quote": "지상 지하를 자유롭게 넘나드는 밀수꾼\n붙임성이 좋고 열정적이며, 유머러스한 성격으로 농담을 잘한다"
+    },
+    {
+      "id": "lore-10031",
+      "name": "페라게야•세르게예브나",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10031.DescTextmapID",
+      "hash": "7314192515874992542",
+      "url": "/starrail-quests/문서/lore-10031.html#section-1-row-1",
+      "quote": "실버메인 철위대의 정보관.\n진중한 성격 덕에 철위대 멤버들에게 존경을 받고 있다"
+    },
+    {
+      "id": "lore-10032",
+      "name": "나타샤",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10032.DescTextmapID",
+      "hash": "6235117103550894435",
+      "url": "/starrail-quests/문서/lore-10032.html#section-1-row-1",
+      "quote": "벨로보그 하층 구역의 의사이자 아이들의 보호자\n상냥하고 친근한 성격 이면에 위험한 모습도 숨겨져 있다"
+    },
+    {
+      "id": "lore-10033",
+      "name": "후크",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10033.DescTextmapID",
+      "hash": "4650851133472229757",
+      "url": "/starrail-quests/문서/lore-10033.html#section-1-row-1",
+      "quote": "지하 모험단 「두더지파」의 대장(자칭)\n자유를 사랑하며 인생을 끊이지 않는 모험이라고 생각한다"
+    },
+    {
+      "id": "lore-10034",
+      "name": "스바로그",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10034.DescTextmapID",
+      "hash": "10797495545232436375",
+      "url": "/starrail-quests/문서/lore-10034.html#section-1-row-1",
+      "quote": "구세계로부터 남겨진 지능 로봇\n자신만의 방식으로 클라라의 소원을 이뤄주고 있다"
+    },
+    {
+      "id": "lore-10035",
+      "name": "클라라",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10035.DescTextmapID",
+      "hash": "5422421799838330540",
+      "url": "/starrail-quests/문서/lore-10035.html#section-1-row-1",
+      "quote": "로봇과 함께 생활하는 방랑 소녀\n내향적이고 상냥하며, 순수한 마음을 지녔다\n하층 구역의 모든 사람들이 서로의 「가족」이 되기를 간절히 바란다"
+    },
+    {
+      "id": "lore-10036",
+      "name": "나누크",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10036.DescTextmapID",
+      "hash": "18346168045593831740",
+      "url": "/starrail-quests/문서/lore-10036.html#section-1-row-1",
+      "quote": "「파멸」 운명의 길을 주관하는 에이언즈. 몰락한 세계 아들리분에서 탄생했다\n어두운 피부에 황금색 두 눈을 가진 인간 남자의 모습으로 현신한다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10037",
+      "name": "란",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10037.DescTextmapID",
+      "hash": "11896694229929614206",
+      "url": "/starrail-quests/문서/lore-10037.html#section-1-row-1",
+      "quote": "선주에게 「천궁의 사명」이라 불리는 배회의 에이언즈. 「수렵」 운명의 길을 주관한다\n끊임없이 여러 세계를 떠돌며 「풍요」의 에이언즈가 만든 흉물을 처치한다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10038",
+      "name": "시페",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10038.DescTextmapID",
+      "hash": "16938902035488516194",
+      "url": "/starrail-quests/문서/lore-10038.html#section-1-row-1",
+      "quote": "여러 개의 조화로운 천체 세계에서 온 에이언즈. 「화합」 운명의 길을 주관한다\n천면일체, 인류의 화합과 통합의 기쁨을 퍼뜨린다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10039",
+      "name": "Ⅸ",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10039.DescTextmapID",
+      "hash": "10446628195802351759",
+      "url": "/starrail-quests/문서/lore-10039.html#section-1-row-1",
+      "quote": "「공허」 운명의 길을 주관하는 에이언즈. 존재 자체가 미스터리다\nIX는 다른 에이언즈와 교류하지 않으며, 다중우주의 결말은 공허하고 가치가 없다고 믿는다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10040",
+      "name": "클리포트",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10040.DescTextmapID",
+      "hash": "14386123550579644356",
+      "url": "/starrail-quests/문서/lore-10040.html#section-1-row-1",
+      "quote": "천혜성의 벽, 아공간 결정의 벽, 거대 인력체 기반의 축조자. 숭배자들은 그를 「앰버 로드」라고 부른다\n「보존」 운명의 길을 관장하며, 가장 강인하고 오래된 에이언즈 중 하나다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10041",
+      "name": "약사",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10041.DescTextmapID",
+      "hash": "8353768002636248151",
+      "url": "/starrail-quests/문서/lore-10041.html#section-1-row-1",
+      "quote": "중생의 양육자, 낙원의 신. 생명의 무궁무진함을 기원한다\n약사는 「풍요」 운명의 길을 관장하며, 「수렵」의 란은 그를 원수로 생각한다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10042",
+      "name": "아키비리",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10042.DescTextmapID",
+      "hash": "6248972970926793099",
+      "url": "/starrail-quests/문서/lore-10042.html#section-1-row-1",
+      "quote": "「개척」 운명의 길을 주관하는 에이언즈. 고독하고 단절된 세계 페가나에서 출발해 미지의 경계를 끊임없이 개척한다\n그의 운명은 뜻밖의 사고로 인해 종지부를 찍게 된다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10043",
+      "name": "누스",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10043.DescTextmapID",
+      "hash": "13251317741059221699",
+      "url": "/starrail-quests/문서/lore-10043.html#section-1-row-1",
+      "quote": "「지식」 운명의 길을 주관하는 에이언즈\n기계에서 만물의 해답을 찾기 위한 천체 컴퓨터가 되었다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10044",
+      "name": "아하",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10044.DescTextmapID",
+      "hash": "17634339529438902723",
+      "url": "/starrail-quests/문서/lore-10044.html#section-1-row-1",
+      "quote": "「환락」의 에이언즈. 그가 어떤 이유로 웃음을 터트리는지는 아무도 모른다\n즐거움은 지혜로운 생명의 특권이다. 아하는 신도들이 생명의 기쁨을 누리도록 격려하며, 칼날 같은 운명의 전환점에서 쾌락을 찾는다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10045",
+      "name": "은하열차",
+      "kind": "region",
+      "group": "train",
+      "source": "LoadingDesc:10045.DescTextmapID",
+      "hash": "5099730149514859937",
+      "url": "/starrail-quests/문서/lore-10045.html#section-1-row-1",
+      "quote": "「개척」의 에이언즈 아키비리가 탑승했던 열차\n세계를 연결하는 철도를 따라 운행하며, 우주의 여러 세계를 거쳐 갔다",
+      "subjectType": "vehicle"
+    },
+    {
+      "id": "lore-10046",
+      "name": "곤충 떼",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10046.DescTextmapID",
+      "hash": "17563108862006103552",
+      "url": "/starrail-quests/문서/lore-10046.html#section-1-row-1",
+      "quote": "「충황(蟲皇)」 타이츠론스의 복제 군단\n「번식」만이 유일한 목적이며, 메뚜기처럼 우주의 각 행성을 침략한다"
+    },
+    {
+      "id": "lore-10047",
+      "name": "반물질 군단",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10047.DescTextmapID",
+      "hash": "8495028051282438388",
+      "url": "/starrail-quests/문서/lore-10047.html#section-1-row-1",
+      "quote": "에이언즈 나누크의 군대. 우주의 흉악한 창조물이 다 모여 있다\n모든 문명과 생명을 파괴하겠다고 맹세했다"
+    },
+    {
+      "id": "lore-10048",
+      "name": "축성가(築城家)",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10048.DescTextmapID",
+      "hash": "10558251936427988044",
+      "url": "/starrail-quests/문서/lore-10048.html#section-1-row-1",
+      "quote": "「보존」의 에이언즈 클리포트를 숭배하는 사람들\n그의 행위를 따라 하며, 자신이 살고 있는 행성의 성벽을 세우고 보수하고 있다\n에이언즈의 행동이 은하계를 멸망시키는 재앙을 예언한다고 믿고 있다"
+    },
+    {
+      "id": "lore-10049",
+      "name": "가족",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10049.DescTextmapID",
+      "hash": "10419842647704835564",
+      "url": "/starrail-quests/문서/lore-10049.html#section-1-row-1",
+      "quote": "시페의 축복을 받은 세계와 선택받은 인간\n끊임없이 그의 자비를 칭송하며, 우주도 결국 「화합」의 일체가 된다고 믿는다"
+    },
+    {
+      "id": "lore-10050",
+      "name": "지니어스 클럽",
+      "kind": "faction",
+      "group": "research",
+      "source": "LoadingDesc:10050.DescTextmapID",
+      "hash": "12337224216518713541",
+      "url": "/starrail-quests/문서/lore-10050.html#section-1-row-1",
+      "quote": "에이언즈 누스의 주목을 받은 사람들\n우주에서 가장 뛰어난 천재와 두뇌가 모여있다\n각각 다른 배경을 가지고 있으며, 과일 가게에서 아르바이트를 하며 생계를 유지하는 사람도 있다"
+    },
+    {
+      "id": "lore-10051",
+      "name": "무명객",
+      "kind": "faction",
+      "group": "train",
+      "source": "LoadingDesc:10051.DescTextmapID",
+      "hash": "11448332290756136865",
+      "url": "/starrail-quests/문서/lore-10051.html#section-1-row-1",
+      "quote": "「개척」의 에이언즈와 함께 우주를 탐사하는 사람들\n용감하고 호기심 넘치는 우주 탐험가\n무명객은 명예와 이익을 추구하지 않으며, 아키비리가 사라진 후에도 여전히 개척의 길을 고집하는 무명객이 있다"
+    },
+    {
+      "id": "lore-10052",
+      "name": "선주 연맹",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10052.DescTextmapID",
+      "hash": "6000384248708343635",
+      "url": "/starrail-quests/문서/lore-10052.html#section-1-row-1",
+      "quote": "여러 지혜로운 종족으로 이루어진 고대 연맹\n선주를 타고 우주에 존재하는 풍요의 흉물을 처치한다"
+    },
+    {
+      "id": "lore-10429",
+      "name": "화중은천",
+      "kind": "region",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10429.DescTextmapID",
+      "hash": "9785977332538917011",
+      "url": "/starrail-quests/문서/lore-10429.html#section-1-row-1",
+      "quote": "그림 속 세계와 현실 세계의 경계\n펄이 이곳에 투자해 온천 호텔을 건설하고, 컴퍼니의 특별 허가를 받은 환조종에게 임종 간호를 제공한다"
+    },
+    {
+      "id": "lore-10054",
+      "name": "풍요의 백성",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10054.DescTextmapID",
+      "hash": "1961144944895094302",
+      "url": "/starrail-quests/문서/lore-10054.html#section-1-row-1",
+      "quote": "「풍요」의 축복을 받은 선택 받은 사람들\n죽지 않는 육체가 가져다주는 행복을 누리며, 약사의 인자함과 상냥함을 칭송한다"
+    },
+    {
+      "id": "lore-10055",
+      "name": "비애의 연극인",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10055.DescTextmapID",
+      "hash": "3905322441463156085",
+      "url": "/starrail-quests/문서/lore-10055.html#section-1-row-1",
+      "quote": "「환락」 운명의 길을 강경 거부하는 사람들\n금욕과 고행으로 환락의 유혹을 희석하는 것을 주장한다\n그들의 능력은 「환락」의 에이언즈 아하의 축복에서 비롯되었다"
+    },
+    {
+      "id": "lore-10056",
+      "name": "가면의 우인",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10056.DescTextmapID",
+      "hash": "6028631878199284233",
+      "url": "/starrail-quests/문서/lore-10056.html#section-1-row-1",
+      "quote": "에이언즈 아하에게 열광하는 숭배자들. 극도의 환락을 추구한다\n환락을 위해 수단과 방법을 가리지 않는다"
+    },
+    {
+      "id": "lore-10057",
+      "name": "기억의 정원",
+      "kind": "faction",
+      "group": "memory",
+      "source": "LoadingDesc:10057.DescTextmapID",
+      "hash": "1606608682803758561",
+      "url": "/starrail-quests/문서/lore-10057.html#section-1-row-1",
+      "quote": "우주의 진귀한 기억을 수집하는 자들\n각 세계를 여행하며 에이언즈를 즐겁게 할 기억을 찾는다"
+    },
+    {
+      "id": "lore-10058",
+      "name": "거울을 안은 자",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10058.DescTextmapID",
+      "hash": "1501536570028786571",
+      "url": "/starrail-quests/문서/lore-10058.html#section-1-row-1",
+      "quote": "각 세계의 아름다움을 지켜본 방랑자들\n「미」의 에이언즈를 부활시키기 위해 우주에 흩어져 있는 그의 유물을 수집한다"
+    },
+    {
+      "id": "lore-10059",
+      "name": "혼돈의 의사",
+      "kind": "faction",
+      "group": "memory",
+      "source": "LoadingDesc:10059.DescTextmapID",
+      "hash": "10519115113602358799",
+      "url": "/starrail-quests/문서/lore-10059.html#section-1-row-1",
+      "quote": "무의식중에 「공허」와 접촉한 고뇌하는 자들\n공허한 운명에 반항하려 하며, 그에게 만물의 존재 의미를 증명하려 한다"
+    },
+    {
+      "id": "lore-10060",
+      "name": "야릴로-Ⅵ",
+      "kind": "region",
+      "group": "belobog",
+      "source": "LoadingDesc:10060.DescTextmapID",
+      "hash": "31842992239649741",
+      "url": "/starrail-quests/문서/lore-10060.html#section-1-row-1",
+      "quote": "열차 성도(星圖)에 기록된 세계의 이름으로 춥고 잔혹한 「서리의 세계」다"
+    },
+    {
+      "id": "lore-10061",
+      "name": "벨로보그",
+      "kind": "region",
+      "group": "belobog",
+      "source": "LoadingDesc:10061.DescTextmapID",
+      "hash": "11682904029662573539",
+      "url": "/starrail-quests/문서/lore-10061.html#section-1-row-1",
+      "quote": "인류가 한파에 대항하는 최후의 보루로 축성가가 건설한 피난 도시다"
+    },
+    {
+      "id": "lore-10062",
+      "name": "수호자",
+      "kind": "concept",
+      "group": "belobog",
+      "source": "LoadingDesc:10062.DescTextmapID",
+      "hash": "6116822120064539029",
+      "url": "/starrail-quests/문서/lore-10062.html#section-1-row-1",
+      "quote": "벨로보그의 최고 지도자. 축성가 의지의 대변인\n현임 수호자는 쿠쿠리아•랜드이다",
+      "subjectType": "role"
+    },
+    {
+      "id": "lore-10063",
+      "name": "상층 구역",
+      "kind": "region",
+      "group": "belobog",
+      "source": "LoadingDesc:10063.DescTextmapID",
+      "hash": "13156737735576256619",
+      "url": "/starrail-quests/문서/lore-10063.html#section-1-row-1",
+      "quote": "벨로보그의 지상에 위치한 도시. 축성가 본부가 위치한 곳이다\n벨로보그의 행정, 상업, 농업, 군사 중심지이다"
+    },
+    {
+      "id": "lore-10064",
+      "name": "하층 구역",
+      "kind": "region",
+      "group": "belobog",
+      "source": "LoadingDesc:10064.DescTextmapID",
+      "hash": "11072446787199938055",
+      "url": "/starrail-quests/문서/lore-10064.html#section-1-row-1",
+      "quote": "벨로보그의 지하에 위치한 도시. 광부들이 모여 사는 곳이다\n희귀한 에너지 광석 「지오매로우」를 채굴해 지상에 열에너지를 공급한다"
+    },
+    {
+      "id": "lore-10065",
+      "name": "선주",
+      "kind": "region",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10065.DescTextmapID",
+      "hash": "16053601394425310624",
+      "url": "/starrail-quests/문서/lore-10065.html#section-1-row-1",
+      "quote": "별바다를 횡단하는 천주의 세계는, 본디 고대 국가에 파견되어 하늘 밖의 바다로 떠나 「선인의 흔적」을 찾는 함대이다"
+    },
+    {
+      "id": "lore-10066",
+      "name": "허수의 나무",
+      "kind": "concept",
+      "group": "civilizations",
+      "source": "LoadingDesc:10066.DescTextmapID",
+      "hash": "8635891183804058996",
+      "url": "/starrail-quests/문서/lore-10066.html#section-1-row-1",
+      "quote": "모든 것에 깃든 존재의 본질. 다양한 세계를 탄생시킨 우주 구조"
+    },
+    {
+      "id": "lore-10067",
+      "name": "에이언즈",
+      "kind": "concept",
+      "group": "paths",
+      "source": "LoadingDesc:10067.DescTextmapID",
+      "hash": "8969601640266798113",
+      "url": "/starrail-quests/문서/lore-10067.html#section-1-row-1",
+      "quote": "신비로운 고등 존재, 마치 의지를 지닌 천체같다\n각자 다양한 「운명의 길」을 주관하고 있으며 자유롭게 별바다를 오갈 수 있다\n현실을 말소하고 세상을 창조하는 거대한 힘을 지니고 있다"
+    },
+    {
+      "id": "lore-10068",
+      "name": "지오매로우",
+      "kind": "concept",
+      "group": "belobog",
+      "source": "LoadingDesc:10068.DescTextmapID",
+      "hash": "17405240969571963033",
+      "url": "/starrail-quests/문서/lore-10068.html#section-1-row-1",
+      "quote": "야릴로-Ⅵ 행성에서 많이 나는 광석으로 벨로보그의 주요 에너지 원천이다"
+    },
+    {
+      "id": "lore-10069",
+      "name": "와일드 파이어",
+      "kind": "faction",
+      "group": "belobog",
+      "source": "LoadingDesc:10069.DescTextmapID",
+      "hash": "7011205372340432064",
+      "url": "/starrail-quests/문서/lore-10069.html#section-1-row-1",
+      "quote": "벨로보그 하층 구역의 민간 단체\n그들은 자발적으로 조직해 지하의 질서를 유지한다"
+    },
+    {
+      "id": "lore-10070",
+      "name": "실버메인 철위대",
+      "kind": "faction",
+      "group": "belobog",
+      "source": "LoadingDesc:10070.DescTextmapID",
+      "hash": "6015262297230546397",
+      "url": "/starrail-quests/문서/lore-10070.html#section-1-row-1",
+      "quote": "벨로보그의 방어부대. 축성가의 지휘에 따라 열계 괴물과 싸운다"
+    },
+    {
+      "id": "lore-10071",
+      "name": "열계",
+      "kind": "concept",
+      "group": "belobog",
+      "source": "LoadingDesc:10071.DescTextmapID",
+      "hash": "6236183595337019031",
+      "url": "/starrail-quests/문서/lore-10071.html#section-1-row-1",
+      "quote": "스텔라론과 함께 나타난 공간 왜곡 현상. 현실을 끊임없이 갉아먹고 있다"
+    },
+    {
+      "id": "lore-10072",
+      "name": "열계 창조물",
+      "kind": "concept",
+      "group": "belobog",
+      "source": "LoadingDesc:10072.DescTextmapID",
+      "hash": "5797071651363440495",
+      "url": "/starrail-quests/문서/lore-10072.html#section-1-row-1",
+      "quote": "열계와 채집한 생물 데이터를 동화시켜 복제 생성한 괴물\n원시적인 형태와 변이를 겸비했다"
+    },
+    {
+      "id": "lore-10073",
+      "name": "약을 구하는 자",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10073.DescTextmapID",
+      "hash": "12962656117167028651",
+      "url": "/starrail-quests/문서/lore-10073.html#section-1-row-1",
+      "quote": "장생을 추구하는 여행자\n별의 바다에서 에이언즈 약사를 찾고 있다"
+    },
+    {
+      "id": "lore-10074",
+      "name": "스타피스 컴퍼니",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10074.DescTextmapID",
+      "hash": "14285079186456101545",
+      "url": "/starrail-quests/문서/lore-10074.html#section-1-row-1",
+      "quote": "에이언즈 클리포트를 지원하기 위해 설립한 회사\n현재 은하계에서 가장 큰 경제 조직이다"
+    },
+    {
+      "id": "lore-10075",
+      "name": "장례식 안내원",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10075.DescTextmapID",
+      "hash": "18289599316412168744",
+      "url": "/starrail-quests/문서/lore-10075.html#section-1-row-1",
+      "quote": "에이언즈 테르미누스의 숭배자\n일생의 단 한 번뿐인 만남을 기다리고 있다"
+    },
+    {
+      "id": "lore-10076",
+      "name": "흉조 선봉",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10076.DescTextmapID",
+      "hash": "17808724759250482664",
+      "url": "/starrail-quests/문서/lore-10076.html#section-1-row-1",
+      "quote": "테르미누스가 우주 종말이라고 믿는 사람들\n테르미누스의 의미불명인 말속에서 종말의 예언을 읽으려고 노력한다"
+    },
+    {
+      "id": "lore-10077",
+      "name": "미(美)의 기사단",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10077.DescTextmapID",
+      "hash": "13392830196040352073",
+      "url": "/starrail-quests/문서/lore-10077.html#section-1-row-1",
+      "quote": "에이언즈 이드릴라의 미모를 열광적으로 찬미하는 사람들\n그 중 실력이 출중한 전사들이 「미」를 보좌하는 기사단을 결성했다\n이드릴라의 실종과 함께 뿔뿔이 흩어졌다"
+    },
+    {
+      "id": "lore-10078",
+      "name": "제Ⅸ 기관",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10078.DescTextmapID",
+      "hash": "11299294689349925536",
+      "url": "/starrail-quests/문서/lore-10078.html#section-1-row-1",
+      "quote": "은하계의 다크웹.\n그 존재는 여전히 증명되지 않았다."
+    },
+    {
+      "id": "lore-10079",
+      "name": "갤럭시 레인저",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10079.DescTextmapID",
+      "hash": "9379254125976090874",
+      "url": "/starrail-quests/문서/lore-10079.html#section-1-row-1",
+      "quote": "자발적으로 결성된 의협 단체. 우주의 선의와 정의는 개인이 구현해야 한다고 믿는다\n지니어스 클럽 #64 「원시 박사」와 원수를 진 후 연락 두절되었다"
+    },
+    {
+      "id": "lore-10080",
+      "name": "허구 역사학자",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10080.DescTextmapID",
+      "hash": "3644740516507524362",
+      "url": "/starrail-quests/문서/lore-10080.html#section-1-row-1",
+      "quote": "에이언즈 미토스의 사도. 은하의 역사를 지어내고 혼란을 주며 파괴하고 말살하기 위해 최선을 다한다\n그들은 「신비」를 유일한 뜻으로 행하여 우주를 안개 속에 휩싸이게 하기로 결심한다"
+    },
+    {
+      "id": "lore-10081",
+      "name": "리들러",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10081.DescTextmapID",
+      "hash": "16460665268791025542",
+      "url": "/starrail-quests/문서/lore-10081.html#section-1-row-1",
+      "quote": "허구 역사학자는 역사의 신비화에 전념하고 있으며 「리들러」파는 언어의 확실성을 파괴하는데 심취해 있다\n그들은 텍스트를 해석하고 은유를 만들며 어순을 바꾸고 의미를 변조해 기존의 정확한 언어를 엉망으로 만든다"
+    },
+    {
+      "id": "lore-10082",
+      "name": "사도",
+      "kind": "concept",
+      "group": "paths",
+      "source": "LoadingDesc:10082.DescTextmapID",
+      "hash": "16384193580061609565",
+      "url": "/starrail-quests/문서/lore-10082.html#section-1-row-1",
+      "quote": "에이언즈로부터 직접 힘을 받는 운명의 길을 걷는 자. 평범한 사람을 초월하는 힘을 가지고 있다\n보통은 에이언즈 의지의 대행이다"
+    },
+    {
+      "id": "lore-10083",
+      "name": "운명의 길을 걷는 자",
+      "kind": "concept",
+      "group": "paths",
+      "source": "LoadingDesc:10083.DescTextmapID",
+      "hash": "8124148139423546669",
+      "url": "/starrail-quests/문서/lore-10083.html#section-1-row-1",
+      "quote": "운명의 길을 걸으며 운명의 길에서 힘을 받는 사람들이다"
+    },
+    {
+      "id": "lore-10084",
+      "name": "룽(龍)",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10084.DescTextmapID",
+      "hash": "1349610739812722053",
+      "url": "/starrail-quests/문서/lore-10084.html#section-1-row-1",
+      "quote": "「불멸」 운명의 길을 주관하는 고대 에이언즈로 현재는 사망했다\n과거 거대 용의 형태로 나타났고 많은 자손 즉 「용의 후예」를 남겼다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10085",
+      "name": "미토스",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10085.DescTextmapID",
+      "hash": "7742307855175838984",
+      "url": "/starrail-quests/문서/lore-10085.html#section-1-row-1",
+      "quote": "「신비」 운명의 길을 주관하는 에이언즈로 형태 불명이다\n그는 사물 자체는 통찰할 수 없고 유한한 것은 무한한 것을 상상할 수 없기에 만물은 수수께끼가 된다고 생각한다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10086",
+      "name": "우로보로스",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10086.DescTextmapID",
+      "hash": "1193359270002028182",
+      "url": "/starrail-quests/문서/lore-10086.html#section-1-row-1",
+      "quote": "「탐식」 운명의 길을 주관하는 고대 에이언즈, 영원히 만족하지 않는 세계의 잠식자\n전설에 따르면 그는 「에이언즈」이자 고대 생명체 「고대 괴수」이기도 하다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10087",
+      "name": "이드릴라",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10087.DescTextmapID",
+      "hash": "5888490251261583678",
+      "url": "/starrail-quests/문서/lore-10087.html#section-1-row-1",
+      "quote": "물질세계의 순수한 선량함이 지적 생명의 마음에 반영되어 생성된 「의미」가 바로——「미」라고 부르는 존재다\n이드릴라가 관장했던 「미」의 운명의 길은 이미 사라졌다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10088",
+      "name": "타이츠론스",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10088.DescTextmapID",
+      "hash": "7642228737433770970",
+      "url": "/starrail-quests/문서/lore-10088.html#section-1-row-1",
+      "quote": "「번식」 운명의 길을 주관하는 고대 에이언즈로 현재는 사망했다\n타이츠론스는 딱정벌레목의 마지막 일원으로, 자가 복제의 공포와 무한 번식의 황무지처럼 보인다\n그, 아니, 그들은 신들이 모종의 방식으로 그의 앞길을 막을 때까지 각계를 활보했다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10089",
+      "name": "테르미누스",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10089.DescTextmapID",
+      "hash": "3753518237481013000",
+      "url": "/starrail-quests/문서/lore-10089.html#section-1-row-1",
+      "quote": "시간을 거스르는 생물. 「종말」 운명의 길을 주관하는 에이언즈\n우주를 넘나드는 유령이며 반드시 실현될 예언을 중얼거린다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10313",
+      "name": "테르미누스",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10313.DescTextmapID",
+      "hash": "12292135454579229242",
+      "url": "/starrail-quests/문서/lore-10313.html#section-1-row-1",
+      "quote": "「종말」 운명의 길을 관장하는 에이언즈, 「네 가지 종말론」의 어떤 가능성이 도래할 때 탄생하며, 시간을 거슬러 나아간다\n그때, 그는 모든 신력을 칠흑 같은 고양이 떼로 만들어 우주 구역 사이를 누비며 반드시 실현될 예언을 나지막이 선포할 것이다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10090",
+      "name": "후리",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10090.DescTextmapID",
+      "hash": "6477954272848169834",
+      "url": "/starrail-quests/문서/lore-10090.html#section-1-row-1",
+      "quote": "사유가 곧 존재며, 기억은 존재의 증거다\n「기억」 운명의 길을 주관하는 에이언즈는 잊혀진 모든 걸 기록하며 우주의 재탄생을 위해 만반의 준비를 한다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10091",
+      "name": "일반 공격",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10091.DescTextmapID",
+      "hash": "1944476375729216434",
+      "url": "/starrail-quests/문서/lore-10091.html#section-1-row-1",
+      "quote": "캐릭터의 「일반 공격」을 발동하면 적을 공격하고 「전투 스킬 포인트」를 회복한다"
+    },
+    {
+      "id": "lore-10092",
+      "name": "전투 스킬 포인트",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10092.DescTextmapID",
+      "hash": "8588565223268114497",
+      "url": "/starrail-quests/문서/lore-10092.html#section-1-row-1",
+      "quote": "「전투 스킬 포인트」는 모든 파티원이 공유하며, 「전투 스킬」을 발동하면 전투 스킬 포인트를 소모하고, 「일반 공격」을 발동하면 전투 스킬 포인트를 회복한다\n적절한 분배가 곧 승리의 관건이다"
+    },
+    {
+      "id": "lore-10093",
+      "name": "필살기",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10093.DescTextmapID",
+      "hash": "10643014852302501197",
+      "url": "/starrail-quests/문서/lore-10093.html#section-1-row-1",
+      "quote": "「필살기」는 활성화 후 즉시 적에게 발동할 수 있으며, 「필살기」의 발동은 정상적인 턴 횟수를 소모하지 않는다\n「필살기」가 활성화되면 자신의 턴이 아니어도 즉시 「필살기」를 발동할 수 있다"
+    },
+    {
+      "id": "lore-10094",
+      "name": "속성",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10094.DescTextmapID",
+      "hash": "2645119422362924399",
+      "url": "/starrail-quests/문서/lore-10094.html#section-1-row-1",
+      "quote": "캐릭터는 각자 다른 「속성」을 보유하고 있다\n적의 「약점」과 동일한 속성인 캐릭터로 공격하면 아군이 전투에서 우위를 점할 수 있다"
+    },
+    {
+      "id": "lore-10095",
+      "name": "경계의 닻",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10095.DescTextmapID",
+      "hash": "432341269491779727",
+      "url": "/starrail-quests/문서/lore-10095.html#section-1-row-1",
+      "quote": "「경계의 닻」에 저장된 에너지는 개척자의 HP를 회복시켜주고 세계 각지를 빠르게 넘나들 수 있게 해준다"
+    },
+    {
+      "id": "lore-10096",
+      "name": "비술",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10096.DescTextmapID",
+      "hash": "3234247542223174898",
+      "url": "/starrail-quests/문서/lore-10096.html#section-1-row-1",
+      "quote": "탐사 중 캐릭터는 비전투 상태에서 「비술」을 사용할 수 있다\n「비술」은 방어, 방해, 서포트, 회복, 급습, 강화 등 다양한 유형으로 나뉜다.\n「비술」을 활용하면 미궁 탐사 과정에서 큰 도움을 받을 수 있다"
+    },
+    {
+      "id": "lore-10097",
+      "name": "약점 격파•물리",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10097.DescTextmapID",
+      "hash": "9095877149332823677",
+      "url": "/starrail-quests/문서/lore-10097.html#section-1-row-1",
+      "quote": "물리 속성을 사용하여 「약점 격파」를 발동할 경우 물리 속성 피해를 주고 「열상」 상태를 부여할 수 있다\n「열상」은 물리 속성의 지속 피해를 준다"
+    },
+    {
+      "id": "lore-10098",
+      "name": "약점 격파•바람",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10098.DescTextmapID",
+      "hash": "3548945722041451373",
+      "url": "/starrail-quests/문서/lore-10098.html#section-1-row-1",
+      "quote": "바람 속성을 사용하여 「약점 격파」를 발동할 경우 바람 속성 피해를 주고 「풍화」 상태를 부여할 수 있다\n「풍화」는 바람 속성의 지속 피해를 준다"
+    },
+    {
+      "id": "lore-10099",
+      "name": "약점 격파•번개",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10099.DescTextmapID",
+      "hash": "14714344714200075219",
+      "url": "/starrail-quests/문서/lore-10099.html#section-1-row-1",
+      "quote": "번개 속성을 사용하여 「약점 격파」를 발동할 경우 번개 속성 피해를 주고 「감전」 상태를 부여할 수 있다\n「감전」은 번개 속성의 지속 피해를 가한다"
+    },
+    {
+      "id": "lore-10100",
+      "name": "약점 격파•화염",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10100.DescTextmapID",
+      "hash": "12381606181416707588",
+      "url": "/starrail-quests/문서/lore-10100.html#section-1-row-1",
+      "quote": "화염 속성을 사용하여 「약점 격파」를 발동할 경우 화염 속성 피해를 주고 「연소」 상태를 부여할 수 있다\n「연소」는 화염 속성의 지속 피해를 가한다"
+    },
+    {
+      "id": "lore-10101",
+      "name": "약점 격파•얼음",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10101.DescTextmapID",
+      "hash": "1163407700241828823",
+      "url": "/starrail-quests/문서/lore-10101.html#section-1-row-1",
+      "quote": "얼음 속성을 사용하여 「약점 격파」를 가할 경우 「빙결」 상태를 부여할 수 있다\n「빙결」은 적이 행동할 수 없게 하며 얼음 속성 추가 피해를 가한다"
+    },
+    {
+      "id": "lore-10102",
+      "name": "약점 격파•양자",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10102.DescTextmapID",
+      "hash": "11303977407038428359",
+      "url": "/starrail-quests/문서/lore-10102.html#section-1-row-1",
+      "quote": "양자 속성을 사용하여 「약점 격파」를 가할 경우, 양자 속성 피해를 가하고 「얽힘」 상태를 부여할 수 있다. 「얽힘」은 적의 행동 게이지를 감소시키며 적이 다음번 행동 시 추가로 양자 속성의 피해를 주고, 대상이 피격되면 해당 추가 피해가 증가한다"
+    },
+    {
+      "id": "lore-10103",
+      "name": "약점 격파•허수",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10103.DescTextmapID",
+      "hash": "3938316546294558739",
+      "url": "/starrail-quests/문서/lore-10103.html#section-1-row-1",
+      "quote": "허수 속성을 사용하여 「약점 격파」를 가할 경우 「속박」 상태를 부여할 수 있다\n「속박」은 적의 행동 게이지를 감소시키는 동시에 대상의 속도를 감소시킨다"
+    },
+    {
+      "id": "lore-10104",
+      "name": "소상",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10104.DescTextmapID",
+      "hash": "12983285727251379440",
+      "url": "/starrail-quests/문서/lore-10104.html#section-1-row-1",
+      "quote": "선주 「요청(曜青)」 출생, 「나부」의 운기군을 찾아가 수련을 받은 신병\n어머니가 주신 가문의 검을 몸에 지니고 있으며 자신이 써 내려갈 미래를 동경하고 있다"
+    },
+    {
+      "id": "lore-10105",
+      "name": "경원",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10105.DescTextmapID",
+      "hash": "1204295590882222376",
+      "url": "/starrail-quests/문서/lore-10105.html#section-1-row-1",
+      "quote": "선주 연맹 천궁의 7대 장군 중 하나로 나부 운기군을 통솔하는 「신책 장군」\n전대 「나부」 검술의 일인자를 스승으로 모셨으나, 무예로 이름을 날리지는 않았다"
+    },
+    {
+      "id": "lore-10106",
+      "name": "나찰",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10106.DescTextmapID",
+      "hash": "7453937929400751837",
+      "url": "/starrail-quests/문서/lore-10106.html#section-1-row-1",
+      "quote": "늘 관을 지니고 다니는 하늘 밖의 바다에서 온 의술이 뛰어난 화외 행상"
+    },
+    {
+      "id": "lore-10107",
+      "name": "연경",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10107.DescTextmapID",
+      "hash": "13914842612835423856",
+      "url": "/starrail-quests/문서/lore-10107.html#section-1-row-1",
+      "quote": "경원 장군의 호위무사이다. 어린 나이임에도 불구하고 천재라 불릴 정도로 뛰어난 검술을 지니고 있다\n검 한 자루만 있으면 누구에게도 지지 않는다"
+    },
+    {
+      "id": "lore-10108",
+      "name": "정운",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10108.DescTextmapID",
+      "hash": "16702968170068824414",
+      "url": "/starrail-quests/문서/lore-10108.html#section-1-row-1",
+      "quote": "선주 「나부」 천박사(天舶司)의 사절\n상단을 따라 수많은 세계를 돌아다니며 무역과 연맹 관련 업무를 처리해왔다"
+    },
+    {
+      "id": "lore-10226",
+      "name": "정운",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10226.DescTextmapID",
+      "hash": "15272162377479999866",
+      "url": "/starrail-quests/문서/lore-10226.html#section-1-row-1",
+      "quote": "선주 「나부」 천박사의 사절\n절멸 대군을 만나 몸과 마음이 파괴되었고, 그 후 어떤 지니어스의 구원을 받아 전화위복하여 다시 복귀했다"
+    },
+    {
+      "id": "lore-10109",
+      "name": "어공",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10109.DescTextmapID",
+      "hash": "5256369019647845300",
+      "url": "/starrail-quests/문서/lore-10109.html#section-1-row-1",
+      "quote": "선주 「나부」 천박사(天舶司)의 수장, 수많은 전장을 거쳐온 노련한 비행사이자 궁수\n지금은 쏟아져 내리는 공무 때문에 몸을 빼기 어려운 상태다"
+    },
+    {
+      "id": "lore-10110",
+      "name": "청작",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10110.DescTextmapID",
+      "hash": "6977041892631483172",
+      "url": "/starrail-quests/문서/lore-10110.html#section-1-row-1",
+      "quote": "선주 「나부」의 태복사 소속 점술가 겸 서고 관리자\n업무 태만으로 인해 곧 「문지기」로 좌천될 예정이라고 한다"
+    },
+    {
+      "id": "lore-10111",
+      "name": "백로",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10111.DescTextmapID",
+      "hash": "11226096773125471765",
+      "url": "/starrail-quests/문서/lore-10111.html#section-1-row-1",
+      "quote": "선주 「나부」 비디아다라족의 큰어른, 「약을 품은 용녀」라 불리는 의사\n독자적인 의학 이론과 용맥만이 실행할 수 있는 「의료 수단」으로 생명을 구하고 치료한다"
+    },
+    {
+      "id": "lore-10112",
+      "name": "설의",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10112.DescTextmapID",
+      "hash": "7572257556711982542",
+      "url": "/starrail-quests/문서/lore-10112.html#section-1-row-1",
+      "quote": "선주 「나부」에서 생사를 감찰하는 「시왕사」의 판관\n이미 죽은 지 오래지만, 인형의 몸에 「환생」하여 사명을 이행한다"
+    },
+    {
+      "id": "lore-10113",
+      "name": "부현",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10113.DescTextmapID",
+      "hash": "11604956329610604047",
+      "url": "/starrail-quests/문서/lore-10113.html#section-1-row-1",
+      "quote": "선주 「나부」 태복사(太卜司)의 수뇌\n제3의 눈과 궁관진을 통해 선주의 항로와 일의 길흉을 점친다"
+    },
+    {
+      "id": "lore-10114",
+      "name": "후",
+      "kind": "person",
+      "group": "paths",
+      "source": "LoadingDesc:10114.DescTextmapID",
+      "hash": "2917998369890681847",
+      "url": "/starrail-quests/문서/lore-10114.html#section-1-row-1",
+      "quote": "「균형」 운명의 길을 주관하는 에이언즈. 형태가 분명하지 않다\n후는 수하의 사도들과 은연중에 우주에 영향을 주며 이상적인 균형을 이루려 한다",
+      "subjectType": "aeon"
+    },
+    {
+      "id": "lore-10115",
+      "name": "중재관",
+      "kind": "faction",
+      "group": "factions",
+      "source": "LoadingDesc:10115.DescTextmapID",
+      "hash": "7825176889188520006",
+      "url": "/starrail-quests/문서/lore-10115.html#section-1-row-1",
+      "quote": "중재관은 에이언즈 「후」의 지시에 따라 행동하며 우주의 「제로섬」을 추구한다\n여러 세계에서 이들을 「신」이라고 착각한다"
+    },
+    {
+      "id": "lore-10116",
+      "name": "효과 해제",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10116.DescTextmapID",
+      "hash": "15358979363883985595",
+      "url": "/starrail-quests/문서/lore-10116.html#section-1-row-1",
+      "quote": "일부 캐릭터의 스킬은 아군이 빠진 「디버프 효과」를 해제할 수 있어 필요한 때에 결정적으로 작용할 수 있다"
+    },
+    {
+      "id": "lore-10117",
+      "name": "효과 해제",
+      "kind": "mechanic",
+      "group": "mechanics",
+      "source": "LoadingDesc:10117.DescTextmapID",
+      "hash": "12398558075845109942",
+      "url": "/starrail-quests/문서/lore-10117.html#section-1-row-1",
+      "quote": "일부 캐릭터의 스킬은 적이 보유한 「버프 효과」를 해제할 수 있어 특수한 적과의 교전 시 효과적으로 작용할 수 있다"
+    },
+    {
+      "id": "lore-10118",
+      "name": "브로냐•랜드",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10118.DescTextmapID",
+      "hash": "11533044310208090135",
+      "url": "/starrail-quests/문서/lore-10118.html#section-1-row-1",
+      "quote": "벨로보그의 현임 「수호자」\n공주의 고고함과 군인의 꿋꿋함이 공존한다"
+    },
+    {
+      "id": "lore-10119",
+      "name": "쿠쿠리아•랜드",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10119.DescTextmapID",
+      "hash": "3823696951215772865",
+      "url": "/starrail-quests/문서/lore-10119.html#section-1-row-1",
+      "quote": "벨로보그의 전임 수호자\n욕망이 없고 냉철하며 자신이 굳게 믿는 방식으로 이 추운 세계를 지키고 있다"
+    },
+    {
+      "id": "lore-10120",
+      "name": "수호자",
+      "kind": "concept",
+      "group": "belobog",
+      "source": "LoadingDesc:10120.DescTextmapID",
+      "hash": "11074767531107123691",
+      "url": "/starrail-quests/문서/lore-10120.html#section-1-row-1",
+      "quote": "벨로보그의 최고 지도자. 축성가 의지의 대변인\n현임 수호자는 브로냐•랜드이다",
+      "subjectType": "role"
+    },
+    {
+      "id": "lore-10121",
+      "name": "루카",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10121.DescTextmapID",
+      "hash": "7484626383462030139",
+      "url": "/starrail-quests/문서/lore-10121.html#section-1-row-1",
+      "quote": "벨로보그 하층 구역의 챔피언 격투선수, 「와일드 파이어」의 실력파 멤버 중 하나.\n격투 클럽의 연속 디펜딩 챔피언, 자신의 열정으로 하층 구역의 꿈이 있는 아이들을 격려한다"
+    },
+    {
+      "id": "lore-10122",
+      "name": "링스",
+      "kind": "person",
+      "group": "belobog",
+      "source": "LoadingDesc:10122.DescTextmapID",
+      "hash": "3971098142195759599",
+      "url": "/starrail-quests/문서/lore-10122.html#section-1-row-1",
+      "quote": "벨로보그의 설원 탐험가, 랜도 가문의 막내 여동생.\n담담한 성격에 행동력이 매우 강하다. 종종 홀로 설원을 탐험한다"
+    },
+    {
+      "id": "lore-10123",
+      "name": "경류",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10123.DescTextmapID",
+      "hash": "4418327575447273286",
+      "url": "/starrail-quests/문서/lore-10123.html#section-1-row-1",
+      "quote": "과거 나부 검술의 일인자이자 운기군 불패신화의 창조자.\n오늘날 그녀의 이름은 역사에서 지워졌고, 마각의 몸의 경계를 걷는 선주의 역적이 되었다"
+    },
+    {
+      "id": "lore-10124",
+      "name": "단항•음월",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10124.DescTextmapID",
+      "hash": "461744064372697379",
+      "url": "/starrail-quests/문서/lore-10124.html#section-1-row-1",
+      "quote": "단항의 비디아다라족으로서의 본모습, 전생의 「음월군」이 남긴 힘.\n이맛전의 각관을 받으면 그 죄인의 모든 공과를 이어받아야 한다"
+    },
+    {
+      "id": "lore-10125",
+      "name": "용의 군사",
+      "kind": "concept",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10125.DescTextmapID",
+      "hash": "16812589931799866931",
+      "url": "/starrail-quests/문서/lore-10125.html#section-1-row-1",
+      "quote": "비디아다라족의 무소불위의 권력을 누리는 장로\n용존의 계승을 보좌하는 스승이자 「용의 폭주」에 빠진 용존을 위해 준비한 살수(殺手)이기도 하다",
+      "subjectType": "role"
+    },
+    {
+      "id": "lore-10126",
+      "name": "인연경",
+      "kind": "region",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10126.DescTextmapID",
+      "hash": "4985853127412622772",
+      "url": "/starrail-quests/문서/lore-10126.html#section-1-row-1",
+      "quote": "나부 비디아다라족의 성지, 파월고해와 불멸의 거목이 존재하는 동천이다\n환생을 준비하는 비디아다라족은 이곳에서 바다로 돌아간다"
+    },
+    {
+      "id": "lore-10127",
+      "name": "약왕의 비전",
+      "kind": "faction",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10127.DescTextmapID",
+      "hash": "3063805096104555438",
+      "url": "/starrail-quests/문서/lore-10127.html#section-1-row-1",
+      "quote": "은밀하게 「풍요」 약사를 숭배하는 반란 조직\n옛 선인의 기적을 증거로 추종자를 모아 나부 선주를 전복시키려 한다"
+    },
+    {
+      "id": "lore-10128",
+      "name": "용존(龍尊)",
+      "kind": "concept",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10128.DescTextmapID",
+      "hash": "13023706138333542414",
+      "url": "/starrail-quests/문서/lore-10128.html#section-1-row-1",
+      "quote": "선주 연맹을 이끄는 세 주춧돌 중 하나인 비디아다라족의 족장, 용족 조상의 「불멸」의 힘을 주관하고 있다\n만고불변의 화룡묘법으로 몸을 가꾸고 젊은 얼굴을 유지하며 장수한다",
+      "subjectType": "role"
+    },
+    {
+      "id": "lore-10129",
+      "name": "불멸의 거목",
+      "kind": "concept",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10129.DescTextmapID",
+      "hash": "18021772632411523182",
+      "url": "/starrail-quests/문서/lore-10129.html#section-1-row-1",
+      "quote": "「풍요」 약사가 선주 나부에 사여한 기적의 조물\n죽음을 치유하고 인간에게 불로장생을 선물하지만 끝없는 후환을 야기하기도 한다"
+    },
+    {
+      "id": "lore-10130",
+      "name": "뒤돌아보지 마",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:10130.DescTextmapID",
+      "hash": "11716074831668981644",
+      "url": "/starrail-quests/문서/lore-10130.html#section-1-row-1",
+      "quote": "Mar. 7th, 뒤돌아보지 말고 앞을 향해 나아가"
+    },
+    {
+      "id": "lore-10131",
+      "name": "토파즈",
+      "kind": "person",
+      "group": "civilizations",
+      "source": "LoadingDesc:10131.DescTextmapID",
+      "hash": "4891967562445517716",
+      "url": "/starrail-quests/문서/lore-10131.html#section-1-row-1",
+      "quote": "스타피스 컴퍼니 「전략투자부」의 고위 간부. 특수채무규찰팀을 이끈다\n어린 나이에 「10인의 스톤하트」 중 한 명이 되었다. 초석은 「독촉의 황옥」이다\n파트너인 차원 저금통 「복순이」와 함께 은하를 여행하며 컴퍼니 업무 전개에 영향을 주는 채무 분쟁을 규찰하고 있다"
+    },
+    {
+      "id": "lore-10132",
+      "name": "복순이",
+      "kind": "person",
+      "group": "civilizations",
+      "source": "LoadingDesc:10132.DescTextmapID",
+      "hash": "9030077134763277860",
+      "url": "/starrail-quests/문서/lore-10132.html#section-1-row-1",
+      "quote": "「부」가 있는 곳을 예리하게 감지할 수 있는 차원 저금통, 토파즈의 가족이자 업무 파트너이다\n보안과 채무 추심, 계리 등의 업무도 척척이다",
+      "subjectType": "named-lifeform"
+    },
+    {
+      "id": "lore-10133",
+      "name": "계네빈",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10133.DescTextmapID",
+      "hash": "13533971895043877297",
+      "url": "/starrail-quests/문서/lore-10133.html#section-1-row-1",
+      "quote": "선주 「나부」에 방문한 행위 예술가——혹은 길거리 예술가\n삼시세끼가 보장된 상황에서 자신의 새로운 삶을 나부에서 추구하고 있다"
+    },
+    {
+      "id": "lore-10134",
+      "name": "≪에테르 배틀≫",
+      "kind": "concept",
+      "group": "belobog",
+      "source": "LoadingDesc:10134.DescTextmapID",
+      "hash": "16404870392583248428",
+      "url": "/starrail-quests/문서/lore-10134.html#section-1-row-1",
+      "quote": "「에테르 복제」 기술에 기반한 「에테르 코인」을 운반체로 한 TCG 게임\n유저는 「에테르 코인」에 생물의 실체 데이터를 저장하고, 이를 「에테르 정령」으로 실체화시켜 다른 유저와 배틀할 수 있다"
+    },
+    {
+      "id": "lore-10135",
+      "name": "에테르 정령",
+      "kind": "concept",
+      "group": "belobog",
+      "source": "LoadingDesc:10135.DescTextmapID",
+      "hash": "2080082402093353546",
+      "url": "/starrail-quests/문서/lore-10135.html#section-1-row-1",
+      "quote": "≪에테르 배틀≫ 게임에서 생물 실체 실제 데이터를 통해 탄생한 산물\n자의식이 없고 프로그램에 따라 유저의 명령대로만 움직인다. 겉모습은 실제와 거의 똑같다"
+    },
+    {
+      "id": "lore-10136",
+      "name": "구름 위 5전사",
+      "kind": "faction",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10136.DescTextmapID",
+      "hash": "8014110503002779995",
+      "url": "/starrail-quests/문서/lore-10136.html#section-1-row-1",
+      "quote": "선주 연맹 역사에서 아주 짧은 시간 함께한 전설적인 다섯 영웅\n혁혁한 전공을 세웠지만, 목숨을 바친 전우에 대한 그리움으로 사분오열됐다"
+    },
+    {
+      "id": "lore-10137",
+      "name": "곽향",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10137.DescTextmapID",
+      "hash": "13762280975700653811",
+      "url": "/starrail-quests/문서/lore-10137.html#section-1-row-1",
+      "quote": "선주 나부 시왕사의 견습 판관, 세양에게 빙의된 여우족 여자아이.\n겁 많은 성격에 연약하고 여러 괴상한 일들을 두려워하지만, 악귀를 처리하는 직책을 맡고 있다"
+    },
+    {
+      "id": "lore-10138",
+      "name": "아젠티",
+      "kind": "person",
+      "group": "civilizations",
+      "source": "LoadingDesc:10138.DescTextmapID",
+      "hash": "10721077703772922794",
+      "url": "/starrail-quests/문서/lore-10138.html#section-1-row-1",
+      "quote": "「미(美)의 기사단」의 고전적인 기사. 실종된 「미」의 에이언즈 이드릴라를 경건한 마음으로 흠모하고 있다.\n정직하고 당당하며, 우주를 유람하면서 이드릴라의 명성을 널리 알린다"
+    },
+    {
+      "id": "lore-10139",
+      "name": "시왕사",
+      "kind": "faction",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10139.DescTextmapID",
+      "hash": "12740969274421877892",
+      "url": "/starrail-quests/문서/lore-10139.html#section-1-row-1",
+      "quote": "선주 연맹에서 장수종의 수명과 법도를 감찰하는 기관\n곧 마각의 몸에 빠질 선주 사람을 인도하고, 10대 죄악을 저지른 장수종을 수용하는 일을 담당한다"
+    },
+    {
+      "id": "lore-10140",
+      "name": "세양",
+      "kind": "concept",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10140.DescTextmapID",
+      "hash": "8596317298978423445",
+      "url": "/starrail-quests/문서/lore-10140.html#section-1-row-1",
+      "quote": "형체가 없는 천외 불꽃의 정령. 무형목 에너지 생명체에 속한다\n세양은 형체가 있는 지적 생명의 몸을 빼앗아, 숙주의 욕망과 감정의 변화를 느끼길 갈망한다\n숙주의 몸이 소진되면 다른 피해자를 찾는다",
+      "subjectType": "species"
+    },
+    {
+      "id": "lore-10141",
+      "name": "완•매",
+      "kind": "person",
+      "group": "research",
+      "source": "LoadingDesc:10141.DescTextmapID",
+      "hash": "18328549674928611082",
+      "url": "/starrail-quests/문서/lore-10141.html#section-1-row-1",
+      "quote": "「지니어스 클럽」 #81 회원. 헤르타, 스크루룸, 스티븐과 함께 「시뮬레이션 우주」를 개발했다\n생명 분야의 대가로 덤덤한 성격에 연구에만 몰두한다"
+    },
+    {
+      "id": "lore-10142",
+      "name": "Dr. 레이시오",
+      "kind": "person",
+      "group": "research",
+      "source": "LoadingDesc:10142.DescTextmapID",
+      "hash": "4984398262094837006",
+      "url": "/starrail-quests/문서/lore-10142.html#section-1-row-1",
+      "quote": "괴팍하고 이기적인 독설가. 다소 음울하지만 품위를 잃지 않는 「지식학회」 학자\n용모는 준수하나, 항상 기괴한 석고상을 써 얼굴을 가린다"
+    },
+    {
+      "id": "lore-10143",
+      "name": "#27 루버트",
+      "kind": "person",
+      "group": "research",
+      "source": "LoadingDesc:10143.DescTextmapID",
+      "hash": "1639715117995569535",
+      "url": "/starrail-quests/문서/lore-10143.html#section-1-row-1",
+      "quote": "「지니어스 클럽」 #27 회원. 자신을 「제왕」이라 칭하며 반유기 방정식을 유도해 냈다\n우주를 휩쓴 「제1차 제왕 전쟁」을 촉발시켰다"
+    },
+    {
+      "id": "lore-10144",
+      "name": "곤충 떼 재난",
+      "kind": "concept",
+      "group": "research",
+      "source": "LoadingDesc:10144.DescTextmapID",
+      "hash": "15904482930494822581",
+      "url": "/starrail-quests/문서/lore-10144.html#section-1-row-1",
+      "quote": "타이츠론스, 증오와 고독 속에서 「번식」의 에이언즈로 승천했다\n이윽고 거대한 「곤충 파도」가 우주를 휩쓸었다",
+      "subjectType": "event-or-ritual"
+    },
+    {
+      "id": "lore-10145",
+      "name": "미샤",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10145.DescTextmapID",
+      "hash": "5022894043127405815",
+      "url": "/starrail-quests/문서/lore-10145.html#section-1-row-1",
+      "quote": "「레버리」 호텔의 벨보이. 은하열차의 「개척」의 길을 무척 동경한다"
+    },
+    {
+      "id": "lore-10176",
+      "name": "미샤",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10176.DescTextmapID",
+      "hash": "13071853313104417429",
+      "url": "/starrail-quests/문서/lore-10176.html#section-1-row-1",
+      "quote": "미하일의 어린 시절 꿈속 철부지 주인공. 꿈방울에서 탈출했다\n은하열차가 「시계공」의 유산을 찾을 수 있게 인도하는 사명을 짊어지고 있으며, 이로 인해 자신을 페나코니의 「벨보이」로 착각한다"
+    },
+    {
+      "id": "lore-10146",
+      "name": "「시계공」",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10146.DescTextmapID",
+      "hash": "85686646289964330",
+      "url": "/starrail-quests/문서/lore-10146.html#section-1-row-1",
+      "quote": "페나코니의 전설적인 거물. 「페나코니의 아버지」라고 칭송받는 꿈세계의 창시자다\n그러나 아무도 그의 정체를 모른다"
+    },
+    {
+      "id": "lore-10177",
+      "name": "「시계공」",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10177.DescTextmapID",
+      "hash": "8657535671862231095",
+      "url": "/starrail-quests/문서/lore-10177.html#section-1-row-1",
+      "quote": "페나코니의 전설적인 거물 레그워크•샤르•미하일, 과거의 무명객이다\n가족에 숨어 있는 악당에 대항하기 위해 일생을 바쳤고, 오직 미완의 목표를 완성하기 위해 죽기 전 은하 전체에 초대장을 보냈다"
+    },
+    {
+      "id": "lore-20024",
+      "name": "「시계공」",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:20024.DescTextmapID",
+      "hash": "17920490797709175662",
+      "url": "/starrail-quests/문서/lore-20024.html#section-1-row-1",
+      "quote": "페나코니의 전설적인 거물. 「페나코니의 아버지」라고 칭송받는다.\n진짜 이름은 미하일, 지금은 페나코니의 가족에 배신자로 여겨지고 있다"
+    },
+    {
+      "id": "lore-10147",
+      "name": "선데이",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10147.DescTextmapID",
+      "hash": "16975652519022497709",
+      "url": "/starrail-quests/문서/lore-10147.html#section-1-row-1",
+      "quote": "자기 절제적이고 박애주의적인 면모를 가진 참나무 가문의 가주. 좋은꿈 낙원의 타고난 지도자다\n외부의 주목을 한눈에 받는 로빈의 오빠다"
+    },
+    {
+      "id": "lore-10178",
+      "name": "선데이",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10178.DescTextmapID",
+      "hash": "12788660294817847651",
+      "url": "/starrail-quests/문서/lore-10178.html#section-1-row-1",
+      "quote": "자기 절제적이고 박애주의적인 면모를 가진 참나무 가문 가주\n어린 시절 여동생과의 약속을 지키기 위해 결국 여동생과 완전히 다른 길을 걷는다"
+    },
+    {
+      "id": "lore-10225",
+      "name": "선데이",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10225.DescTextmapID",
+      "hash": "8736327445517522523",
+      "url": "/starrail-quests/문서/lore-10225.html#section-1-row-1",
+      "quote": "전 참나무 가문 가주이자 로빈의 오빠\n조화의 축제 소동이 진정된 후, 「질서」와 고향과 작별하고 은하열차에 탑승해 새로운 길을 찾고 있다"
+    },
+    {
+      "id": "lore-10175",
+      "name": "로빈",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10175.DescTextmapID",
+      "hash": "6866060063956968158",
+      "url": "/starrail-quests/문서/lore-10175.html#section-1-row-1",
+      "quote": "은하의 유명 가수. 별하늘 무대의 타고난 주인공이다\n자신의 노랫소리로 온 우주에 「화합」의 이름을 전한다"
+    },
+    {
+      "id": "lore-10149",
+      "name": "어벤츄린",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10149.DescTextmapID",
+      "hash": "11780186401875484604",
+      "url": "/starrail-quests/문서/lore-10149.html#section-1-row-1",
+      "quote": "스타피스 컴퍼니 「전략투자부」의 고위 간부로, 「10인의 스톤하트」 중 한 명이다. 초석은 「모략의 사금」.\n늘 웃는 얼굴이라 진심을 알기 어려우며, 「하이리스크 하이리턴」이라는 생활신조를 갖고 있다"
+    },
+    {
+      "id": "lore-20025",
+      "name": "반디",
+      "kind": "person",
+      "group": "hunters",
+      "source": "LoadingDesc:20025.DescTextmapID",
+      "hash": "11948266266572970835",
+      "url": "/starrail-quests/문서/lore-20025.html#section-1-row-1",
+      "quote": "자신을 붓꽃 가문의 신인 엔터테이너라고 소개하지만, 사실은 「스텔라론 헌터」의 일원이다.\n「은하열차가 『성대한 유산』을 쫓게」 만들기 위해 직접 위험에 뛰어들어 결국 「죽었다 다시 살아난다」"
+    },
+    {
+      "id": "lore-10150",
+      "name": "반디",
+      "kind": "person",
+      "group": "civilizations",
+      "source": "LoadingDesc:10150.DescTextmapID",
+      "hash": "5700693224687881752",
+      "url": "/starrail-quests/문서/lore-10150.html#section-1-row-1",
+      "quote": "자신을 붓꽃 가문의 신인 엔터테이너라고 소개한다.\n사냥개 가문에 밀입국자 취급을 받은 적이 있는데, 후에 도와준 {NICKNAME}에게 보답하기 위해 가이드 역할을 자처한다"
+    },
+    {
+      "id": "lore-10151",
+      "name": "샘",
+      "kind": "person",
+      "group": "hunters",
+      "source": "LoadingDesc:10151.DescTextmapID",
+      "hash": "15161422006678015479",
+      "url": "/starrail-quests/문서/lore-10151.html#section-1-row-1",
+      "quote": "스텔라론 헌터 멤버로, 견고한 장갑을 장착한 전사다.\n그의 기계 갑옷은 화염을 내뿜어 전장을 불태우고 열화와 같은 공격을 퍼부을 수 있다"
+    },
+    {
+      "id": "lore-10152",
+      "name": "아케론",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10152.DescTextmapID",
+      "hash": "14290504473085830123",
+      "url": "/starrail-quests/문서/lore-10152.html#section-1-row-1",
+      "quote": "갤럭시 레인저와 밀접한 관계가 있는 차갑고 과묵한 여행자. 중요한 일을 잘 잊어버리는 듯하다"
+    },
+    {
+      "id": "lore-20022",
+      "name": "아케론",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:20022.DescTextmapID",
+      "hash": "14851267698298046529",
+      "url": "/starrail-quests/문서/lore-20022.html#section-1-row-1",
+      "quote": "냉담하고 과묵한 여행자. 「공허」 IX의 그림자 속에서 돌아온 「자멸자」.\n운명에 맞서기 위해 그녀는 손에 든 검을 끊임없이 휘두르며 운명의 길을 베어버리고자 한다"
+    },
+    {
+      "id": "lore-10153",
+      "name": "스파클",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10153.DescTextmapID",
+      "hash": "427625638485823760",
+      "url": "/starrail-quests/문서/lore-10153.html#section-1-row-1",
+      "quote": "열정적이지만 변덕스러운 가면의 우인 멤버.\n재밌는 일을 찾아 각 파벌 사이를 오가며, 혼자의 힘으로 온 세계를 뒤집어 놓는다"
+    },
+    {
+      "id": "lore-10154",
+      "name": "블랙 스완",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10154.DescTextmapID",
+      "hash": "15114922347066348317",
+      "url": "/starrail-quests/문서/lore-10154.html#section-1-row-1",
+      "quote": "나른하고 신비로운 기억하는 자. 재미있는 기억을 수집하는 것을 좋아한다.\n운명은 종잡을 수 없으며, 모든 것은 영원한 기억 속의 「이미 알고 있는 것」이 된다고 생각한다"
+    },
+    {
+      "id": "lore-10155",
+      "name": "갤러거",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10155.DescTextmapID",
+      "hash": "9850290410819752496",
+      "url": "/starrail-quests/문서/lore-10155.html#section-1-row-1",
+      "quote": "겉치장에 신경 쓰지 않는 음료 제조가. 사냥개 가문의 보안관이기도 하다.\n페나코니 현지인이며, 경험이 무척 풍부하지만 그것에 관해 남에게 먼저 말하는 경우가 거의 없다"
+    },
+    {
+      "id": "lore-20023",
+      "name": "갤러거",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:20023.DescTextmapID",
+      "hash": "13611551608470885611",
+      "url": "/starrail-quests/문서/lore-20023.html#section-1-row-1",
+      "quote": "겉치장에 신경 쓰지 않는 페나코니 현지 음료 제조가이자 사냥개 가문의 보안관.\n「신비」 운명의 길을 걷는 자로 추정되며, 기억의 영역 밈 「무엇이 죽음으로 향하는가」와 밀접한 관련이 있다"
+    },
+    {
+      "id": "lore-10179",
+      "name": "갤러거",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10179.DescTextmapID",
+      "hash": "12797850133081223526",
+      "url": "/starrail-quests/문서/lore-10179.html#section-1-row-1",
+      "quote": "「시계공」의 충실한 사냥개. 어떤 허구 역사학자가 페나코니의 여러 사실을 바탕으로 지어낸 인물이다\n「시계공」의 유지를 계승했으며, 생명의 마지막 순간까지 가족과 대치했다"
+    },
+    {
+      "id": "lore-20014",
+      "name": "제이드",
+      "kind": "person",
+      "group": "civilizations",
+      "source": "LoadingDesc:20014.DescTextmapID",
+      "hash": "17331162019240205908",
+      "url": "/starrail-quests/문서/lore-20014.html#section-1-row-1",
+      "quote": "스타피스 컴퍼니 「전략투자부」의 고위 간부. 「10인의 스톤하트」 중 한 명이다. 초석은 「전당의 비취」"
+    },
+    {
+      "id": "lore-10156",
+      "name": "시계 소년",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10156.DescTextmapID",
+      "hash": "13978686563742885623",
+      "url": "/starrail-quests/문서/lore-10156.html#section-1-row-1",
+      "quote": "페나코니의 유명 애니메이션 시리즈 주인공. 낙천적이고 똑똑하며 활기가 넘치지만, 무모한 면도 있다.\n어째서인지 꿈속의 페나코니에서 여러 번 나타났는데, 「동심이 있는 사람」만 볼 수 있는 것 같다"
+    },
+    {
+      "id": "lore-10157",
+      "name": "페나코니(현실)",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:10157.DescTextmapID",
+      "hash": "3504884104463722704",
+      "url": "/starrail-quests/문서/lore-10157.html#section-1-row-1",
+      "quote": "아스다나 은하계의 거대 건축물. 우뚝 솟은 「레버리 호텔」이 랜드마크다.\n과거엔 컴퍼니의 변방 감옥이었는데, 지금은 가족의 건설하에 좋은꿈 낙원의 대문이자 은하 교통의 중추가 되었다"
+    },
+    {
+      "id": "lore-10158",
+      "name": "페나코니(꿈세계)",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:10158.DescTextmapID",
+      "hash": "12088493335708473112",
+      "url": "/starrail-quests/문서/lore-10158.html#section-1-row-1",
+      "quote": "인파가 끊이지 않는 금빛찬란한 대도시. 은하계의 공감각 꿈세계를 정성스럽게 관리한 가족의 성과다.\n「레버리 호텔」에서 잠이 든 후, 손님들의 의식은 꿈세계와 연결되어 「꿈속의 페나코니」로 오게 된다"
+    },
+    {
+      "id": "lore-10159",
+      "name": "「레버리」 호텔",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:10159.DescTextmapID",
+      "hash": "16323602863843326080",
+      "url": "/starrail-quests/문서/lore-10159.html#section-1-row-1",
+      "quote": "페나코니의 랜드마크 건물. 환상적이고 럭셔리한 최상급 리조트 호텔이다.\n은하를 누비는 여행객들에게 휴식을 제공할 뿐 아니라 향락주의의 천국으로 가는 유일한 입구이기도 하다"
+    },
+    {
+      "id": "lore-10160",
+      "name": "어린아이의 꿈",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:10160.DescTextmapID",
+      "hash": "236874103152725604",
+      "url": "/starrail-quests/문서/lore-10160.html#section-1-row-1",
+      "quote": "누군가의 기억에서 잘라낸 얇은 조각. 페나코니의 어떤 어둡고 거대한 비밀과 관련이 있는 듯하다"
+    },
+    {
+      "id": "lore-10180",
+      "name": "어린아이의 꿈",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:10180.DescTextmapID",
+      "hash": "15937133112437070492",
+      "url": "/starrail-quests/문서/lore-10180.html#section-1-row-1",
+      "quote": "미하일이 죽기 전에 꾼 마지막 꿈. 「시계공」과 미샤, 그리고 시계 소년에 관한 모든 진실이 기록되어 있다"
+    },
+    {
+      "id": "lore-10161",
+      "name": "츠가냐",
+      "kind": "region",
+      "group": "civilizations",
+      "source": "LoadingDesc:10161.DescTextmapID",
+      "hash": "6912248056530291455",
+      "url": "/starrail-quests/문서/lore-10161.html#section-1-row-1",
+      "quote": "드네스-프로티아-도르누 3대 은하계의 접경지대에 위치한 주인 없는 행성 구역.\n이곳의 천체는 오랫동안 많은 항성풍과 동떨어진 천체의 작용으로 인해 행성의 표면 기후가 매우 열악하다고 한다"
+    },
+    {
+      "id": "lore-10162",
+      "name": "에브긴인",
+      "kind": "concept",
+      "group": "civilizations",
+      "source": "LoadingDesc:10162.DescTextmapID",
+      "hash": "8466949568509348432",
+      "url": "/starrail-quests/문서/lore-10162.html#section-1-row-1",
+      "quote": "츠가냐-Ⅳ의 원주민 중 하나로, 절벽 같은 열악한 환경에서 살아가는 법을 잘 안다.\n「에브긴」은 츠가냐어로 「꿀」이라는 뜻인데, 이유 없이 그들을 견제하는 사람들은 본래의 의미를 왜곡해 겉으론 꿀 바른 말을 하지만 속은 시커먼 그들의 교활하고 음흉한 천성을 강조한다",
+      "subjectType": "species"
+    },
+    {
+      "id": "lore-10163",
+      "name": "기억의 영역",
+      "kind": "concept",
+      "group": "memory",
+      "source": "LoadingDesc:10163.DescTextmapID",
+      "hash": "13936765313414142839",
+      "url": "/starrail-quests/문서/lore-10163.html#section-1-row-1",
+      "quote": "「기억 물질」이 응집되어 형성된 공간. 그 안은 직접 관측할 수 없으며, 「기억」의 운명의 길을 걷는 자——또는 비정상적인 수단으로만 그 안을 자유롭게 오갈 수 있다\n과거 「신비」는 우주와 기억의 영역의 변경에 수많은 누출구를 뚫었다"
+    },
+    {
+      "id": "lore-10164",
+      "name": "기억 물질",
+      "kind": "concept",
+      "group": "memory",
+      "source": "LoadingDesc:10164.DescTextmapID",
+      "hash": "2366099796471264462",
+      "url": "/starrail-quests/문서/lore-10164.html#section-1-row-1",
+      "quote": "인간의 기억과 의식의 운반체이자 재료. 기억하는 자가 아닌 누군가가 처리되지 않은 기억 물질에 직접 접촉하면 다른 영향을 받게 된다.\n「기억의 영역」과 「기억 거품」 모두 기억 물질의 집합체이며 서로 크기만 다르다"
+    },
+    {
+      "id": "lore-10165",
+      "name": "공감각 꿈세계",
+      "kind": "concept",
+      "group": "penacony",
+      "source": "LoadingDesc:10165.DescTextmapID",
+      "hash": "13002074504580453818",
+      "url": "/starrail-quests/문서/lore-10165.html#section-1-row-1",
+      "quote": "기질성 정신 질환의 특수 증상으로, 기억 물질의 누출구와 밀접한 관련이 있는 은하계에 많이 발생한다.\n수많은 꿈세계가 얽히고 겹쳐 사람들은 꿈속 세계에서 서로 만나고 새로운 삶도 시작할 수 있게 되었다"
+    },
+    {
+      "id": "lore-10166",
+      "name": "조화의 축제",
+      "kind": "concept",
+      "group": "penacony",
+      "source": "LoadingDesc:10166.DescTextmapID",
+      "hash": "7772970203582290961",
+      "url": "/starrail-quests/문서/lore-10166.html#section-1-row-1",
+      "quote": "페나코니에서 1 엠버기원마다 열리는 중요한 의식.\n소문에 의하면 어느 세계에 천체의 하모니가 울려 퍼질 때, 시페의 화신이 강림해 믿는 자와 안 믿는 자 모두에게 아낌없는 축복을 내린다고 한다",
+      "subjectType": "event-or-ritual"
+    },
+    {
+      "id": "lore-10167",
+      "name": "꿈의 주인",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10167.DescTextmapID",
+      "hash": "1928092779167901257",
+      "url": "/starrail-quests/문서/lore-10167.html#section-1-row-1",
+      "quote": "좋은꿈의 주인. 페나코니에 있는 가족의 진정한 지도자이다.\n종종 배후에 숨어 있으며, 좋은꿈의 관리 업무는 참나무 가문이 대신 맡는다"
+    },
+    {
+      "id": "lore-10314",
+      "name": "꿈의 주인",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10314.DescTextmapID",
+      "hash": "6994131688689579360",
+      "url": "/starrail-quests/문서/lore-10314.html#section-1-row-1",
+      "quote": "「가족」 페나코니 분가의 진정한 리더. 육신은 이미 파멸했으나, 그의 의식은 좋은꿈 곳곳에 스며들었다\n그는 「스텔라론」의 힘을 빌려 「질서」를 위해 순교하며 몰락한 에이언즈 「에나」를 잠시나마 세상에 되돌려보냈다"
+    },
+    {
+      "id": "lore-10168",
+      "name": "시계 트릭",
+      "kind": "concept",
+      "group": "penacony",
+      "source": "LoadingDesc:10168.DescTextmapID",
+      "hash": "9867588215464024614",
+      "url": "/starrail-quests/문서/lore-10168.html#section-1-row-1",
+      "quote": "시계 소년이 개척자에게 부여한 특수한 능력.\n꿈세계에 흐르는 다양한 감정을 사람들의 마음으로 되돌릴 수 있다"
+    },
+    {
+      "id": "lore-10169",
+      "name": "「무엇이 죽음으로 향하는가」",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10169.DescTextmapID",
+      "hash": "11601974110943017832",
+      "url": "/starrail-quests/문서/lore-10169.html#section-1-row-1",
+      "quote": "신비한 기억의 영역 밈. 「죽음」과 「살해」에 대한 공포의 감정이 구현된 것이라고 한다.\n흔적도 없이 나타났다 사라지고 행동 패턴도 알 수 없으며, 이미 페나코니의 꿈세계에서 수많은 악질적인 사건을 저질렀다",
+      "subjectType": "named-lifeform"
+    },
+    {
+      "id": "lore-10181",
+      "name": "「무엇이 죽음으로 향하는가」",
+      "kind": "person",
+      "group": "penacony",
+      "source": "LoadingDesc:10181.DescTextmapID",
+      "hash": "3572781898313345968",
+      "url": "/starrail-quests/문서/lore-10181.html#section-1-row-1",
+      "quote": "갤러거가 「신비」의 힘을 빌려 만들어 낸 허구의 밈 생명체 「깊은 잠」. 꿈이 흐르는 암초 주민들이 좋은꿈으로 돌아갈 수 있게 돕는다\n「죽음」과 「살해」에 대한 사람들의 공포심이 구현된 것이라고 오해받곤 한다",
+      "subjectType": "named-lifeform"
+    },
+    {
+      "id": "lore-10170",
+      "name": "황금의 순간",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:10170.DescTextmapID",
+      "hash": "3655823076162036792",
+      "url": "/starrail-quests/문서/lore-10170.html#section-1-row-1",
+      "quote": "페나코니의 열두 꿈세계 중 하나로, 상응하는 시간은 「자정」이다.\n이곳의 시간은 영원히 0시에 머물러 있다. 다음 날은 오지 않으며, 광란의 밤도 영원히 끝나지 않는다"
+    },
+    {
+      "id": "lore-10171",
+      "name": "좋은꿈 극단",
+      "kind": "concept",
+      "group": "penacony",
+      "source": "LoadingDesc:10171.DescTextmapID",
+      "hash": "1142519232828022952",
+      "url": "/starrail-quests/문서/lore-10171.html#section-1-row-1",
+      "quote": "가족에게 길들여진 후 손님을 위한 물품과 시설에 사용되며, 꿈속 감정의 영향을 받아 자의식을 갖게 되었다.\n그중 부정적 감정의 영향을 받아 괴물의 모습이 되어 사방을 파괴하는 것들은 「나쁜꿈 극단」이라고 불린다",
+      "subjectType": "collective-existence"
+    },
+    {
+      "id": "lore-10172",
+      "name": "꿈방울",
+      "kind": "concept",
+      "group": "penacony",
+      "source": "LoadingDesc:10172.DescTextmapID",
+      "hash": "6578087870050398357",
+      "url": "/starrail-quests/문서/lore-10172.html#section-1-row-1",
+      "quote": "「신비」의 힘에 영향을 받은 기억 거품. 조각되지 않은 꿈방울엔 종종 강렬한 감정이 담겨 있다\n가족의 조율 덕에 사람들은 안전하게 이것을 개인의 꿈을 기록하는 데에 사용할 수 있게 되었고, 페나코니에서 가장 재미있는 특산물이 되었다"
+    },
+    {
+      "id": "lore-10173",
+      "name": "기억의 영역 밈",
+      "kind": "concept",
+      "group": "penacony",
+      "source": "LoadingDesc:10173.DescTextmapID",
+      "hash": "5248990216332377645",
+      "url": "/starrail-quests/문서/lore-10173.html#section-1-row-1",
+      "quote": "특정 인지가 있는 실체로, 기억의 영역 속 잠재의식 조각이 쌓여서 만들어졌다\n지능이 없으며 그저 자신이 가진 인지에 따라 움직이고, 더 많은 기억을 집어삼키기를 갈망한다"
+    },
+    {
+      "id": "lore-10174",
+      "name": "꿈세계 여권",
+      "kind": "concept",
+      "group": "penacony",
+      "source": "LoadingDesc:10174.DescTextmapID",
+      "hash": "14385073068622044600",
+      "url": "/starrail-quests/문서/lore-10174.html#section-1-row-1",
+      "quote": "페나코니 「레버리 호텔」에 체크인한 손님 모두에게 주어지는 기념품으로, 다양한 기능이 있다"
+    },
+    {
+      "id": "lore-20015",
+      "name": "아침 이슬 공관",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:20015.DescTextmapID",
+      "hash": "11728639035096503076",
+      "url": "/starrail-quests/문서/lore-20015.html#section-1-row-1",
+      "quote": "각 가문의 가주가 페나코니 발전에 대한 중대 사안을 논의하는 장소. 명목상 선데이의 소유지다.\n평범한 손님은 공관의 존재를 알 수 없으며, 그곳으로 가는 방법을 찾는 건 더더욱 불가능하다"
+    },
+    {
+      "id": "lore-20016",
+      "name": "아침 이슬의 순간",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:20016.DescTextmapID",
+      "hash": "7845174166410760526",
+      "url": "/starrail-quests/문서/lore-20016.html#section-1-row-1",
+      "quote": "가장 고요한 순간, 페나코니의 열두 꿈세계 중 하나이다.\n가족의 저택이자 집무 공간인 「아침 이슬 공관」이 이곳에 있다"
+    },
+    {
+      "id": "lore-20017",
+      "name": "클락 스튜디오 테마파크",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:20017.DescTextmapID",
+      "hash": "13934750998228605366",
+      "url": "/starrail-quests/문서/lore-20017.html#section-1-row-1",
+      "quote": "가족이 페나코니의 유명 만화 캐릭터 시리즈를 중심으로 만든 스튜디오 테마파크.\n명목상 「클락 스튜디오」에 속하며, 전설적인 거물 「시계공」의 소유이다"
+    },
+    {
+      "id": "lore-20018",
+      "name": "자멸자",
+      "kind": "concept",
+      "group": "memory",
+      "source": "LoadingDesc:20018.DescTextmapID",
+      "hash": "1232320911711080242",
+      "url": "/starrail-quests/문서/lore-20018.html#section-1-row-1",
+      "quote": "실수로 「공허」 IX의 그림자에 발을 들여 존재의 의미를 잃은 자.\n퇴락한 자멸자는 홀로 우주를 거닐며, 그들의 결말은 대부분 무의미한 소멸이다",
+      "subjectType": "collective-existence"
+    },
+    {
+      "id": "lore-20019",
+      "name": "초석",
+      "kind": "concept",
+      "group": "penacony",
+      "source": "LoadingDesc:20019.DescTextmapID",
+      "hash": "1931056891177758637",
+      "url": "/starrail-quests/문서/lore-20019.html#section-1-row-1",
+      "quote": "「보존」 사도의 권능이 봉인되어 있는 신성한 돌. 「10인의 스톤하트」가 하나씩 소지하고 있다"
+    },
+    {
+      "id": "lore-10182",
+      "name": "꿈이 흐르는 암초",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:10182.DescTextmapID",
+      "hash": "18437747060843380224",
+      "url": "/starrail-quests/문서/lore-10182.html#section-1-row-1",
+      "quote": "심해에 비친 페나코니의 그림자이자, 가족이 소위 말하는 「악몽」\n그러나 이 초기 기억의 영역의 일각이야말로 꿈세계의 본래 모습이다"
+    },
+    {
+      "id": "lore-10183",
+      "name": "솔글래드™ 축제 오디션",
+      "kind": "concept",
+      "group": "penacony",
+      "source": "LoadingDesc:10183.DescTextmapID",
+      "hash": "9423566617973725901",
+      "url": "/starrail-quests/문서/lore-10183.html#section-1-row-1",
+      "quote": "조화의 축제의 분위기를 뛰우기 위한 대회\n하룻밤 만에 유명해지길 꿈꾸는 사람들이 이곳에서 치열한 경쟁을 펼친다. 그들의 목표는 바로 「축제의 슈퍼스타」라는 타이틀과 조화의 축제 특등석이다",
+      "subjectType": "event-or-ritual"
+    },
+    {
+      "id": "lore-10184",
+      "name": "뜨거운 모래의 순간",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:10184.DescTextmapID",
+      "hash": "10949911826685157533",
+      "url": "/starrail-quests/문서/lore-10184.html#section-1-row-1",
+      "quote": "들바람이 스치는 순간, 페나코니의 열두 꿈세계 중 하나이다\n철로, 목장, 말 그리고 끝없는 들판은 한때 재난 속에서 파괴되었다\n재건 후 솔글래드사의 협찬으로 「축제 오디션」의 연회장이 지어졌다"
+    },
+    {
+      "id": "lore-10185",
+      "name": "페나코니 극장",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:10185.DescTextmapID",
+      "hash": "7432826491881529507",
+      "url": "/starrail-quests/문서/lore-10185.html#section-1-row-1",
+      "quote": "화려하고 사치스러운 극장\n가족이 과거의 감옥을 기반으로 설계한 거대한 구조물이며, 오늘날 「조화의 축제」 무대로 쓰이고 있다"
+    },
+    {
+      "id": "lore-10186",
+      "name": "빛나는 펠드스파호",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:10186.DescTextmapID",
+      "hash": "17477030243551199168",
+      "url": "/starrail-quests/문서/lore-10186.html#section-1-row-1",
+      "quote": "가족이 만든 호화 비행선, 기억 물질의 바다를 순회하던 중 어떠한 이유로 한동안 휴항했다"
+    },
+    {
+      "id": "lore-10312",
+      "name": "그라모스 철기",
+      "kind": "concept",
+      "group": "civilizations",
+      "source": "LoadingDesc:10312.DescTextmapID",
+      "hash": "15905994530650744686",
+      "url": "/starrail-quests/문서/lore-10312.html#section-1-row-1",
+      "quote": "전투를 위해 태어난 병기, 「번식」 운명의 길을 걷는 자\n태어난 그 순간부터 자신의 숙적과 함께 재가 될 운명이었다",
+      "subjectType": "collective-existence"
+    },
+    {
+      "id": "lore-10315",
+      "name": "좀먹은 참나무의 꿈",
+      "kind": "region",
+      "group": "penacony",
+      "source": "LoadingDesc:10315.DescTextmapID",
+      "hash": "17374918200571440603",
+      "url": "/starrail-quests/문서/lore-10315.html#section-1-row-1",
+      "quote": "원시 기억의 영역에 잠긴 좋은꿈은 이제 「번식」의 벌레 소리로 가득 차 있다\n이곳에서 거짓말은 또 다른 거짓말이 되며, 「신주」는 공포 속에서 귀환한다"
+    },
+    {
+      "id": "lore-10200",
+      "name": "성천 연무 의식",
+      "kind": "concept",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10200.DescTextmapID",
+      "hash": "4477163460678127521",
+      "url": "/starrail-quests/문서/lore-10200.html#section-1-row-1",
+      "quote": "선주 연맹의 전통 축제. 위기로부터 선주를 구한 천궁과 운기군의 공로를 기념하기 위해 설립된 비무 대회\n무술을 통해 친구를 사귀고, 다양한 세계의 무사를 경기에 초대한다",
+      "subjectType": "event-or-ritual"
+    },
+    {
+      "id": "lore-10201",
+      "name": "비소",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10201.DescTextmapID",
+      "hash": "1204411664961601681",
+      "url": "/starrail-quests/문서/lore-10201.html#section-1-row-1",
+      "quote": "선주 「요청」을 통솔하는 천궁 장군, 「천격 장군」이라 불린다\n번개처럼 빠른 결단력을 갖고 있고 행동이 자유분방하며, 무인의 덕목으로 혁혁한 공을 세워왔다"
+    },
+    {
+      "id": "lore-10202",
+      "name": "초구",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10202.DescTextmapID",
+      "hash": "11297131374341790415",
+      "url": "/starrail-quests/문서/lore-10202.html#section-1-row-1",
+      "quote": "비소 휘하의 막료. 그녀가 먹는 음식과 건강을 책임지고 있다\n그에게 있어 약을 짓는 솥은 불 위에 올려진 훠궈와 같으며, 솥 안의 식자재와 약재도 별반 다를 게 없다…"
+    },
+    {
+      "id": "lore-10203",
+      "name": "운리",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10203.DescTextmapID",
+      "hash": "13794233953643349862",
+      "url": "/starrail-quests/문서/lore-10203.html#section-1-row-1",
+      "quote": "나부 선주를 방문한 주명의 검객, 회염 장군의 총애를 받는 손녀이자 손제자이다\n덕목을 갖추지 않은 무인에게 인정사정없으며, 자신에게 패배한 자의 검을 몰수한다"
+    },
+    {
+      "id": "lore-10204",
+      "name": "회염",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10204.DescTextmapID",
+      "hash": "15158014899525850098",
+      "url": "/starrail-quests/문서/lore-10204.html#section-1-row-1",
+      "quote": "선주 「주명」을 통솔하는 천궁 장군, 「촉연 장군」이라 불린다\n노인의 얼굴을 하고 있으며, 오랫동안 젊음을 유지하는 선주 사람 중에선 상당히 특별한 존재다"
+    },
+    {
+      "id": "lore-10205",
+      "name": "맥택",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10205.DescTextmapID",
+      "hash": "1487247679818544028",
+      "url": "/starrail-quests/문서/lore-10205.html#section-1-row-1",
+      "quote": "비소 휘하의 막료, 정보와 호위 관련 업무를 담당한다\n어둠 속에 숨어 있는 날카로운 칼날로서, 존재감이 희미한 그는 오직 필요할 때만 모습을 드러낸다"
+    },
+    {
+      "id": "lore-10206",
+      "name": "호뢰",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10206.DescTextmapID",
+      "hash": "11535135253331095446",
+      "url": "/starrail-quests/문서/lore-10206.html#section-1-row-1",
+      "quote": "선주인들의 강적이자 보리인의 소부\n700년 전 전패해 나부 선주의 유폐옥에 수감되어 영원한 고통을 판결받았다"
+    },
+    {
+      "id": "lore-10210",
+      "name": "효광",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10210.DescTextmapID",
+      "hash": "11792674874426101083",
+      "url": "/starrail-quests/문서/lore-10210.html#section-1-row-1",
+      "quote": "선주 「옥궐」을 통솔하는 천궁 장군, 「융도 장군」이라고 불린다\n연맹에서 이 문직 장군을 실제로 본 사람은 거의 없으며, 언제나 배후에 숨어 원수(元帥)를 위해 중요한 책략을 점친다"
+    },
+    {
+      "id": "lore-10414",
+      "name": "효광",
+      "kind": "person",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10414.DescTextmapID",
+      "hash": "11898880849932091058",
+      "url": "/starrail-quests/문서/lore-10414.html#section-1-row-1",
+      "quote": "선주 「옥궐」을 통솔하는 천궁 장군으로 「융도 장군」이라고도 불린다\n공무로 「이상 낙원」을 방문했다가 「관자재의 눈」으로 현지 생명체에 닥칠 대재앙을 예견한다"
+    },
+    {
+      "id": "lore-10211",
+      "name": "십방광영법계",
+      "kind": "concept",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10211.DescTextmapID",
+      "hash": "16227678244892908127",
+      "url": "/starrail-quests/문서/lore-10211.html#section-1-row-1",
+      "quote": "옥궐 선주에서 만든 점괘 진법\n그 원리는 「대연 궁관진」과 비슷하다고 전해지며, 연산 경전과 영감 모두 「전지 천군」 누스로부터 왔다"
+    },
+    {
+      "id": "lore-10212",
+      "name": "경기 함선",
+      "kind": "region",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10212.DescTextmapID",
+      "hash": "17420004189632189125",
+      "url": "/starrail-quests/문서/lore-10212.html#section-1-row-1",
+      "quote": "선주 「나부」 성천 연무 의식의 대회장. 퇴역한 대형 군함을 개량해 만들었다\n예포가 하늘을 울리면, 각 세계에서 초청을 받고 온 전사들이 이곳에 모여 승부를 겨룬다"
+    },
+    {
+      "id": "lore-10213",
+      "name": "유폐옥",
+      "kind": "region",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10213.DescTextmapID",
+      "hash": "13084729061463370435",
+      "url": "/starrail-quests/문서/lore-10213.html#section-1-row-1",
+      "quote": "선주 연맹에서 죄수들을 구금하고 진압하는 감옥 시스템\n선주 「나부」에 있는 유폐옥은 선주인과 비디아다라족이 함께 지었으며 동천 깊은 곳, 심연 아래에 깊이 묻혀있다"
+    },
+    {
+      "id": "lore-10214",
+      "name": "보리인",
+      "kind": "concept",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10214.DescTextmapID",
+      "hash": "616230874071072928",
+      "url": "/starrail-quests/문서/lore-10214.html#section-1-row-1",
+      "quote": "성계의 광폭한 사냥꾼, 선주의 숙적. 풍요의 백성 중 가장 강성한 일족이다\n보리인은 두 발로 서 있는 거대한 늑대의 형상을 하고 있으며, 성격이 난폭하고 강한 것을 긍지로 여긴다. 그들은 수많은 별을 습격해 그들의 자원을 고갈시키고 여러 문명을 파괴했다",
+      "subjectType": "species"
+    },
+    {
+      "id": "lore-10215",
+      "name": "방호 전쟁",
+      "kind": "concept",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10215.DescTextmapID",
+      "hash": "11316528013039660096",
+      "url": "/starrail-quests/문서/lore-10215.html#section-1-row-1",
+      "quote": "3차 풍요의 백성 전쟁의 전환점. 요사스러운 별빛 아래, 보리인이 이끄는 풍요의 흉물 연합군이 선주의 「방호」를 거의 함락할 뻔했다\n수많은 선주의 장병들이 목숨 바쳐 전방으로 돌격한 덕에 「감운경」에서 메시지를 보내 천궁을 소환하고 전세를 뒤집을 수 있었다",
+      "subjectType": "event-or-ritual"
+    },
+    {
+      "id": "lore-10216",
+      "name": "「붉은 달」",
+      "kind": "concept",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10216.DescTextmapID",
+      "hash": "5793949275555867117",
+      "url": "/starrail-quests/문서/lore-10216.html#section-1-row-1",
+      "quote": "보리인 수장을 결정하는 의식에서 격투자들은 대대로 전해 내려오는 역병의 흔적——핏빛의 보름달 같은 「심장」을 집어삼킨다\n「사냥감을 삼켜 강해지는 것」은 보리인 불사 비술의 극치이며, 오랫동안 쇠하지 않는 근본적인 원인이다"
+    },
+    {
+      "id": "lore-10217",
+      "name": "「비황」",
+      "kind": "person",
+      "group": "xianzhou",
+      "source": "LoadingDesc:10217.DescTextmapID",
+      "hash": "10135969408400072204",
+      "url": "/starrail-quests/문서/lore-10217.html#section-1-row-1",
+      "quote": "천궁의 사명이 하사한 위령, 「천격 장군」 비소 체내에 숨어있는 신속의 짐승\n속세의 눈으로는 볼 수 없으며, 오직 죽기 직전 만물이 멈춘 순간에만 그것의 강림을 목격할 수 있다\n비소에게 이는 그녀를 인도하는 화살촉이자 그녀의 생명을 집어삼키는 죽음이며, 그녀가 평생 쫓아온 사냥감이다",
+      "subjectType": "named-lifeform"
+    },
+    {
+      "id": "lore-10220",
+      "name": "라파",
+      "kind": "person",
+      "group": "civilizations",
+      "source": "LoadingDesc:10220.DescTextmapID",
+      "hash": "8676090789405944610",
+      "url": "/starrail-quests/문서/lore-10220.html#section-1-row-1",
+      "quote": "축시 삼각의 섬광탄처럼 페나코니에 나타나 자신을 닌자라고 칭하며, 세간의 모든 것을 「인법」으로 귀결하는 기묘한 소녀\n말법 시대의 꿈의 땅에서 의를 행하며, 「원숭이 통치자•사닌」이라고 하는 악당을 사냥하는 일에 전념한다"
+    },
+    {
+      "id": "lore-10221",
+      "name": "라파",
+      "kind": "person",
+      "group": "civilizations",
+      "source": "LoadingDesc:10221.DescTextmapID",
+      "hash": "9232190055858186113",
+      "url": "/starrail-quests/문서/lore-10221.html#section-1-row-1",
+      "quote": "자신을 「요란 닌자 레인저」라고 칭하는 갤럭시 레인저. 회귀 실험으로 인해 밈 바이러스에 감염되어, 모든 것을 「닌자」 세계로 인식한다\n지난날의 고통을 청산하고 요란의 인도를 관철하기 위해 「원숭이 통치자•사닌」 또는 「원시 박사」라고 불리는 악당을 사냥하는 일에 전념한다"
+    },
+    {
+      "id": "lore-10222",
+      "name": "원시 박사",
+      "kind": "person",
+      "group": "research",
+      "source": "LoadingDesc:10222.DescTextmapID",
+      "hash": "8398531447757381198",
+      "url": "/starrail-quests/문서/lore-10222.html#section-1-row-1",
+      "quote": "「지니어스 클럽」 #64 회원. 수많은 반인륜적인 죄를 지은 과학자로, 신원 미상이다\n「회귀 실험」의 악행으로 전 우주의 재앙을 야기했고, 이로 인해 갤럭시 레인저와 악연을 맺었다. 현재까지 행방이 묘연하다"
+    },
+    {
+      "id": "lore-10223",
+      "name": "원구의 숲",
+      "kind": "faction",
+      "group": "research",
+      "source": "LoadingDesc:10223.DescTextmapID",
+      "hash": "17130572177532307756",
+      "url": "/starrail-quests/문서/lore-10223.html#section-1-row-1",
+      "quote": "「원시 박사」를 숭배하는 학자들로 이루어진 열광적인 연구 단체. 이 편집적인 인간과 유인원들은 그들의 우상을 따라 「회귀 실험」을 온 은하에 퍼뜨리려 한다"
+    },
+    {
+      "id": "lore-10224",
+      "name": "페나코니 종이접기 아카데미",
+      "kind": "faction",
+      "group": "penacony",
+      "source": "LoadingDesc:10224.DescTextmapID",
+      "hash": "5516542448474043400",
+      "url": "/starrail-quests/문서/lore-10224.html#section-1-row-1",
+      "quote": "페나코니의 명문 고등교육기관. 「태양의 순간」에 위치해 있다. 뛰어난 인재의 요람이며, 꿈세계 안팎으로 지식의 빛과 열을 전하고 있다",
+      "subjectType": "educational-institution"
+    },
+    {
+      "id": "lore-10227",
+      "name": "「닥쳐」",
+      "kind": "person",
+      "group": "train",
+      "source": "LoadingDesc:10227.DescTextmapID",
+      "hash": "13488255165596546450",
+      "url": "/starrail-quests/문서/lore-10227.html#section-1-row-1",
+      "quote": "은하열차의 바텐더 로봇. 자신이 유머러스하다고 생각한다\n수 앰버기원 전에 탄생하여 점차 잊혔다\n열차가 다시 출발한 후 허공만장에 의해 복원되었다"
+    },
+    {
+      "id": "lore-10311",
+      "name": "「달리아」 콘스탄스",
+      "kind": "person",
+      "group": "civilizations",
+      "source": "LoadingDesc:10311.DescTextmapID",
+      "hash": "322605230376362758",
+      "url": "/starrail-quests/문서/lore-10311.html#section-1-row-1",
+      "quote": "천성이 탐욕스러운 「소각공」, 「파멸」 운명의 길과 기억의 정원을 차례로 배반했다\n우주를 홀로 떠돌며, 그녀는 살아있다는 모든 가능성을 탐색하려 한다"
+    },
+    {
+      "id": "lore-10228",
+      "name": "아글라이아",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10228.DescTextmapID",
+      "hash": "691818199764306807",
+      "url": "/starrail-quests/문서/lore-10228.html#section-1-row-1",
+      "quote": "오크마의 황금의 후예, 「낭만」의 반신이자 불을 쫓는 여정의 리더\n그녀는 방직공으로서 직접 실을 엮어 세간의 영웅들을 모아 다시 기나긴 여정에 올랐다"
+    },
+    {
+      "id": "lore-10297",
+      "name": "아글라이아",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10297.DescTextmapID",
+      "hash": "18427226110808313692",
+      "url": "/starrail-quests/문서/lore-10297.html#section-1-row-1",
+      "quote": "오크마의 지도자, 「낭만」의 반신, 실험 인자 「KaLos618」\n그녀는 방직공으로서 직접 실을 엮어 세간의 영웅들을 모아 앰포리어스의 미래를 짠다"
+    },
+    {
+      "id": "lore-10229",
+      "name": "트리비, 트리앤, 트리논",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10229.DescTextmapID",
+      "hash": "17406351628060309906",
+      "url": "/starrail-quests/문서/lore-10229.html#section-1-row-1",
+      "quote": "야누소폴리스의 황금의 후예, 「통로」의 반신, 오크마의 꼬마 전달자이자 사제\n세 사람은 예언으로 황금의 후예를 앞으로 이끌며, 각자 다른 사명을 짊어진다",
+      "subjectType": "multiple-named-persons"
+    },
+    {
+      "id": "lore-10257",
+      "name": "트리비, 트리앤, 트리논",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10257.DescTextmapID",
+      "hash": "17781763950153870960",
+      "url": "/starrail-quests/문서/lore-10257.html#section-1-row-1",
+      "quote": "야누소폴리스의 황금의 후예이자 「통로」의 반신. 한때 아름다운 성녀였으나, 불씨의 대가로 인해 어린아이의 모습으로 퇴행했다\n트리앤은 불을 훔치는 자의 습격으로 희생되었고, 영혼이 완전히 사라졌으며, 비슷한 생김새의 인형으로 변해버렸다",
+      "subjectType": "multiple-named-persons"
+    },
+    {
+      "id": "lore-10298",
+      "name": "트리비",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10298.DescTextmapID",
+      "hash": "18209782429374312627",
+      "url": "/starrail-quests/문서/lore-10298.html#section-1-row-1",
+      "quote": "야누소폴리스의 성녀, 「통로」의 반신, 실험 인자 「HapLotes405」\n앰포리어스의 첫 번째 반신, 불씨의 대가로 아이의 모습으로 퇴행하였으며, 신탁으로 황금의 후예를 이끈다"
+    },
+    {
+      "id": "lore-10230",
+      "name": "마이데이",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10230.DescTextmapID",
+      "hash": "7281842732177002184",
+      "url": "/starrail-quests/문서/lore-10230.html#section-1-row-1",
+      "quote": "크렘노스성의 왕세자, 고르고의 자식이자 사자처럼 날카로운 전사\n겉으로는 오만하고 자유분방해 보이지만, 사실은 의리를 중시하며 백성들을 잘 보살핀다"
+    },
+    {
+      "id": "lore-10258",
+      "name": "마이데이",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10258.DescTextmapID",
+      "hash": "8955186294089989627",
+      "url": "/starrail-quests/문서/lore-10258.html#section-1-row-1",
+      "quote": "크렘노스성의 황금의 후예이자 「분쟁」의 반신, 고르고의 자식이자 크렘노스의 마지막 신왕이다\n백성들을 이끌고 불을 쫓는 일에 몸을 바치며, 홀로 고향으로 돌아가 세상을 휩쓰는 검은 물결을 막아낸다"
+    },
+    {
+      "id": "lore-10299",
+      "name": "마이데이",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10299.DescTextmapID",
+      "hash": "6657166570748436544",
+      "url": "/starrail-quests/문서/lore-10299.html#section-1-row-1",
+      "quote": "크렘노스성의 군왕, 「분쟁」의 반신, 실험 인자 「PoleMos600」\n백성들을 이끌고 불을 쫓는 일에 몸을 바치며, 홀로 고향으로 돌아가 세상을 휩쓰는 검은 물결을 막아낸다"
+    },
+    {
+      "id": "lore-10231",
+      "name": "카스토리스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10231.DescTextmapID",
+      "hash": "4617666578651340947",
+      "url": "/starrail-quests/문서/lore-10231.html#section-1-row-1",
+      "quote": "아이도니아의 독전(督戰) 성녀이자 오크마의 「입관사」\n「죽음의 손길」이라는 저주를 지니고 있으며, 손가락에 닿은 것들은 전부 죽어서 무(無)로 돌아간다"
+    },
+    {
+      "id": "lore-10262",
+      "name": "카스토리스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10262.DescTextmapID",
+      "hash": "8810144670125113133",
+      "url": "/starrail-quests/문서/lore-10262.html#section-1-row-1",
+      "quote": "아이도니아의 독전 성녀, 「죽음」의 반신. 타나토스의 왼손이자 「죽음을 내리는」 권능을 다스린다\n자신의 과거를 밝혀낸 후 시련을 이겨냈고, 죽음의 양손을 하나로 합쳐 세상의 삶과 죽음의 질서를 유지한다"
+    },
+    {
+      "id": "lore-10300",
+      "name": "카스토리스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10300.DescTextmapID",
+      "hash": "2012471173929074513",
+      "url": "/starrail-quests/문서/lore-10300.html#section-1-row-1",
+      "quote": "아이도니아의 독전 성녀, 「죽음」의 반신, 실험 인자 「EpieiKeia216」\n자신의 과거를 밝혀낸 후 시련을 이겨냈고, 죽음의 양손을 하나로 합쳐 세상의 삶과 죽음의 흐름을 유지한다"
+    },
+    {
+      "id": "lore-10232",
+      "name": "파이논",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10232.DescTextmapID",
+      "hash": "17710445732647001846",
+      "url": "/starrail-quests/문서/lore-10232.html#section-1-row-1",
+      "quote": "엘리사이 에데스의 황금의 후예이자 오크마의 전사\n온화하고 밝은 청년. 세심하며 모든 일을 완벽하게 처리하는 것을 추구한다"
+    },
+    {
+      "id": "lore-10278",
+      "name": "파이논",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10278.DescTextmapID",
+      "hash": "3609412077726767709",
+      "url": "/starrail-quests/문서/lore-10278.html#section-1-row-1",
+      "quote": "엘리사이 에데스의 황금의 후예, 오크마의 전사이자 예언 속 「부세」의 반신\n실험명은 「NeiKos496」이다. 고된 여정은 세상의 끝에 다다르고, 잔혹한 진실로 인해 그는 「파멸」의 눈길을 받았다"
+    },
+    {
+      "id": "lore-10306",
+      "name": "파이논",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10306.DescTextmapID",
+      "hash": "9363106843671144663",
+      "url": "/starrail-quests/문서/lore-10306.html#section-1-row-1",
+      "quote": "엘리사이 에데스의 전사, 「부세」의 반신, 실험 인자 「NeiKos496」\n완벽한 그릇으로서, 자신으로 아이언툼을 가두는 것을 선택해 윤회의 끝에서 새벽을 떠받친다"
+    },
+    {
+      "id": "lore-10233",
+      "name": "미미",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10233.DescTextmapID",
+      "hash": "5335153939415525201",
+      "url": "/starrail-quests/문서/lore-10233.html#section-1-row-1",
+      "quote": "분홍색 털을 가진 미스터리한 생물, 앰포리어스와 깊은 관련이 있는 듯하다",
+      "subjectType": "named-lifeform"
+    },
+    {
+      "id": "lore-10281",
+      "name": "미미",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10281.DescTextmapID",
+      "hash": "11452169737125644113",
+      "url": "/starrail-quests/문서/lore-10281.html#section-1-row-1",
+      "quote": "분홍색 털을 가진 미스터리한 생물, 앰포리어스와 깊은 관련이 있는 듯하다\n{NICKNAME}와(과) 세상의 끝까지 동행하며 더 많은 「기억」을 되찾았다",
+      "subjectType": "named-lifeform"
+    },
+    {
+      "id": "lore-10307",
+      "name": "미미",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10307.DescTextmapID",
+      "hash": "7099224360303367506",
+      "url": "/starrail-quests/문서/lore-10307.html#section-1-row-1",
+      "quote": "분홍색 솜털이 난 신비한 생명체. 실은 셉터의 원시 연산 목표이자 앰포리어스의 「마음」인 데미우르고스이다\n인자 「PhiLia093」의 영향으로 자의식이 싹텄고, {NICKNAME}의 등장으로 깨어났다",
+      "subjectType": "named-lifeform"
+    },
+    {
+      "id": "lore-10259",
+      "name": "히아킨",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10259.DescTextmapID",
+      "hash": "7521554027105431232",
+      "url": "/starrail-quests/문서/lore-10259.html#section-1-row-1",
+      "quote": "놀빛 정원의 황금의 후예이자 하늘의 후예\n낙천적이고 타인의 말을 경청하며, 위태로운 말세에 타인을 위해 세상과 단절된 치유의 정원을 만들려고 온 힘을 다한다"
+    },
+    {
+      "id": "lore-10302",
+      "name": "히아킨",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10302.DescTextmapID",
+      "hash": "5947413776015363713",
+      "url": "/starrail-quests/문서/lore-10302.html#section-1-row-1",
+      "quote": "놀빛 정원의 의사, 「천공」의 반신, 실험 인자 「EleOs252」\n낙천적이고 타인의 말을 경청하며, 위태로운 말세에 사람들에게 치유의 빛을 내리기 위해 최선을 다한다"
+    },
+    {
+      "id": "lore-10260",
+      "name": "사이퍼",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10260.DescTextmapID",
+      "hash": "15511544335971050077",
+      "url": "/starrail-quests/문서/lore-10260.html#section-1-row-1",
+      "quote": "도로스의 황금의 후예이자 「계략」의 반신. 불을 쫓는 사명을 일찍이 버리고 거룩한 도시를 떠났다\n신속의 힘을 지녔지만, 이를 도둑질에 사용한다. 교활하고 꾀가 많으며, 영웅의 여정보다 자신의 평범한 일상을 더 좋아한다"
+    },
+    {
+      "id": "lore-10264",
+      "name": "사이퍼",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10264.DescTextmapID",
+      "hash": "17330872028196021777",
+      "url": "/starrail-quests/문서/lore-10264.html#section-1-row-1",
+      "quote": "도로스의 황금의 후예이자 「계략」의 반신. 불을 쫓는 사명을 버렸으나, 몰래 거룩한 도시로 돌아왔다\n신속의 힘을 지녔지만, 이를 도둑질에 사용한다. 교활하고 꾀가 많으며, 영웅의 여정보다 자신의 평범한 일상을 더 좋아한다"
+    },
+    {
+      "id": "lore-10303",
+      "name": "사이퍼",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10303.DescTextmapID",
+      "hash": "5686880236068595093",
+      "url": "/starrail-quests/문서/lore-10303.html#section-1-row-1",
+      "quote": "도로스의 도적, 「계략」의 반신, 실험 인자 「OreXis945」\n신속의 힘을 지녔고, 불을 쫓을 생각이 없는 듯 보이지만, 거짓말로 오크마의 빛을 천년 간 이어왔다"
+    },
+    {
+      "id": "lore-10261",
+      "name": "아낙사",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10261.DescTextmapID",
+      "hash": "11380391115467678215",
+      "url": "/starrail-quests/문서/lore-10261.html#section-1-row-1",
+      "quote": "깨달음의 나무 정원의 황금의 후예, 일곱 현인 중 하나이자 누스페르마타 학파의 창립자. 인간과 신은 다르지 않다는 입장을 고수하여 「신을 모독하는 자」라 불린다\n나무 정원 재난에서 기적적으로 살아남았으며, 이성의 티탄의 불씨가 현재 그의 몸에 깃들어 있다"
+    },
+    {
+      "id": "lore-10263",
+      "name": "아낙사",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10263.DescTextmapID",
+      "hash": "7902469002374060716",
+      "url": "/starrail-quests/문서/lore-10263.html#section-1-row-1",
+      "quote": "깨달음의 나무 정원의 황금의 후예, 「이성」의 반신. 일곱 현인 중 하나이자 누스페르마타 학파의 창립자\n나무 정원 재난 중에 죽었지만, 죽은 후에도 티탄과 동행했으며, 시련을 이겨내고 앰포리어스 세계의 본질을 밝혀냈다"
+    },
+    {
+      "id": "lore-10301",
+      "name": "아낙사",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10301.DescTextmapID",
+      "hash": "1050436428148429394",
+      "url": "/starrail-quests/문서/lore-10301.html#section-1-row-1",
+      "quote": "깨달음의 나무 정원의 학자, 「이성」의 반신, 실험 인자 「SkeMma720」\n그는 지식의 씨앗 이론을 창시하고, 티탄과 천재들의 주장을 반박했으며, 앰포리어스 세계의 본질을 밝혔다"
+    },
+    {
+      "id": "lore-10276",
+      "name": "리고스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10276.DescTextmapID",
+      "hash": "6621576759887953426",
+      "url": "/starrail-quests/문서/lore-10276.html#section-1-row-1",
+      "quote": "「신례 관중」을 자처하는 앰포리어스 연산의 운용자\n「지식」 운명의 길을 걸으면서도 「파멸」을 창조하려고 한다"
+    },
+    {
+      "id": "lore-10288",
+      "name": "리고스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10288.DescTextmapID",
+      "hash": "18310477783741072998",
+      "url": "/starrail-quests/문서/lore-10288.html#section-1-row-1",
+      "quote": "「신례 관중」 을 자처하는 앰포리어스 연산의 운용자\n자칭 지니어스 클럽 #1 잔다르인 그는 앰포리어스를 통해 누스를 파멸할 힘을 만들어 내려 한다\n「지식」 운명의 길을 걸으면서도 「파멸」을 창조하려고 한다"
+    },
+    {
+      "id": "lore-10277",
+      "name": "아이언툼",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10277.DescTextmapID",
+      "hash": "12995001119353142532",
+      "url": "/starrail-quests/문서/lore-10277.html#section-1-row-1",
+      "quote": "「파멸」의 사도, 절멸 대군 중 하나. 그들은 운명의 길의 뿌리, 더 나아가 은하를 불태우기 위해 태어났다\n아이언툼은 「지식」의 파멸자이다"
+    },
+    {
+      "id": "lore-10308",
+      "name": "아이언툼",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10308.DescTextmapID",
+      "hash": "4785809463143419865",
+      "url": "/starrail-quests/문서/lore-10308.html#section-1-row-1",
+      "quote": "「파멸」의 사도이자 절멸 대군 중 하나. 셉터 δ-me13에서 승격되어 형성되었다\n순수한 검은 물결 운반체이자 자아가 없는 머리 없는 거인으로, 「지식」 운명의 길을 파괴하는 것이 유일한 원동력이다"
+    },
+    {
+      "id": "lore-10280",
+      "name": "키레네",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10280.DescTextmapID",
+      "hash": "17101197337548179165",
+      "url": "/starrail-quests/문서/lore-10280.html#section-1-row-1",
+      "quote": "엘리사이 에데스의 신비로운 소녀. 축제 정원의 사제, 예언 속 「세월」의 반신\n실험명은 「PhiLia093」이며, 현재 행방불명이다"
+    },
+    {
+      "id": "lore-10310",
+      "name": "키레네",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10310.DescTextmapID",
+      "hash": "17581069029003333169",
+      "url": "/starrail-quests/문서/lore-10310.html#section-1-row-1",
+      "quote": "엘리사이 에데스의 딸, 앰포리어스의 무루의 아이, 셉터 δ-me13의 「마음」, 데미우르고스\n서사시의 마지막에 소녀의 기억은 시간을 거슬러 올라가 세월의 시작점에서 「PhiLia093」이 되어 인과를 닫는다"
+    },
+    {
+      "id": "lore-10285",
+      "name": "히실렌스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10285.DescTextmapID",
+      "hash": "9562283920342055147",
+      "url": "/starrail-quests/문서/lore-10285.html#section-1-row-1",
+      "quote": "심연 아래 고대 국가의 황금의 후예. 바다의 악사이자 「글래디오럼」이라는 이름의 기사로, 카이사르의 가장 강력한 칼날이다\n세이렌 일족의 후손이었으며, 인간 세상을 떠돌아다니다가 케리드라의 휘하에 들어가 불을 쫓는 여정의 일원이 되었다"
+    },
+    {
+      "id": "lore-10304",
+      "name": "히실렌스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10304.DescTextmapID",
+      "hash": "12079103323683834851",
+      "url": "/starrail-quests/문서/lore-10304.html#section-1-row-1",
+      "quote": "심연의 고대 국가의 세이렌, 「바다」의 반신, 실험 인자 「ApoRia432」\n「글래디오럼」이라는 이름의 기사로, 홀로 천년의 공허에 맞서 앰포리어스를 위해 희망을 쟁취한다"
+    },
+    {
+      "id": "lore-10286",
+      "name": "케리드라",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10286.DescTextmapID",
+      "hash": "1776923464496297169",
+      "url": "/starrail-quests/문서/lore-10286.html#section-1-row-1",
+      "quote": "휘페르보레아의 황금의 후예. 북부 제국의 군주이자, 전쟁을 멈춘 화염의 왕관이며, 앰포리어스의 유일한 카이사르다\n여러 도시 국가를 평정한 후, 천하의 영웅을 모아 불을 쫓는 여정을 시작했으며, 낡은 율법을 깨트리고 새로운 율법을 쓰겠노라 맹세했다"
+    },
+    {
+      "id": "lore-10305",
+      "name": "케리드라",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10305.DescTextmapID",
+      "hash": "4182186328990455292",
+      "url": "/starrail-quests/문서/lore-10305.html#section-1-row-1",
+      "quote": "휘페르보레아의 군주, 「율법」의 반신, 실험 인자 「HubRis504」\n앰포리어스의 유일한 카이사르로, 신과 겨루고 새로운 율법을 세워 앰포리어스가 뭇별 사이에서 우뚝 서기를 바란다"
+    },
+    {
+      "id": "lore-10287",
+      "name": "에버나이트",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10287.DescTextmapID",
+      "hash": "1240548312584566711",
+      "url": "/starrail-quests/문서/lore-10287.html#section-1-row-1",
+      "quote": "기억의 틈새에 나타난 신비로운 방문객. Mar. 7th와 모습이 같으며, 정체를 알 수 없다\n「기억」 운명의 길과 깊은 연관이 있으며, 다른 기억하는 자들과는 다른 목적을 가지고 있는 듯하다"
+    },
+    {
+      "id": "lore-10291",
+      "name": "에버나이트",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10291.DescTextmapID",
+      "hash": "18213143355761620897",
+      "url": "/starrail-quests/문서/lore-10291.html#section-1-row-1",
+      "quote": "기억의 틈새에 나타난 신비한 방문객. Mar. 7th와 똑같이 생겼고, 서로 동전의 양면 같다\nMar. 7th는 자신의 기억을 내어주고 깊은 잠에 빠져들었고, 에버나이트는 「망각」의 물결을 풀어 자신을 감추었다"
+    },
+    {
+      "id": "lore-10293",
+      "name": "단항•등황",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10293.DescTextmapID",
+      "hash": "5269780410147167482",
+      "url": "/starrail-quests/문서/lore-10293.html#section-1-row-1",
+      "quote": "테라복스로부터 「대지」의 불씨를 이어받은 새로운 신이자, 은하열차의 가드\n상처로 가득한 용의 허물을 벗고, 「불멸」로써 과거와 미래를 포용하며 새로운 여정을 시작한다"
+    },
+    {
+      "id": "lore-10234",
+      "name": "조석의 눈, 아퀼라",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10234.DescTextmapID",
+      "hash": "8702379358909759528",
+      "url": "/starrail-quests/문서/lore-10234.html#section-1-row-1",
+      "quote": "천공의 티탄\n아퀼라가 대지를 주시하는 눈을 뜰 때 세상은 빛을 맞이한다. 아퀼라의 눈꺼풀이 내려앉을 때 세상은 어둠에 빠진다",
+      "subjectType": "titan"
+    },
+    {
+      "id": "lore-10235",
+      "name": "반석의 근간, 지오리오스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10235.DescTextmapID",
+      "hash": "11093573937917881250",
+      "url": "/starrail-quests/문서/lore-10235.html#section-1-row-1",
+      "quote": "대지의 티탄\n모든 산맥은 한때 지오리오스 성체의 화신이였다. 그는 체격이 가장 크며, 가장 온화하고 선량한 티탄이자 인간 세상의 수호신이다",
+      "subjectType": "titan"
+    },
+    {
+      "id": "lore-10236",
+      "name": "충만의 잔, 파구사",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10236.DescTextmapID",
+      "hash": "2866304357708027095",
+      "url": "/starrail-quests/문서/lore-10236.html#section-1-row-1",
+      "quote": "바다의 티탄\n파구사는 인간 세상에서 표류하는 걸 좋아한다. 바다의 파도, 강의 격류, 연회의 술잔 속에 나타나 노래와 춤 그리고 웃음을 가져온다",
+      "subjectType": "titan"
+    },
+    {
+      "id": "lore-10237",
+      "name": "황금의 고치, 네스티아",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10237.DescTextmapID",
+      "hash": "18108752508127441155",
+      "url": "/starrail-quests/문서/lore-10237.html#section-1-row-1",
+      "quote": "낭만의 티탄\n권속들과 함께 세상의 아름다움을 쫓아 금실을 엮어 세상의 낭만으로 직조하고, 앰포리어스의 모든 생명체에게 사랑을 전해준다",
+      "subjectType": "titan"
+    },
+    {
+      "id": "lore-10238",
+      "name": "세상의 왕좌, 케팔",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10238.DescTextmapID",
+      "hash": "5806226951276766146",
+      "url": "/starrail-quests/문서/lore-10238.html#section-1-row-1",
+      "quote": "부세의 티탄\n케팔은 신들로부터 생명을 짊어지라는 책임을 부여받았다. 그는 모든 세상을 통치하는 왕좌를 포기하고, 오직 인간을 위해 세상에 한 줄기 빛을 남겼다",
+      "subjectType": "titan"
+    },
+    {
+      "id": "lore-10239",
+      "name": "분열의 가지, 세르세스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10239.DescTextmapID",
+      "hash": "6056532823145090893",
+      "url": "/starrail-quests/문서/lore-10239.html#section-1-row-1",
+      "quote": "이성의 티탄\n세르세스는 성스러운 거목의 형상으로 세상에 내려왔다. 인간이 자신의 곁에서 걷고, 깨어나고, 깊이 생각하고, 지식을 얻는 것을 허락했다",
+      "subjectType": "titan"
+    },
+    {
+      "id": "lore-10240",
+      "name": "변화의 동전, 자그레우스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10240.DescTextmapID",
+      "hash": "8810780905417096592",
+      "url": "/starrail-quests/문서/lore-10240.html#section-1-row-1",
+      "quote": "계략의 티탄\n자그레우스는 신의 직책을 이행하려는 마음이 없다. 그는 신들의 길에서 갈등을 일으키고, 신들을 농락하며 갖가지 혼란과 무질서를 창조하는 것을 즐긴다",
+      "subjectType": "titan"
+    },
+    {
+      "id": "lore-10241",
+      "name": "천벌의 창, 니카도르",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10241.DescTextmapID",
+      "hash": "10873748498881944668",
+      "url": "/starrail-quests/문서/lore-10241.html#section-1-row-1",
+      "quote": "분쟁의 티탄\n그는 신들에게 선전포고하고 세상을 끝없는 분쟁에 빠트렸다. 시인의 노래에서 그의 천벌의 창은 일격에 천지를 쓸어버릴 수 있다고 한다",
+      "subjectType": "titan"
+    },
+    {
+      "id": "lore-10242",
+      "name": "어둠의 손, 타나토스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10242.DescTextmapID",
+      "hash": "14283011765833921441",
+      "url": "/starrail-quests/문서/lore-10242.html#section-1-row-1",
+      "quote": "죽음의 티탄\n수많은 영혼들이 안식처를 찾지 못할 때 저승의 강의 조수가 대지를 뒤덮고, 타나토스가 배를 몰고 와 그들을 내세로 인도한다",
+      "subjectType": "titan"
+    },
+    {
+      "id": "lore-10243",
+      "name": "영원한 밤의 장막, 오로닉스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10243.DescTextmapID",
+      "hash": "12413314556430605571",
+      "url": "/starrail-quests/문서/lore-10243.html#section-1-row-1",
+      "quote": "세월의 티탄\n오로닉스는 세월의 흐름을 정리하고 세상의 과거, 현재, 미래를 지탱하며 만물이 순환할 수 있게 한다",
+      "subjectType": "titan"
+    },
+    {
+      "id": "lore-10244",
+      "name": "공정의 저울, 탈란톤",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10244.DescTextmapID",
+      "hash": "17780363309924111865",
+      "url": "/starrail-quests/문서/lore-10244.html#section-1-row-1",
+      "quote": "율법의 티탄\n탈란톤은 편파와 불공정을 절대 용납하지 않으며, 앰포리어스의 금기와 경계를 수호하고 만물의 논리와 법을 제정한다",
+      "subjectType": "titan"
+    },
+    {
+      "id": "lore-10245",
+      "name": "만 갈래의 문, 야누스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10245.DescTextmapID",
+      "hash": "1779626674377068305",
+      "url": "/starrail-quests/문서/lore-10245.html#section-1-row-1",
+      "quote": "통로의 티탄\n야누스는 모든 길의 존재와 종착점을 알고 있다. 야누스가 관장하는 것은 사람들이 지나가는 통로뿐만 아니라 운명을 이어주는 여정이기도 하다",
+      "subjectType": "titan"
+    },
+    {
+      "id": "lore-10246",
+      "name": "티탄",
+      "kind": "concept",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10246.DescTextmapID",
+      "hash": "17303168201033189059",
+      "url": "/starrail-quests/문서/lore-10246.html#section-1-row-1",
+      "quote": "앰포리어스의 티탄은 천지를 지탱하는 힘이자, 과거와 현재를 관통하는 운명이며 세상 만물의 규칙이다\n평범한 인간들은 그들의 희로애락 속에서 살아가며, 지식, 전쟁, 사랑, 생사 모두 티탄의 신권과 밀접하게 연결되어 있다"
+    },
+    {
+      "id": "lore-10247",
+      "name": "황금의 후예",
+      "kind": "concept",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10247.DescTextmapID",
+      "hash": "7818635583130380850",
+      "url": "/starrail-quests/문서/lore-10247.html#section-1-row-1",
+      "quote": "전설에 따르면, 케팔의 신성은 빛이 어두웠다고 전해진다. 그는 자신의 불씨를 바치고 「창세의 신탁」을 남겼다\n그 후, 위대한 힘을 지닌 영웅들이 대지를 누비기 시작했고, 그들의 몸에는 황금색 신의 피가 흘러 「황금의 후예」라고 불리게 되었다",
+      "subjectType": "collective-existence"
+    },
+    {
+      "id": "lore-10248",
+      "name": "반신",
+      "kind": "concept",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10248.DescTextmapID",
+      "hash": "5513193411309916644",
+      "url": "/starrail-quests/문서/lore-10248.html#section-1-row-1",
+      "quote": "트리스비오스가 야누스의 불씨를 이어받아 첫 번째 반신이 되었다\n이후 수많은 황금의 후예 영웅들이 시련을 통과하여 티탄의 신권을 이어받았고, 반신이 되어 세상의 질서를 수호하고 있다",
+      "subjectType": "role"
+    },
+    {
+      "id": "lore-10249",
+      "name": "오크마",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10249.DescTextmapID",
+      "hash": "7761635937668796380",
+      "url": "/starrail-quests/문서/lore-10249.html#section-1-row-1",
+      "quote": "인간들은 케팔의 발 아래 부락을 세웠고, 그렇게 「오크마」의 전신이 탄생했다\n오늘날 이곳은 종말의 은신처이자, 「재창기」 여정의 시작점이다"
+    },
+    {
+      "id": "lore-10250",
+      "name": "크렘노스성",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10250.DescTextmapID",
+      "hash": "8997757496455109507",
+      "url": "/starrail-quests/문서/lore-10250.html#section-1-row-1",
+      "quote": "거대한 이동 요새이자 니카도르를 신봉하는 전사들의 성\n크렘노스인은 죽을 때까지 싸우는 것을 영광으로 여기며, 엄격한 규율로 앰포리어스 전역에서 유명하다"
+    },
+    {
+      "id": "lore-10251",
+      "name": "운명의 심연",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10251.DescTextmapID",
+      "hash": "10773558322931934015",
+      "url": "/starrail-quests/문서/lore-10251.html#section-1-row-1",
+      "quote": "야누소폴리스, 도시 국가의 지리와 정치를 초월한 종교의 성지\n지금은 신전 몇 개만이 남아있으며, 사람들은 이를 「운명의 심연」 혹은 「운명 삼상의 신전」이라고 부른다"
+    },
+    {
+      "id": "lore-10252",
+      "name": "검은 물결",
+      "kind": "concept",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10252.DescTextmapID",
+      "hash": "14265579821972132147",
+      "url": "/starrail-quests/문서/lore-10252.html#section-1-row-1",
+      "quote": "영혼을 녹여버린 물이자 앰포리어스를 집어삼킨 어둠\n검은 물결과 그로부터 탄생한 창조물은 앰포리어스가 파멸에 이르게 한 직접적인 원인이다"
+    },
+    {
+      "id": "lore-10253",
+      "name": "불을 훔치는 자",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10253.DescTextmapID",
+      "hash": "12023466043789088984",
+      "url": "/starrail-quests/문서/lore-10253.html#section-1-row-1",
+      "quote": "검은 물결과 함께 등장했으며, 티탄의 불씨를 사냥하는 이름 없는 검객. 그 누구도 그의 정체를 알지 못한다\n불가사의한 힘을 지니고 있으며, 검술 또한 거의 흠 잡을 데 없다"
+    },
+    {
+      "id": "lore-10254",
+      "name": "불을 훔치는 자",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10254.DescTextmapID",
+      "hash": "11245410312791812579",
+      "url": "/starrail-quests/문서/lore-10254.html#section-1-row-1",
+      "quote": "검은 물결과 함께 등장했으며, 티탄의 불씨를 사냥하는 이름 없는 검객. 그 누구도 그의 정체를 알지 못한다\n크렘노스성에서의 사냥에서 여러 사람과 사투를 벌인 끝에 패배하고 행방불명됐다"
+    },
+    {
+      "id": "lore-10279",
+      "name": "불을 훔치는 자",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10279.DescTextmapID",
+      "hash": "7440036363674608536",
+      "url": "/starrail-quests/문서/lore-10279.html#section-1-row-1",
+      "quote": "검은 물결과 함께 등장했으며, 티탄의 불씨를 사냥하는 이름 없는 검객. 가면 아래의 얼굴은 파이논과 똑같다\n영겁 회귀를 넘어, 수많은 불씨에 불타버려 슬픔에 젖은 한 줌의 재가 되었다. 숙원을 파이논에게 전하고 사그라졌다"
+    },
+    {
+      "id": "lore-10255",
+      "name": "깨달음의 나무 정원",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10255.DescTextmapID",
+      "hash": "3008243979914723887",
+      "url": "/starrail-quests/문서/lore-10255.html#section-1-row-1",
+      "quote": "세르세스의 화신을 중심으로 설립된 화원이자, 앰포리어스의 학술 성지 중 하나이다\n현재는 오크마의 우방이며, 검은 물결과 티탄 등 신비한 사물을 연구하는 최전선에 있다"
+    },
+    {
+      "id": "lore-10256",
+      "name": "깨달음의 나무 정원",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10256.DescTextmapID",
+      "hash": "11700567736964559330",
+      "url": "/starrail-quests/문서/lore-10256.html#section-1-row-1",
+      "quote": "세르세스의 화신을 바탕으로 설립된 화원이자, 앰포리어스의 학술 성지 중 하나다\n이미 검은 물결의 습격으로 인해 파괴되었다"
+    },
+    {
+      "id": "lore-10265",
+      "name": "여명의 절벽",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10265.DescTextmapID",
+      "hash": "14929176284640445490",
+      "url": "/starrail-quests/문서/lore-10265.html#section-1-row-1",
+      "quote": "오크마에서 「부세의 티탄」 케팔에 가장 가까운 곳이자, 황금의 후예와 티탄이 소통의 연계를 맺는 성지\n이곳은 장엄하고 신성하며, 오크마 도시 내 신분이 높은 자들의 집결지이자, 오크마 정치 및 문화의 중심지이다"
+    },
+    {
+      "id": "lore-10266",
+      "name": "용해 고성",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10266.DescTextmapID",
+      "hash": "12099117387504725028",
+      "url": "/starrail-quests/문서/lore-10266.html#section-1-row-1",
+      "quote": "스틱시아, 거대 용과 파도의 도시 국가, 지금은 폐허만이 남아있다\n너무나 많은 망령이 피안에 닿지 못해 저승의 강은 끊임없이 범람하고 있으며, 행방이 묘연한 타나토스는 이곳과 밀접한 관련이 있다"
+    },
+    {
+      "id": "lore-10267",
+      "name": "「태양과 번개의 기사」 셀리오스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10267.DescTextmapID",
+      "hash": "6262334047667777690",
+      "url": "/starrail-quests/문서/lore-10267.html#section-1-row-1",
+      "quote": "전설 속에서 홀로 「조석의 눈」에 도전해 인류를 위해 불을 쫓는 여정을 시작한 용사. 오늘날 하늘 일족의 선조로 여겨진다\n그녀의 업적은 그 시대의 하늘과 관련된 모든 이야기의 핵심 인물이 될 만큼 찬란하다"
+    },
+    {
+      "id": "lore-10268",
+      "name": "「태양과 번개의 기사」 셀리오스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10268.DescTextmapID",
+      "hash": "13426781078376365836",
+      "url": "/starrail-quests/문서/lore-10268.html#section-1-row-1",
+      "quote": "전설 속에서 홀로 「조석의 눈」에 도전한 용사. 그녀는 부족 사람을 바꾸지 못했고, 그 어리석음으로 인해 그녀는 하늘의 자손에게 완전히 절망했다\n부족 사람에게 사형을 선고한 후, 그녀는 아퀼라와 하나가 되어 하늘 요새에 머물고 있다"
+    },
+    {
+      "id": "lore-10269",
+      "name": "「천궁 요새」 조석의 눈",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10269.DescTextmapID",
+      "hash": "2748453370154974766",
+      "url": "/starrail-quests/문서/lore-10269.html#section-1-row-1",
+      "quote": "티탄이라 불리는 구름 속 도시 국가의 중추이자, 아퀼라의 거처로서 하늘에서 대지를 내려다보고 있다\n화벽에 비친 앰포리어스의 천후에는 비밀이 숨겨져 있는 것 같다"
+    },
+    {
+      "id": "lore-10270",
+      "name": "「구름 속 폐성」 조석의 눈",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10270.DescTextmapID",
+      "hash": "561947259104208664",
+      "url": "/starrail-quests/문서/lore-10270.html#section-1-row-1",
+      "quote": "아퀼라가 죽은 후 조금씩 무너져 내린 하늘 요새\n기구가 간신히 돌아가고 있지만, 대부분은 고장이 나서 거의 작동을 멈췄다"
+    },
+    {
+      "id": "lore-10271",
+      "name": "「빛이 없는 기도당」 여명의 절벽",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10271.DescTextmapID",
+      "hash": "6670824716615512639",
+      "url": "/starrail-quests/문서/lore-10271.html#section-1-row-1",
+      "quote": "여명 기계가 꺼진 후의 오크마 성지. 대부분의 구역이 검은 물결에 휩쓸렸다\n행정 중추로서 아직 기능을 상실하지 않았다. 일부 시민들은 의회 건물 근처로 대피해 호위병들과 함께 괴물의 침입을 막고 있다"
+    },
+    {
+      "id": "lore-10272",
+      "name": "「몰락한 황혼의 도시」 오크마",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10272.DescTextmapID",
+      "hash": "13031007078049115088",
+      "url": "/starrail-quests/문서/lore-10272.html#section-1-row-1",
+      "quote": "여명 기계가 꺼지고 난 후의 거룩한 도시. 주민들은 격변을 직접 목격했고, 불안과 혼란이 곳곳에 퍼지고 있다\n하늘의 황금의 후예는 이곳을 주시하며 무지갯빛 장막으로 주민을 보호한다"
+    },
+    {
+      "id": "lore-10273",
+      "name": "「태양과 번개의 업과」 아퀼라",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10273.DescTextmapID",
+      "hash": "5705141191665155507",
+      "url": "/starrail-quests/문서/lore-10273.html#section-1-row-1",
+      "quote": "격전 끝에 검은 물결에 침식된 「조석의 눈」이 인간의 의지에 의해 다시금 날개를 펼친다\n하늘의 영광을 망각하고 이제 이곳에 남아있는 것은 살의에 지배당하는 거대한 신일 뿐이다",
+      "subjectType": "titan"
+    },
+    {
+      "id": "lore-10309",
+      "name": "무루의 아이",
+      "kind": "concept",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10309.DescTextmapID",
+      "hash": "5303462919891965537",
+      "url": "/starrail-quests/문서/lore-10309.html#section-1-row-1",
+      "quote": "「기억」의 에이언즈가 될 수도 있는 이들은, 특별한 「기억」의 사도로 여겨진다\n사람들이 알고 있는 「후리」는 단지 한 줌의 기억일 뿐, 그는 우주 인과의 끝에서 태어날 것이다",
+      "subjectType": "collective-existence"
+    },
+    {
+      "id": "lore-10274",
+      "name": "엘리사이 에데스",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10274.DescTextmapID",
+      "hash": "4568255873471342073",
+      "url": "/starrail-quests/문서/lore-10274.html#section-1-row-1",
+      "quote": "엘리사이 에데스, 영원한 밤의 장막에 둘러싸인 작은 마을. 검은 물결에 의해 파괴되었다\n영웅은 고향의 밀 물결 속에서 걸어 나와 다시는 뒤돌아보지 않았다"
+    },
+    {
+      "id": "lore-10275",
+      "name": "비밀 미궁",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10275.DescTextmapID",
+      "hash": "18058268720681870716",
+      "url": "/starrail-quests/문서/lore-10275.html#section-1-row-1",
+      "quote": "엘리사이 에데스 숲에 숨겨진 아담한 세상, 요정들의 마을\n천진난만한 아이만이 들어갈 수 있다고 한다"
+    },
+    {
+      "id": "lore-10282",
+      "name": "재창기",
+      "kind": "concept",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10282.DescTextmapID",
+      "hash": "15056418718387481845",
+      "url": "/starrail-quests/문서/lore-10282.html#section-1-row-1",
+      "quote": "앰포리어스의 세대교체 형식이자 케팔의 시련\n「부세」의 반신은 기억을 통해 새로운 세계를 창조하고 짊어져야 한다. 그 무게를 견디지 못하고 쓰러지거나 누군가가 그 직책을 이어받을 때까지 버텨야 한다"
+    },
+    {
+      "id": "lore-10283",
+      "name": "재창기",
+      "kind": "concept",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10283.DescTextmapID",
+      "hash": "273307485243572460",
+      "url": "/starrail-quests/문서/lore-10283.html#section-1-row-1",
+      "quote": "앰포리어스의 세대교체 형식이자 셉터 δ-me13 「앰포리어스」의 연산 메커니즘\n「파멸」 방정식을 풀기 위해 끊임없이 저항과 학습의 샘플을 입력한다\n이론상의 마지막 「재창기」는 파이논과 키레네에 의해 저지되었으며, 33,550,336회에 달하는 무한 루프에 빠졌다"
+    },
+    {
+      "id": "lore-10296",
+      "name": "재창기",
+      "kind": "concept",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10296.DescTextmapID",
+      "hash": "8518172828420278934",
+      "url": "/starrail-quests/문서/lore-10296.html#section-1-row-1",
+      "quote": "앰포리어스의 세대교체 형식이자, 셉터 δ-me13 「앰포리어스」의 연산 메커니즘\n이제, {NICKNAME}은(는) 「부세」의 이름으로, 앰포리어스에 전례 없는 결말을 만들어낼 것이다"
+    },
+    {
+      "id": "lore-10284",
+      "name": "영겁 회귀",
+      "kind": "concept",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10284.DescTextmapID",
+      "hash": "9802853432943263163",
+      "url": "/starrail-quests/문서/lore-10284.html#section-1-row-1",
+      "quote": "두 신호가 셉터 δ-me13 「앰포리어스」 연산 중에 일으킨 무한 루프. 「파멸」 방정식 완성을 저지하는 것을 목표로 한다\n「기억」의 힘의 영향을 받아 의식검에 열두 불씨를 주입하면 연산 프로세스 및 세월을 시작점으로 되돌릴 수 있다"
+    },
+    {
+      "id": "lore-10289",
+      "name": "신화의 밖",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10289.DescTextmapID",
+      "hash": "16613333099691030781",
+      "url": "/starrail-quests/문서/lore-10289.html#section-1-row-1",
+      "quote": "앰포리어스와 현실 우주의 경계선이자, 셉터 δ-me13의 하드웨어 시설\n영웅 이야기의 관중석이며, 이곳에 흐르는 데이터와 문자가 「원동력」을 연산하는 전기 신호가 된다"
+    },
+    {
+      "id": "lore-10290",
+      "name": "노래의 해안",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10290.DescTextmapID",
+      "hash": "16610286716613459655",
+      "url": "/starrail-quests/문서/lore-10290.html#section-1-row-1",
+      "quote": "검은 물결이 물러난 후의 스틱시아, 끝없는 연회가 펼쳐지고 있다\n이는 사실 세이렌이 노랫소리로 만들어낸 환상으로, 연회의 귀빈은 모두 이미 세상을 떠난 동료들이다"
+    },
+    {
+      "id": "lore-10292",
+      "name": "테라복스",
+      "kind": "person",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10292.DescTextmapID",
+      "hash": "15545544433677868893",
+      "url": "/starrail-quests/문서/lore-10292.html#section-1-row-1",
+      "quote": "드로마스의 왕, 지오리오스의 창조물, 예언 속 「대지」의 반신\n강인한 성격의 그는 수많은 생령과 에버나이트와 협력하여 기억 물결의 세계를 지키고 거대 무덤의 비밀을 봉인한다",
+      "subjectType": "named-lifeform"
+    },
+    {
+      "id": "lore-10294",
+      "name": "빛이 흔적을 남긴 신성한 숲",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10294.DescTextmapID",
+      "hash": "6165797918875197410",
+      "url": "/starrail-quests/문서/lore-10294.html#section-1-row-1",
+      "quote": "「파멸」의 금빛 광선이 깨달음의 나무 정원을 관통해 거대 무덤 깊숙한 곳을 가리킨다\n지금은 기억 물결의 영향으로, 수많은 혼란스러운 기억이 이곳에 모인다"
+    },
+    {
+      "id": "lore-10295",
+      "name": "이름 없는 티탄의 거대 무덤",
+      "kind": "region",
+      "group": "amphoreus",
+      "source": "LoadingDesc:10295.DescTextmapID",
+      "hash": "16639113916756358596",
+      "url": "/starrail-quests/문서/lore-10295.html#section-1-row-1",
+      "quote": "「대지」에 의해 지하 깊숙이 봉인된 거대 무덤, 셉터 δ-me13의 내핵층\n거대한 스토리지 어레이는 끊임없이 깜빡이며 알려지지 않은 과거를 기록하고 있다"
+    },
+    {
+      "id": "lore-10400",
+      "name": "환월",
+      "kind": "region",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10400.DescTextmapID",
+      "hash": "9280529333474875435",
+      "url": "/starrail-quests/문서/lore-10400.html#section-1-row-1",
+      "quote": "「이상 낙원」 하늘 높이 걸린 환락의 달로 낙원 전체의 「원력」이 이곳에 모여 흐른다\n웃음은 세계가 평온하다는 뜻이며, 슬픔은 세계가 위태롭다는 의미다"
+    },
+    {
+      "id": "lore-10401",
+      "name": "환조",
+      "kind": "concept",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10401.DescTextmapID",
+      "hash": "9833128351511046181",
+      "url": "/starrail-quests/문서/lore-10401.html#section-1-row-1",
+      "quote": "「이상 낙원」만의 독특한 창작 의식으로 형체를 그려내고 원력을 주입해 「존재할 수 있는 것」을 현실로 불러낸다\n이 기술을 다루는 자는 「화공」이라 불리며, 행성의 모든 환조 활동은 낙원 이사회의 엄격한 관리를 받는다"
+    },
+    {
+      "id": "lore-10402",
+      "name": "환조종",
+      "kind": "concept",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10402.DescTextmapID",
+      "hash": "1180011470302964192",
+      "url": "/starrail-quests/문서/lore-10402.html#section-1-row-1",
+      "quote": "「환조」로 탄생한 생령으로 창작자의 상상에 따라 각종 기이한 능력을 지닌다\n「원력」에 의존해 자신의 존재를 유지하며, 환월이 비추는 범위 밖에선 오래 존재할 수 없다",
+      "subjectType": "species"
+    },
+    {
+      "id": "lore-10403",
+      "name": "환월 게임",
+      "kind": "concept",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10403.DescTextmapID",
+      "hash": "12352012970561547416",
+      "url": "/starrail-quests/문서/lore-10403.html#section-1-row-1",
+      "quote": "환월이 가득 차오를 때마다 「환월 게임」이라 불리는 신이 내린 의식이 펼쳐진다\n알현자 중에서 두각을 나타내면 「환락」이 강림하여 우승자의 소원을 듣고, 그의 권능을 1분간 나눠준다",
+      "subjectType": "event-or-ritual"
+    },
+    {
+      "id": "lore-10404",
+      "name": "환락의 가면",
+      "kind": "concept",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10404.DescTextmapID",
+      "hash": "2026699644822980291",
+      "url": "/starrail-quests/문서/lore-10404.html#section-1-row-1",
+      "quote": "「환월 게임」의 입장권으로 알현자의 신분을 증명한다\n소지자는 「호명」, 「기적」, 「선양」을 완료하여 에이언즈를 알현하는 영광을 놓고 겨루어야 한다"
+    },
+    {
+      "id": "lore-10405",
+      "name": "초토 기원",
+      "kind": "concept",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10405.DescTextmapID",
+      "hash": "8335479848251047937",
+      "url": "/starrail-quests/문서/lore-10405.html#section-1-row-1",
+      "quote": "앰버기원 2148년, 「파멸」의 군세가 아하토피아를 휩쓸면서 초토 기원의 서막이 올랐다\n화공 「그래피아」의 인도 아래 최초의 환조종은 인간과 함께 외계의 천마를 함께 막아냈다",
+      "subjectType": "event-or-ritual"
+    },
+    {
+      "id": "lore-10406",
+      "name": "그림 속 세계",
+      "kind": "region",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10406.DescTextmapID",
+      "hash": "9418094814171351333",
+      "url": "/starrail-quests/문서/lore-10406.html#section-1-row-1",
+      "quote": "문명이 파멸될 위기에 처했을 때, 화공 「그래피아」는 기적을 일으켜 온 세계를 그림 속에 담았다\n옛 벤자이텐고쿠는 현실을 잃었지만, 「그림 속 세계」에서 존속할 수 있게 되었다"
+    },
+    {
+      "id": "lore-10407",
+      "name": "2차원 시티",
+      "kind": "region",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10407.DescTextmapID",
+      "hash": "1813016142932899603",
+      "url": "/starrail-quests/문서/lore-10407.html#section-1-row-1",
+      "quote": "「이상 낙원」의 번화한 도시로, 인간과 환조종이 함께 세운 신도시\n2차원 평면에서 건져 올려진 덕분에 붙은 이름이며, 주민들은 관심을 얻기 위해 쉴 새 없이 분주하게 움직인다"
+    },
+    {
+      "id": "lore-10408",
+      "name": "그래피아 아카데미",
+      "kind": "faction",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10408.DescTextmapID",
+      "hash": "13278100921583974643",
+      "url": "/starrail-quests/문서/lore-10408.html#section-1-row-1",
+      "quote": "그래피아 가문이 「환조사」 양성을 목표로 창립한 고등학교\n학생들이 열광하는 이야기 소재는 회화, 성적, 심령 이야기이다",
+      "subjectType": "educational-institution"
+    },
+    {
+      "id": "lore-10409",
+      "name": "환월의 비밀 정원",
+      "kind": "region",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10409.DescTextmapID",
+      "hash": "14669962795063599974",
+      "url": "/starrail-quests/문서/lore-10409.html#section-1-row-1",
+      "quote": "그림 속 세계 어딘가에 있는 「환월 게임」의 의식 중추\n비밀 정원 속 진세의 신목은 천 년 동안 불멸하며, 의식이 시작되기 전에만 꽃을 피운다"
+    },
+    {
+      "id": "lore-10410",
+      "name": "도브브룩 구역",
+      "kind": "region",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10410.DescTextmapID",
+      "hash": "17470020887689548300",
+      "url": "/starrail-quests/문서/lore-10410.html#section-1-row-1",
+      "quote": "2차원 시티의 한 구역으로 그 사이를 흐르는 「도브브룩」에서 이름을 따왔다\n현재는 신흥 환조종 조직 「공원파」가 장악하여 범죄가 만연한 회색지대로 전락했다"
+    },
+    {
+      "id": "lore-10411",
+      "name": "「세상 끝」 술집",
+      "kind": "region",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10411.DescTextmapID",
+      "hash": "9648913386650714625",
+      "url": "/starrail-quests/문서/lore-10411.html#section-1-row-1",
+      "quote": "「세상 끝」 한 구석, 가면의 우인이 모이는 곳\n술집의 문은 수많은 세계와 연결되어 있으며, 오직 「환락」 취향을 지닌 손님에게만 열린다"
+    },
+    {
+      "id": "lore-10421",
+      "name": "「잔본」 공간",
+      "kind": "region",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10421.DescTextmapID",
+      "hash": "7899904438339507868",
+      "url": "/starrail-quests/문서/lore-10421.html#section-1-row-1",
+      "quote": "「이상 낙원」이 현실로 돌아올 때, 「그림 속 세계」에서 분리된 공간의 조각\n현실과 그림의 접경지대로, 버려진 레일은 헤아릴 수 없는 심연으로 이어진다"
+    },
+    {
+      "id": "lore-10422",
+      "name": "행복 미소 연구회",
+      "kind": "faction",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10422.DescTextmapID",
+      "hash": "4475298937340345787",
+      "url": "/starrail-quests/문서/lore-10422.html#section-1-row-1",
+      "quote": "규모가 방대한 자선단체로, 전신은 죽음의 전령 사건 피해자 자조 모임이다\n「행복 수술」 등의 치료 수단으로 「이상 낙원」이 다시 행복과 미소를 되찾도록 힘쓰고 있다"
+    },
+    {
+      "id": "lore-10427",
+      "name": "행복 미소 연구회",
+      "kind": "faction",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10427.DescTextmapID",
+      "hash": "7936070054681103773",
+      "url": "/starrail-quests/문서/lore-10427.html#section-1-row-1",
+      "quote": "규모가 방대한 자선단체로, 전신은 죽음의 전령 사건 피해자 자조 모임이다\n「행복 수술」 등 수단을 이용해 시민을 오직 행복의 맛밖에 모르는 흉악한 괴물로 개조한다"
+    },
+    {
+      "id": "lore-10423",
+      "name": "만원",
+      "kind": "person",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10423.DescTextmapID",
+      "hash": "12935995348719598592",
+      "url": "/starrail-quests/문서/lore-10423.html#section-1-row-1",
+      "quote": "「행복 미소 연구회」 회장 겸 「만원 방송국」의 국장. 피로 칠한 게임의 고아\n현재 저명한 자선가이자 미디어 거물로서, 환락의 길을 올바른 방향으로 이끄는 것을 자신의 소임으로 여긴다"
+    },
+    {
+      "id": "lore-10426",
+      "name": "만원",
+      "kind": "person",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10426.DescTextmapID",
+      "hash": "15775210941734156598",
+      "url": "/starrail-quests/문서/lore-10426.html#section-1-row-1",
+      "quote": "「행복 미소 연구회」 회장 겸 「만원 방송국」의 국장. 피로 칠한 게임에서 생존한 고아\n이상 낙원의 「환락」에 복수하기 위해 스스로 자신의 원수로 변했으며, 죽음의 전령의 모습으로 낙원을 위해 심판을 내린다"
+    },
+    {
+      "id": "lore-10424",
+      "name": "스타레일 FES",
+      "kind": "concept",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10424.DescTextmapID",
+      "hash": "1578286290968547153",
+      "url": "/starrail-quests/문서/lore-10424.html#section-1-row-1",
+      "quote": "「은하열차」를 주제로 한 박람회이자 펄이 무명객을 위해 마련한 무대\n무명객의 참석으로 돌풍을 일으켜, 「이상 낙원」 내 수많은 원력의 이목을 사로잡았다",
+      "subjectType": "event-or-ritual"
+    },
+    {
+      "id": "lore-10425",
+      "name": "펄럭스 그룹",
+      "kind": "faction",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10425.DescTextmapID",
+      "hash": "17341264755499759832",
+      "url": "/starrail-quests/문서/lore-10425.html#section-1-row-1",
+      "quote": "펄 명의의 성간 엔터테인먼트 그룹. 「메카아머」의 생산과 판매를 아우르며, 이를 주력 사업으로 한다\n우뚝 솟은 본사 「펄럭스 타워」는 수많은 구직자들이 선망하는 전당이다"
+    },
+    {
+      "id": "lore-10412",
+      "name": "스파키",
+      "kind": "person",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10412.DescTextmapID",
+      "hash": "12749037736850348778",
+      "url": "/starrail-quests/문서/lore-10412.html#section-1-row-1",
+      "quote": "「이상 낙원」에서 인기 만점인 스트리머이자 이번 「환월 게임」의 알현자 중 한 명\n실제로는 스파클이 만든 가상 아바타로, 병적으로 관심을 갈망한다"
+    },
+    {
+      "id": "lore-10413",
+      "name": "에바네시아",
+      "kind": "person",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10413.DescTextmapID",
+      "hash": "5923670897721382931",
+      "url": "/starrail-quests/문서/lore-10413.html#section-1-row-1",
+      "quote": "진세의 신목 곁에 사는 소녀이자, ≪창천항로 복슬복슬호≫ 만화의 열성팬\n신들린 그림 솜씨로 「환월 게임」에 참가할 수 있도록 가면을 만들어준다"
+    },
+    {
+      "id": "lore-10415",
+      "name": "펄",
+      "kind": "person",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10415.DescTextmapID",
+      "hash": "8108193160127526717",
+      "url": "/starrail-quests/문서/lore-10415.html#section-1-row-1",
+      "quote": "스타피스 컴퍼니 「전략투자부」의 고위 간부이자 「10인의 스톤하트」 중 한 명이며, 초석은 「투영의 진주」다\n「이상 낙원」의 현 최고경영자로, 예술의 본질을 탐구하는 데 집착한다"
+    },
+    {
+      "id": "lore-10416",
+      "name": "애쉬베일",
+      "kind": "person",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10416.DescTextmapID",
+      "hash": "16990490565395169667",
+      "url": "/starrail-quests/문서/lore-10416.html#section-1-row-1",
+      "quote": "불사의 명탐정 사무소 소장\n정의를 지키며, 각종 탐정 의뢰를 맡아 조수 「내레이터」와 함께 사건을 해결한다"
+    },
+    {
+      "id": "lore-10418",
+      "name": "쿠치바",
+      "kind": "person",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10418.DescTextmapID",
+      "hash": "3033278023469307888",
+      "url": "/starrail-quests/문서/lore-10418.html#section-1-row-1",
+      "quote": "「이상방어부」의 보안관\n열정적이고 정직하며, 미식에 대해 독특한 견해와 취향을 가지고 있다"
+    },
+    {
+      "id": "lore-10419",
+      "name": "나힐럭스",
+      "kind": "person",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10419.DescTextmapID",
+      "hash": "8250560151365095070",
+      "url": "/starrail-quests/문서/lore-10419.html#section-1-row-1",
+      "quote": "가십 잡지 ≪주간 너굴≫의 전 사장\n행적이 묘연하고 오랫동안 모습을 드러내지 않았다. 임금 체불로 너굴 기자들의 불만을 사고 있다"
+    },
+    {
+      "id": "lore-10428",
+      "name": "죽음의 전령",
+      "kind": "person",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10428.DescTextmapID",
+      "hash": "12367077295044443543",
+      "url": "/starrail-quests/문서/lore-10428.html#section-1-row-1",
+      "quote": "피로 칠한 게임의 주범이자 살육을 즐기는 괴물.\n현재는 만원에게 이용당하며 「공포」의 상징으로서 이상 낙원의 사상을 뒤흔들고 있다",
+      "subjectType": "named-lifeform"
+    },
+    {
+      "id": "lore-10417",
+      "name": "그래피아",
+      "kind": "person",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10417.DescTextmapID",
+      "hash": "4885466731096601288",
+      "url": "/starrail-quests/문서/lore-10417.html#section-1-row-1",
+      "quote": "「이상 낙원」의 시조이자 세계를 그림 속에 봉인한 초대 화공\n그 정체는 아삿 프라마드의 딸이며, 추락한 열차를 목격한 후 「파멸」을 배반하는 길을 택했다"
+    },
+    {
+      "id": "lore-10420",
+      "name": "류스케",
+      "kind": "person",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10420.DescTextmapID",
+      "hash": "6965190146902654310",
+      "url": "/starrail-quests/문서/lore-10420.html#section-1-row-1",
+      "quote": "그래피아 아카데미의 현임 교장이자, 그래피아 가문의 현 가주\n자신을 히메코의 아버지라고 칭하나, 실제로는 수년 전부터 아삿 프라마드가 위장한 것이다"
+    },
+    {
+      "id": "lore-10430",
+      "name": "미착",
+      "kind": "person",
+      "group": "civilizations",
+      "source": "LoadingDesc:10430.DescTextmapID",
+      "hash": "17941326728564310615",
+      "url": "/starrail-quests/문서/lore-10430.html#section-1-row-1",
+      "quote": "초대받지 않고 찾아오는 것을 즐기는 가면의 우인이자, 절멸 대군 아삿 프라마드의 과거 신분 중 하나\n그가 술집을 떠나기 전 3만 조 개의 농담을 들었다고 한다"
+    },
+    {
+      "id": "lore-10431",
+      "name": "아삿 프라마드",
+      "kind": "person",
+      "group": "civilizations",
+      "source": "LoadingDesc:10431.DescTextmapID",
+      "hash": "13846471899000724543",
+      "url": "/starrail-quests/문서/lore-10431.html#section-1-row-1",
+      "quote": "「파멸」의 사도이자, 절멸 대군 중 하나\n아삿 프라마드는 「환락」의 파멸자다. 그는 아무것도 하지 않는 즐거움의 주인을 증오하며, 「도전하지 않은 자는 보상을 받을 수 없다」고 믿는다"
+    },
+    {
+      "id": "lore-10432",
+      "name": "페가나",
+      "kind": "region",
+      "group": "train",
+      "source": "LoadingDesc:10432.DescTextmapID",
+      "hash": "16032376656172714562",
+      "url": "/starrail-quests/문서/lore-10432.html#section-1-row-1",
+      "quote": "전설 속 우주의 끝이자, 아키비리의 고향\n수천 앰버기원 전, 강력한 별의 인도자 기갑을 사용해 우주에서 영토를 확장했다"
+    },
+    {
+      "id": "lore-10433",
+      "name": "모토코",
+      "kind": "person",
+      "group": "planarcadia",
+      "source": "LoadingDesc:10433.DescTextmapID",
+      "hash": "6427612926117107519",
+      "url": "/starrail-quests/문서/lore-10433.html#section-1-row-1",
+      "quote": "히메코의 자화상이 실체화한 환조종으로, 히메코와 함께 환월 게임에 참가해 죽음의 전령을 처치했다\n친구를 별하늘로 보내기 위해, 자신의 소멸을 대가로 히메코의 풍화의 저주를 「치료」했다"
+    },
+    {
+      "id": "lore-10434",
+      "name": "아집",
+      "kind": "person",
+      "group": "train",
+      "source": "LoadingDesc:10434.DescTextmapID",
+      "hash": "9180384536581898947",
+      "url": "/starrail-quests/문서/lore-10434.html#section-1-row-1",
+      "quote": "은하열차의 전 항법사이자, 절멸 대군 아삿 프라마드의 과거 신분 중 하나\n그는 아키비리의 죽음과 나누크의 탄생을 차례로 목격했다고 한다"
+    },
+    {
+      "id": "lore-10435",
+      "name": "아스트로폴리스",
+      "kind": "region",
+      "group": "astropolis",
+      "source": "LoadingDesc:10435.DescTextmapID",
+      "hash": "16193964783269604302",
+      "url": "/starrail-quests/문서/lore-10435.html#section-1-row-1",
+      "quote": "엡실론 은하계의 빛나는 진주, 미디어 엘리트들의 집결지이자, 「스타피스 엔터테인먼트」의 본부\n행성의 수장도 이곳에 오면 그저 평범한 직장인이 될 수밖에 없다고 한다"
+    },
+    {
+      "id": "lore-10436",
+      "name": "케네스•아리타",
+      "kind": "person",
+      "group": "astropolis",
+      "source": "LoadingDesc:10436.DescTextmapID",
+      "hash": "6123386491248577940",
+      "url": "/starrail-quests/문서/lore-10436.html#section-1-row-1",
+      "quote": "「전통프로젝트부」 담당자 「아리타」의 직속 비서로, 아스트로폴리스의 관리 업무 대부분을 담당하고 있다\n야무진 성격과 노련한 일 처리로 「아리타」의 두터운 신임을 받고 있다"
+    },
+    {
+      "id": "lore-10437",
+      "name": "등대",
+      "kind": "concept",
+      "group": "astropolis",
+      "source": "LoadingDesc:10437.DescTextmapID",
+      "hash": "5815378448611748252",
+      "url": "/starrail-quests/문서/lore-10437.html#section-1-row-1",
+      "quote": "아스트로폴리스의 양산형 슈퍼 히어로로, 도시 전체의 치안 유지를 담당하고 있다\n5년 전 혜성처럼 등장해 아스트로폴리스 주민들의 깊은 사랑을 받고 있다",
+      "subjectType": "collective-existence"
+    },
+    {
+      "id": "lore-10438",
+      "name": "야불리",
+      "kind": "person",
+      "group": "astropolis",
+      "source": "LoadingDesc:10438.DescTextmapID",
+      "hash": "15196792654224007189",
+      "url": "/starrail-quests/문서/lore-10438.html#section-1-row-1",
+      "quote": "「기술개발부」 부장, 우아하면서도 고집스러운 과학 연구 계리사이자 지식학회의 배후 스폰서\n십여 년 전 아스트로폴리스의 생명과학연구원을 인수했으며, 유독 고대 괴수 관련 연구에 각별한 애정을 보이는 듯하다"
+    },
+    {
+      "id": "lore-10439",
+      "name": "로빈•서머레토",
+      "kind": "person",
+      "group": "astropolis",
+      "source": "LoadingDesc:10439.DescTextmapID",
+      "hash": "2002406721396602022",
+      "url": "/starrail-quests/문서/lore-10439.html#section-1-row-1",
+      "quote": "은하의 유명 가수. 별하늘 무대의 타고난 주인공이다\n맑은 하늘과 푸른 바다 아래에서 아스트로폴리스의 축제를 위해 노래한다"
+    },
+    {
+      "id": "lore-10440",
+      "name": "어벤츄린•웨이브",
+      "kind": "person",
+      "group": "astropolis",
+      "source": "LoadingDesc:10440.DescTextmapID",
+      "hash": "15778569439881074101",
+      "url": "/starrail-quests/문서/lore-10440.html#section-1-row-1",
+      "quote": "스타피스 컴퍼니 「전략투자부」의 고위 간부로, 「10인의 스톤하트」 중 한 명이다. 초석은 「모략의 사금」\n축제의 거센 파도 속에서 변함없이 여유로운 자태로 유영한다"
+    },
+    {
+      "id": "lore-10441",
+      "name": "수길라이트",
+      "kind": "person",
+      "group": "astropolis",
+      "source": "LoadingDesc:10441.DescTextmapID",
+      "hash": "954438853652205351",
+      "url": "/starrail-quests/문서/lore-10441.html#section-1-row-1",
+      "quote": "스타피스 컴퍼니 「전략투자부」의 고위 간부로, 「10인의 스톤하트」 중 한 명이다. 초석은 「징수의 삼석」\n한때 모든 것을 정복하고 소유했던 제왕은 거상들이 천금을 탕진하는 비극을 관찰하는 것을 통해 즐거움을 얻는다"
+    },
+    {
+      "id": "lore-20000",
+      "name": "개척자 시점으로 돌아가는 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20000.DescTextmapID",
+      "hash": "4824631307326765924",
+      "url": "/starrail-quests/문서/lore-20000.html#section-1-row-1",
+      "quote": "선택의 기회가 주어지면 후회할 짓은 하지 말렴"
+    },
+    {
+      "id": "lore-20002",
+      "name": "[어벤츄린]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20002.DescTextmapID",
+      "hash": "7758440173981809229",
+      "url": "/starrail-quests/문서/lore-20002.html#section-1-row-1",
+      "quote": "어벤츄린은 현재 상황에 대해 어느 정도 실마리를 얻었다. 그는 참나무 가문의 가주를 만나 잃어버린 자신의 물건과 그에 걸맞은 힘을 되찾기로 한다……"
+    },
+    {
+      "id": "lore-20003",
+      "name": "[어벤츄린]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20003.DescTextmapID",
+      "hash": "633297654610191450",
+      "url": "/starrail-quests/문서/lore-20003.html#section-1-row-1",
+      "quote": "어벤츄린은 이미 패배한 것처럼 보이지만, 물건의 가치를 최대한 활용하기 위해 거리에서 돈과 보석을 나눠주기로 한다. 그의 목적은 대체 무엇일까……?"
+    },
+    {
+      "id": "lore-20004",
+      "name": "[아케론]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20004.DescTextmapID",
+      "hash": "8056909172072463584",
+      "url": "/starrail-quests/문서/lore-20004.html#section-1-row-1",
+      "quote": "아케론과 웰트는 합의점을 찾았고 결국 화살을 가족에게로 돌렸다. 그들은 아침 이슬 공관에서 무엇을 발견하게 될까?"
+    },
+    {
+      "id": "lore-20005",
+      "name": "[어벤츄린]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20005.DescTextmapID",
+      "hash": "14075123277077430758",
+      "url": "/starrail-quests/문서/lore-20005.html#section-1-row-1",
+      "quote": "어벤츄린은 자신이 결정적인 단서를 찾아 반드시 승리할 것이라고 확신하는 것 같다. 그러나 과연 그는 클락 스튜디오 테마파크 무대에 오르는 최후의 순간까지 버틸 수 있을까?"
+    },
+    {
+      "id": "lore-20006",
+      "name": "[토파즈]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20006.DescTextmapID",
+      "hash": "12951597111411989819",
+      "url": "/starrail-quests/문서/lore-20006.html#section-1-row-1",
+      "quote": "그와 동시에 토파즈는 페나코니의 어느 호화 비행선에 탑승해 중요한 만남의 시작을 기다리고 있다……"
+    },
+    {
+      "id": "lore-20007",
+      "name": "[제이드]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20007.DescTextmapID",
+      "hash": "10863455189564837374",
+      "url": "/starrail-quests/문서/lore-20007.html#section-1-row-1",
+      "quote": "오티•알팔파와의 회담 초반부는 순조롭지 않았다. 제이드와 토파즈는 빛나는 펠드스파호에서 회담 후반부에 대해 논의한다……"
+    },
+    {
+      "id": "lore-20008",
+      "name": "[반디]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20008.DescTextmapID",
+      "hash": "14747928693079229553",
+      "url": "/starrail-quests/문서/lore-20008.html#section-1-row-1",
+      "quote": "이때, 어느 민첩한 「밀입국자」도 빛나는 펠드스파호에 탑승했다……"
+    },
+    {
+      "id": "lore-20011",
+      "name": "[Mar. 7th]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20011.DescTextmapID",
+      "hash": "16112365175928661736",
+      "url": "/starrail-quests/문서/lore-20011.html#section-1-row-1",
+      "quote": "회염 장군의 의도적인 또는 무의식적인 격려 아래 Mar. 7th는 뜻밖에도 선주의 검술을 배워 연무 의식에서 선보일 기회를 얻는다……"
+    },
+    {
+      "id": "lore-20012",
+      "name": "[초구]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20012.DescTextmapID",
+      "hash": "2918224671855948788",
+      "url": "/starrail-quests/문서/lore-20012.html#section-1-row-1",
+      "quote": "요청 장군의 명을 받은 초구와 맥택은 유폐옥에 수감된 보리인의 수장 호뢰의 상태를 살피기 위해 그곳에 발을 들인다……"
+    },
+    {
+      "id": "lore-20013",
+      "name": "Dr. 레이시오에게 도움 청하는 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20013.DescTextmapID",
+      "hash": "15825937980798828062",
+      "url": "/starrail-quests/문서/lore-20013.html#section-1-row-1",
+      "quote": "레이시오 교수는 뒤도 돌아보지 않고 아무 말 없이 모형판을 떠났다. 정말 좋은 사람이다!"
+    },
+    {
+      "id": "lore-20026",
+      "name": "[로빈]의 시점으로 전환 중…?",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20026.DescTextmapID",
+      "hash": "12961035173565908263",
+      "url": "/starrail-quests/문서/lore-20026.html#section-1-row-1",
+      "quote": "스튜디오 테마파크의 소동으로 인해 페나코니는 혼란에 빠졌다. 로빈(?)은 이 기회에 그녀의 작은 선물을 사람들에게 나눠주기로 한다……"
+    },
+    {
+      "id": "lore-20027",
+      "name": "[부트힐]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20027.DescTextmapID",
+      "hash": "271695020368509816",
+      "url": "/starrail-quests/문서/lore-20027.html#section-1-row-1",
+      "quote": "부트힐과 단항은 합의점을 찾았다. 그들은 이제 좋은꿈에 잠입해 동료들을 구할 방법을 찾아야 한다……"
+    },
+    {
+      "id": "lore-20028",
+      "name": "[로빈]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20028.DescTextmapID",
+      "hash": "8676428658547311101",
+      "url": "/starrail-quests/문서/lore-20028.html#section-1-row-1",
+      "quote": "로빈과 선데이는 옛 은인인 「꿈의 주인」 고퍼우드 씨를 설득하기로 결심했다——모든 것이 순조롭기를……"
+    },
+    {
+      "id": "lore-20051",
+      "name": "[영사]의 시점으로 전환 중",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20051.DescTextmapID",
+      "hash": "18015525891136251307",
+      "url": "/starrail-quests/문서/lore-20051.html#section-1-row-1",
+      "quote": "유폐옥에서 영사, 단항과 경원은 보리인의 습격에서 실마리를 찾고 있다…"
+    },
+    {
+      "id": "lore-20052",
+      "name": "[초구]의 시점으로 전환 중",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20052.DescTextmapID",
+      "hash": "17846633923075989388",
+      "url": "/starrail-quests/문서/lore-20052.html#section-1-row-1",
+      "quote": "보리인의 손아귀에 잡힌 초구는 생존의 기회를 찾고 있다…. 하지만 그가 찾으려는 건 자신의 생존 기회가 아니다"
+    },
+    {
+      "id": "lore-20053",
+      "name": "[Mar. 7th]의 시점으로 전환 중",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20053.DescTextmapID",
+      "hash": "16107329837238965495",
+      "url": "/starrail-quests/문서/lore-20053.html#section-1-row-1",
+      "quote": "Mar. 7th와 운리는 회염의 명에 따라 경기 함선에 올라 예정대로 연무 의식에 참가한다…"
+    },
+    {
+      "id": "lore-20054",
+      "name": "[비소]의 시점으로 전환 중",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20054.DescTextmapID",
+      "hash": "11500625635182346385",
+      "url": "/starrail-quests/문서/lore-20054.html#section-1-row-1",
+      "quote": "「적을 포위할 땐 한쪽을 남겨라」 천격 장군이 늑대 무리를 사냥하기 시작한다…"
+    },
+    {
+      "id": "lore-20055",
+      "name": "[운리]의 시점으로 전환 중",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20055.DescTextmapID",
+      "hash": "12787602078187812",
+      "url": "/starrail-quests/문서/lore-20055.html#section-1-row-1",
+      "quote": "경기 함선 위, 폭풍전야의 분위기에 운리는 불안과 초조함에 휩싸인다…"
+    },
+    {
+      "id": "lore-20056",
+      "name": "[Mar. 7th]의 시점으로 전환 중",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20056.DescTextmapID",
+      "hash": "5448625804484258056",
+      "url": "/starrail-quests/문서/lore-20056.html#section-1-row-1",
+      "quote": "Mar. 7th가 위기의 징조를 느꼈다. 검술 실력을 시험해 볼 순간이 드디어 왔다…"
+    },
+    {
+      "id": "lore-20057",
+      "name": "[영사]의 시점으로 전환 중",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20057.DescTextmapID",
+      "hash": "13148893998311792760",
+      "url": "/starrail-quests/문서/lore-20057.html#section-1-row-1",
+      "quote": "단항과 영사는 인연경에서 비디아다라족 용의 군사와 만나기로 약속했다…"
+    },
+    {
+      "id": "lore-20058",
+      "name": "[부트힐]의 촬영장으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20058.DescTextmapID",
+      "hash": "4367065536535658685",
+      "url": "/starrail-quests/문서/lore-20058.html#section-1-row-1",
+      "quote": "아무도 알지 못했다. 연락이 닿지 않는 우주 카우보이는 지금 꿈세계의 그림자 속에 숨어 있다는 것을……"
+    },
+    {
+      "id": "lore-20059",
+      "name": "[선데이]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20059.DescTextmapID",
+      "hash": "7444189029610078254",
+      "url": "/starrail-quests/문서/lore-20059.html#section-1-row-1",
+      "quote": "그러나 이 좋은꿈에 되돌아오는 자들 중엔 손님뿐만 아니라 「주인」도 있다……"
+    },
+    {
+      "id": "lore-20060",
+      "name": "[선데이]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20060.DescTextmapID",
+      "hash": "5977619423327919261",
+      "url": "/starrail-quests/문서/lore-20060.html#section-1-row-1",
+      "quote": "고행자는 여전히 과거 자신의 마음을 되돌아보고 있다. 그중 가장 중요한 존재와도 끝내 이별을 맞이하게 될 것이다……"
+    },
+    {
+      "id": "lore-20061",
+      "name": "[아글라이아]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20061.DescTextmapID",
+      "hash": "5267040972392201783",
+      "url": "/starrail-quests/문서/lore-20061.html#section-1-row-1",
+      "quote": "오크마가 「침투」됐을지도 모른다는 사실을 알게 된 아글라이아는 직접 도시 곳곳에 숨어있는 오염을 찾아낸다……"
+    },
+    {
+      "id": "lore-20062",
+      "name": "[헤르타]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20062.DescTextmapID",
+      "hash": "7913095454083421461",
+      "url": "/starrail-quests/문서/lore-20062.html#section-1-row-1",
+      "quote": "헤르타는 우주정거장에서 에이언즈 「누스」를 알현할 준비를 하고 있다. 그러나 그 과정이 순조롭지만은 않은 듯하다"
+    },
+    {
+      "id": "lore-20063",
+      "name": "[마이데이]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20063.DescTextmapID",
+      "hash": "11910821152756221306",
+      "url": "/starrail-quests/문서/lore-20063.html#section-1-row-1",
+      "quote": "마이데이의 백성, 크렘노스 사람은 「분쟁」의 신권에 대해 다른 꿍꿍이가 있는 것 같다. 시련을 이겨내기 전에 그는 반드시 일족의 신뢰를 얻어야 한다……"
+    },
+    {
+      "id": "lore-20064",
+      "name": "[트리비]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20064.DescTextmapID",
+      "hash": "5731401936688655922",
+      "url": "/starrail-quests/문서/lore-20064.html#section-1-row-1",
+      "quote": "트리비는 깨달음의 나무 정원으로 떠난 트리앤이 다시 한번 「백계의 문」을 열었다는 것을 알고, 매우 불안해한다……"
+    },
+    {
+      "id": "lore-20065",
+      "name": "[트리비]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20065.DescTextmapID",
+      "hash": "9838854162822678628",
+      "url": "/starrail-quests/문서/lore-20065.html#section-1-row-1",
+      "quote": "크렘노스 사람과 오크마 사람을 화해시키기 위해 트리비, 트리앤 그리고 트리논은 티탄을 알현하고 기억을 되찾기로 결정한다……"
+    },
+    {
+      "id": "lore-20066",
+      "name": "[마이데이]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20066.DescTextmapID",
+      "hash": "15930688905975166230",
+      "url": "/starrail-quests/문서/lore-20066.html#section-1-row-1",
+      "quote": "마이데이는 뒷일을 잘 마무리했다. 이젠 고향으로 돌아갈 때다……"
+    },
+    {
+      "id": "lore-20067",
+      "name": "[아낙사]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20067.DescTextmapID",
+      "hash": "2945573534591339802",
+      "url": "/starrail-quests/문서/lore-20067.html#section-1-row-1",
+      "quote": "학자는 탐구의 길에서 몇 가지 간단한 원리를 지켜야 한다. 예를 들어 「인간은 재능을 충분히 발휘하고, 물건은 용도를 다해야 한다」라든가……"
+    },
+    {
+      "id": "lore-20068",
+      "name": "[아낙사]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20068.DescTextmapID",
+      "hash": "910512129201680315",
+      "url": "/starrail-quests/문서/lore-20068.html#section-1-row-1",
+      "quote": "지식은 학식이 있는 사람들의 두 번째 태양이고, 학자는 자리에 앉은 모든 어리석은 이들에게 아낌없이 햇빛을 비춘다…"
+    },
+    {
+      "id": "lore-20069",
+      "name": "[단항]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20069.DescTextmapID",
+      "hash": "10851964521510355223",
+      "url": "/starrail-quests/문서/lore-20069.html#section-1-row-1",
+      "quote": "아카이브를 유지 보수하는 가장 직접적인 방법은 현지의 아카이브를 방문하는 것이며, 단항은 이를 매우 잘 알고 있다……"
+    },
+    {
+      "id": "lore-20070",
+      "name": "[헤르타]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20070.DescTextmapID",
+      "hash": "17495377381777580304",
+      "url": "/starrail-quests/문서/lore-20070.html#section-1-row-1",
+      "quote": "앰포리어스는 그 지니어스를 움직일 수 있는 괜찮은 「질문」이었던 것 같다…"
+    },
+    {
+      "id": "lore-20071",
+      "name": "[카스토리스]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20071.DescTextmapID",
+      "hash": "3544821513431005533",
+      "url": "/starrail-quests/문서/lore-20071.html#section-1-row-1",
+      "quote": "아낙사는 티탄의 영혼 깊은 곳에 숨겨진 기억을 카스토리스에게 보여줬다. 그것은 산길의 환영의 연속이었다……"
+    },
+    {
+      "id": "lore-20072",
+      "name": "[카스토리스]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20072.DescTextmapID",
+      "hash": "3300038417399408206",
+      "url": "/starrail-quests/문서/lore-20072.html#section-1-row-1",
+      "quote": "낯선 얼굴이 불을 쫓는 여정의 시련에 대해 이야기하고 있다. 그것은 대체 언제, 어디서 일어났던 일일까……"
+    },
+    {
+      "id": "lore-20073",
+      "name": "[카스토리스]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20073.DescTextmapID",
+      "hash": "9259575246177351126",
+      "url": "/starrail-quests/문서/lore-20073.html#section-1-row-1",
+      "quote": "나이어스라는 이름의 용사가 자신의 영혼을 분열시켰다. 그것은… 니카도르의 과거였다……"
+    },
+    {
+      "id": "lore-20074",
+      "name": "[카스토리스]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20074.DescTextmapID",
+      "hash": "12223316102017255227",
+      "url": "/starrail-quests/문서/lore-20074.html#section-1-row-1",
+      "quote": "폴리시아와 그 「카스토리스」의 운명의 종착점이 타나토스의 행방을 밝혀줄 것이다……"
+    },
+    {
+      "id": "lore-20075",
+      "name": "[사이퍼]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20075.DescTextmapID",
+      "hash": "15098663502295522575",
+      "url": "/starrail-quests/문서/lore-20075.html#section-1-row-1",
+      "quote": "같은 시각, 사이퍼는 「도둑 유령」 바르톨로스를 붙잡고 저승의 강 강가에서 보물을 찾고 있다……"
+    },
+    {
+      "id": "lore-20076",
+      "name": "[사이퍼]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20076.DescTextmapID",
+      "hash": "18073262980101991523",
+      "url": "/starrail-quests/문서/lore-20076.html#section-1-row-1",
+      "quote": "사이퍼는 약속을 지키기 위해 얼마 전 저승의 강 강가로 향해 불씨를 노리는 적들을 홀로 상대하고 있다……"
+    },
+    {
+      "id": "lore-20077",
+      "name": "[히아킨]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20077.DescTextmapID",
+      "hash": "3700573911068738274",
+      "url": "/starrail-quests/문서/lore-20077.html#section-1-row-1",
+      "quote": "하늘에 닿으려는 자는 하늘의 축복을 얻어야 한다…"
+    },
+    {
+      "id": "lore-20078",
+      "name": "[카오스라나]의 기억이 파도처럼 밀려온다…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20078.DescTextmapID",
+      "hash": "14478088950180195552",
+      "url": "/starrail-quests/문서/lore-20078.html#section-1-row-1",
+      "quote": "「부세」의 이름으로, 케팔은 절대 잊지 않을 것이다"
+    },
+    {
+      "id": "lore-20079",
+      "name": "[로빈]의 기억이 서서히 떠오르는 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20079.DescTextmapID",
+      "hash": "6812365717142747740",
+      "url": "/starrail-quests/문서/lore-20079.html#section-1-row-1",
+      "quote": "그것이 당신의 첫 번째 꿈 입장이었다. 당신을 맞이한 로빈은 목소리를 잃고 괴로워했다……"
+    },
+    {
+      "id": "lore-20080",
+      "name": "[단항]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20080.DescTextmapID",
+      "hash": "17607696832687138535",
+      "url": "/starrail-quests/문서/lore-20080.html#section-1-row-1",
+      "quote": "단항은 정신 점프를 통해 은하열차로 돌아왔지만, 그 사이 너무나도 많은 것이 변해버렸다……"
+    },
+    {
+      "id": "lore-20081",
+      "name": "[블랙 스완]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20081.DescTextmapID",
+      "hash": "4134922832983736085",
+      "url": "/starrail-quests/문서/lore-20081.html#section-1-row-1",
+      "quote": "「에버나이트」와 동행하며 블랙 스완은 「기억」이 앰포리어스의 얽힌 운명에 어떻게 관여하는지 목격하게 된다……"
+    },
+    {
+      "id": "lore-20082",
+      "name": "[블랙 스완]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20082.DescTextmapID",
+      "hash": "16474419261080242296",
+      "url": "/starrail-quests/문서/lore-20082.html#section-1-row-1",
+      "quote": "에버나이트와 선데이의 짧은 만남을 틈타, 블랙 스완은 운명의 강을 거슬러 올라갔다……"
+    },
+    {
+      "id": "lore-20083",
+      "name": "[단항]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20083.DescTextmapID",
+      "hash": "10148376553912565270",
+      "url": "/starrail-quests/문서/lore-20083.html#section-1-row-1",
+      "quote": "단항은 앰포리어스로 돌아와 {NICKNAME}을(를) 찾아 Mar. 7th와 재회하기로 결심했다……"
+    },
+    {
+      "id": "lore-20084",
+      "name": "[로빈]의 기억이 서서히 떠오르는 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20084.DescTextmapID",
+      "hash": "10613328969379775988",
+      "url": "/starrail-quests/문서/lore-20084.html#section-1-row-1",
+      "quote": "시점이 로빈의 쪽으로 돌아온다. 음모가 꿈이 흐르는 암초의 역사 속에 숨겨져 있고, 그녀가 밝히기를 기다리고 있다……"
+    },
+    {
+      "id": "lore-20085",
+      "name": "[달리아]의 기억이 서서히 떠오르는 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20085.DescTextmapID",
+      "hash": "13926479804641762096",
+      "url": "/starrail-quests/문서/lore-20085.html#section-1-row-1",
+      "quote": "당신이 한 번도 가보지 못한 기이한 꿈세계에서 달리아는 그녀의 「진짜 모습」을 드러낼 것이다……"
+    },
+    {
+      "id": "lore-20088",
+      "name": "[반디]의 기억이 서서히 떠오르는 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20088.DescTextmapID",
+      "hash": "13367375188605891904",
+      "url": "/starrail-quests/문서/lore-20088.html#section-1-row-1",
+      "quote": "은랑의 도움으로 반디는 페나코니에 잠입하려 한다……"
+    },
+    {
+      "id": "lore-20089",
+      "name": "[반디]의 기억이 서서히 떠오르는 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20089.DescTextmapID",
+      "hash": "2585168311872430780",
+      "url": "/starrail-quests/문서/lore-20089.html#section-1-row-1",
+      "quote": "「죽음」의 습격으로 반디와 흩어졌고, 이때 그녀는 자신의 또 다른 동료를 만났다……"
+    },
+    {
+      "id": "lore-20090",
+      "name": "[반디]의 기억이 서서히 떠오르는 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20090.DescTextmapID",
+      "hash": "15349979494051893674",
+      "url": "/starrail-quests/문서/lore-20090.html#section-1-row-1",
+      "quote": "시점이 반디 쪽으로 돌아온다. 어쩌다 보니 그녀는 꿈의 주인의 음모의 결말로 깊이 들어가고 있었다……"
+    },
+    {
+      "id": "lore-20091",
+      "name": "[히메코]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20091.DescTextmapID",
+      "hash": "3274442422260553909",
+      "url": "/starrail-quests/문서/lore-20091.html#section-1-row-1",
+      "quote": "은하열차 일행은 앰포리어스 진입을 준비한다……"
+    },
+    {
+      "id": "lore-20092",
+      "name": "[헤르타]의 시점으로 전환 중…",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20092.DescTextmapID",
+      "hash": "9432047610716785690",
+      "url": "/starrail-quests/문서/lore-20092.html#section-1-row-1",
+      "quote": "헤르타와 스크루룸이 셉터의 내핵층으로 진격하고 있다……"
+    },
+    {
+      "id": "lore-20093",
+      "name": "아직 끝나지 않은 [키레네]의 이야기……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20093.DescTextmapID",
+      "hash": "16701756445914236434",
+      "url": "/starrail-quests/문서/lore-20093.html#section-1-row-1",
+      "quote": "아이언툼은 고요해졌지만, 이야기는 아직 끝나지 않았다……"
+    },
+    {
+      "id": "lore-20094",
+      "name": "[반디]의 기억이 서서히 떠오르는 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20094.DescTextmapID",
+      "hash": "8667871071809976076",
+      "url": "/starrail-quests/문서/lore-20094.html#section-1-row-1",
+      "quote": "긴 밤이 저물어가고, 불나방은 불로 뛰어든다"
+    },
+    {
+      "id": "lore-20095",
+      "name": "[로빈]의 기억이 서서히 떠오르는 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20095.DescTextmapID",
+      "hash": "5713694212777072948",
+      "url": "/starrail-quests/문서/lore-20095.html#section-1-row-1",
+      "quote": "시점이 로빈의 쪽으로 돌아온다. 에나의 꿈에서 벗어난 후에도 그녀가 마주한 위기는 아직 해결되지 않았다……"
+    },
+    {
+      "id": "lore-20096",
+      "name": "[히메코]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20096.DescTextmapID",
+      "hash": "12836171507455931031",
+      "url": "/starrail-quests/문서/lore-20096.html#section-1-row-1",
+      "quote": "{NICKNAME} 일행이 2차원 시티를 즐겁게 여행하는 동안, 열차팀의 두 어른은 펄을 접견하고 있었는데……"
+    },
+    {
+      "id": "lore-20097",
+      "name": "[망귀인]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20097.DescTextmapID",
+      "hash": "2789854258083820676",
+      "url": "/starrail-quests/문서/lore-20097.html#section-1-row-1",
+      "quote": "{NICKNAME} 일행이 스파키와 실랑이를 벌이는 동안, 정운은 도브브룩 구역으로 가서 위험한 임무를 수행해야만 했는데……"
+    },
+    {
+      "id": "lore-20098",
+      "name": "[은랑]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20098.DescTextmapID",
+      "hash": "13013570150725855329",
+      "url": "/starrail-quests/문서/lore-20098.html#section-1-row-1",
+      "quote": "정운은 순조롭게 가면을 훔쳐 달아났다. 얼마 지나지 않아, 가면을 잃어버린 불운한 사람도 도브브룩 구역에 도착하게 된다……"
+    },
+    {
+      "id": "lore-20099",
+      "name": "[애쉬베일]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20099.DescTextmapID",
+      "hash": "15653858738333534749",
+      "url": "/starrail-quests/문서/lore-20099.html#section-1-row-1",
+      "quote": "범인의 자취를 쫓아 다리 위에 선 애쉬베일, 잠시 과거의 기억을 떠올린다……"
+    },
+    {
+      "id": "lore-20100",
+      "name": "[애쉬베일]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20100.DescTextmapID",
+      "hash": "6948859994907691109",
+      "url": "/starrail-quests/문서/lore-20100.html#section-1-row-1",
+      "quote": "다시 「세상 끝」을 찾은 애쉬베일은 극도로 위험한 목표를 물었다……"
+    },
+    {
+      "id": "lore-20101",
+      "name": "[히메코]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20101.DescTextmapID",
+      "hash": "15852495555566248882",
+      "url": "/starrail-quests/문서/lore-20101.html#section-1-row-1",
+      "quote": "히메코는 아버지의 의문점을 쫓으며, 잠시 파멸과 관련된 그 미술품들을 떠올렸다…"
+    },
+    {
+      "id": "lore-20102",
+      "name": "[에바네시아]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20102.DescTextmapID",
+      "hash": "15398439013244423122",
+      "url": "/starrail-quests/문서/lore-20102.html#section-1-row-1",
+      "quote": "{NICKNAME}이(가) 학교에서 조사하고 있을 때, 에바네시아와 효광도 시필드 시티에 도착한다……"
+    },
+    {
+      "id": "lore-20103",
+      "name": "[스파키]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20103.DescTextmapID",
+      "hash": "6313634203390758432",
+      "url": "/starrail-quests/문서/lore-20103.html#section-1-row-1",
+      "quote": "한편, 스파키는 「술집」에서 누군가와 담소를 나누고 있다……"
+    },
+    {
+      "id": "lore-20104",
+      "name": "[에바네시아]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20104.DescTextmapID",
+      "hash": "17506339367973939467",
+      "url": "/starrail-quests/문서/lore-20104.html#section-1-row-1",
+      "quote": "에바네시아는 척도를 꺼내 들고, 자신의 사명을 다하려고 준비한다……"
+    },
+    {
+      "id": "lore-20105",
+      "name": "[은랑]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20105.DescTextmapID",
+      "hash": "8045777949447212272",
+      "url": "/starrail-quests/문서/lore-20105.html#section-1-row-1",
+      "quote": "이때, 펄의 화실에서 은랑도 움직이려고 한다……"
+    },
+    {
+      "id": "lore-20106",
+      "name": "[히메코]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20106.DescTextmapID",
+      "hash": "3288935711465984745",
+      "url": "/starrail-quests/문서/lore-20106.html#section-1-row-1",
+      "quote": "얼마 전, 히메코는 아삿 프라마드에 의해 어떤 그림 속 세계로 끌려갔다……"
+    },
+    {
+      "id": "lore-20107",
+      "name": "[어벤츄린]의 시점으로 전환 중……",
+      "kind": "reading-instruction",
+      "group": "instructions",
+      "source": "LoadingDesc:20107.DescTextmapID",
+      "hash": "14944339368566076142",
+      "url": "/starrail-quests/문서/lore-20107.html#section-1-row-1",
+      "quote": "한편, 어벤츄린은 홀로 레이싱 경기 스튜디오로 향하는데…"
+    }
+  ]
+}
