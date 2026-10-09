@@ -1,4 +1,5 @@
 ---
+import {sourceDescription} from '../../lib/seo.mjs';
 import {disclosureAttributes,sourceLinkAttributes} from '../../lib/reading-kit/reader.mjs';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import universe from '../../../data/universe-catalog.json';
@@ -18,7 +19,7 @@ const sourceRecords=sources.modes.find(mode=>mode.id===m.id)?.records||[];
 const settingTexts=official.records.filter(record=>record.modeId===m.id);
 const cluster=clusters.clusters.find(c=>c.modeId===m.id);
 ---
-<StarlightPage frontmatter={{title:m.name,editUrl:false,tableOfContents:false}}>
+<StarlightPage frontmatter={{title:m.name,description:sourceDescription([m.name,'우주 콘텐츠 원문과 관련 기록',m.intro]),editUrl:false,tableOfContents:false}}>
  <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('우주.html')}>우주 콘텐츠·아이템</a><span>/</span><span>{m.name}</span></nav>
  <p class="page-deck">{m.intro}</p><p class="muted">원문에 근거한 요약 · 아래 기록과 발언을 대조한 읽기 묶음</p>
  <details {...disclosureAttributes({className:'source-details'})}><summary>개요의 원문 근거 · {m.introEvidence.status}</summary><blockquote class="rw-quotation">{m.introEvidence.quote}</blockquote><a {...sourceLinkAttributes({reading:true})} href={href(m.introEvidence.url)}>{m.introEvidence.title} · 이 발언의 원문 ↗</a></details>

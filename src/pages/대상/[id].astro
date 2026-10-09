@@ -1,4 +1,5 @@
 ---
+import {sourceDescription} from '../../lib/seo.mjs';
 import {disclosureAttributes} from '../../lib/reading-kit/reader.mjs';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import Scene from '../../components/Scene.astro';
@@ -16,7 +17,7 @@ const curated=atlas.nodes.filter(n=>normalize(n.name)===normalize(e.name)||e.axi
 const mentions=(e.mentions||[]).slice(0,24);
 const sourceDocs=e.axis==='aeon'?e.documents.map(id=>doc(id)):[];
 ---
-<StarlightPage frontmatter={{title:e.name,editUrl:false,tableOfContents:false}}>
+<StarlightPage frontmatter={{title:e.name,description:sourceDescription([e.name,label,e.axis==='person'?'인물 이야기와 관련 발언':e.axis==='region'?'지역의 임무·서적·설정':'운명의 길과 에이언즈 원문'],e.description||e.stories?.[0]?.text),editUrl:false,tableOfContents:false}}>
  <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('설정집.html')}>설정집</a><span>/</span><a href={href('관점/'+e.axis+'.html')}>{label}</a><span>/</span><span>{e.name}</span></nav>
  <p class="page-deck">{e.axis==='region'?'이곳의 임무·서적·설정을 함께 읽습니다.':e.axis==='person'?'인물의 과거와 행적을 원문 이야기와 발언에서 읽습니다.':'운명의 길과 에이언즈를 설명하는 기록을 대조합니다.'}</p>
  {e.description&&<blockquote class="entity-definition">{e.description}</blockquote>}

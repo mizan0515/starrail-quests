@@ -1,16 +1,25 @@
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
+import sitemap from '@astrojs/sitemap';
+import fs from 'node:fs';
+import {canonicalPageUrl} from './src/lib/seo.mjs';
 import {buildReadingGraph} from './tools/build_reading_graph.mjs';
 await buildReadingGraph();
 
 const base=process.env.SITE_BASE || '/starrail-quests';
+const aliases=JSON.parse(fs.readFileSync(new URL('./data/aliases.json',import.meta.url),'utf8'));
+const sitemapPage=(url)=>{
+  const pathname=decodeURIComponent(new URL(url).pathname);
+  const relative=pathname.slice(base.replace(/\/$/,'').length).replace(/^\//,'').replace(/\.html$/,'');
+  return !relative.startsWith('alias/') && relative!=='시작' && !['404','500'].includes(relative) && !(relative.startsWith('문서/') && Object.hasOwn(aliases,relative.slice('문서/'.length)));
+};
 // Starlight adds the configured base to sidebar links itself.
 const link=(path)=>`/${path}`;
 export default defineConfig({
   site:'https://mizan0515.github.io',base,trailingSlash:'never',
   build:{format:'file'},
   vite:{ssr:{external:['satteri']}},
-  integrations:[starlight({
+  integrations:[sitemap({filter:sitemapPage,serialize:item=>({...item,url:canonicalPageUrl(item.url)})}),starlight({
     title:'스타레일 · 별의 기록',description:'스타레일 한국어 임무와 설정을 맥락으로 연결한 자료집',
     defaultLocale:'root',locales:{root:{label:'한국어',lang:'ko'}},
     customCss:['./src/styles/library.css','./src/styles/context.css','./src/styles/complete-library.css','./src/styles/reading-system.css','./src/lib/reading-kit/reading.css','./src/styles/universe.css','./src/styles/mission-reader.css','./src/lib/reading-kit/reader.css','./src/lib/reading-kit/search-dialog.css','./src/lib/reading-kit/cva.css'],
@@ -23,7 +32,7 @@ export default defineConfig({
       {label:'설정의 연결',collapsed:true,items:[['paths-and-factions','에이언즈와 파벌'],['xianzhou-immortality','선주 · 영생과 마각'],['borisin-and-foxians','보리인과 여우족'],['belobog-preservation','벨로보그 · 보존의 의미'],['penacony-memory','페나코니 · 꿈과 기록'],['amphoreus-myth-and-life','앰포리어스 · 신화와 일상'],['herta-life-and-knowledge','헤르타 · 생명과 지식']].map(([k,label])=>({label,link:link(`설정/${k}.html`)}))},
       {label:'읽기 안내',items:[{label:'수록 범위와 출처',link:link('자료안내.html')}]}
     ],
-    components:{Sidebar:'./src/components/Sidebar.astro',Footer:'./src/components/Footer.astro',Search:'./src/components/Search.astro'},
+    components:{Sidebar:'./src/components/Sidebar.astro',Footer:'./src/components/Footer.astro',Search:'./src/components/Search.astro',Head:'./src/components/Head.astro'},
     pagination:false,lastUpdated:false
   })]
 });

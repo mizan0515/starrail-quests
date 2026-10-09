@@ -3,7 +3,7 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import {stats,href,versionEvidence} from '../lib/data';
 import {dataset,dialogueData} from '../lib/explorer';
 ---
-<StarlightPage frontmatter={{title:'수록 범위와 출처',editUrl:false,tableOfContents:false}}>
+<StarlightPage frontmatter={{title:'수록 범위와 출처',description:'붕괴: 스타레일 한국어 임무·대사·설정 자료집의 원문 수록 범위와 출처. 대사 식별자, 버전 수록 시점, 임무 진행과 원문·편집 해설의 구분을 확인합니다.',editUrl:false,tableOfContents:false}}>
   <p class="page-deck">원문은 보존하고, 독서의 순서와 해설은 구분합니다.</p>
   <h2>수록 자료</h2><p>로컬 한국어 문자열 {stats.original.korean_texts.toLocaleString()}개와 대사 {stats.original.local_dialogues.toLocaleString()}개를 추출한 자료에서, 임무와 설정 원문 {stats.documents.toLocaleString()}개 문서를 독서용으로 연결했습니다. 동일한 유물·아이템 본문과 같은 임무의 진행 조각 {stats.aliases}개 항목은 대표 문서에 통합했습니다.</p>
   <p>임무 목표 {stats.localSubMissions.toLocaleString()}개와 챕터 {stats.chapters}개를 추가로 로컬 표에서 읽었습니다. 게임 파일을 수정하지 않았습니다. 이번 갱신에서는 대사 표와 한국어 TextMap을 다시 직접 읽어 한국어 본문이 있는 대사 {dialogueData.evidence.displayed.toLocaleString()}개를 버전별 대사 읽기에 모두 넣었습니다. 본문이 없는 {dialogueData.evidence.missingKorean}개 참조는 임의로 채우지 않았습니다.</p>

@@ -5,6 +5,8 @@ Push-Location $Root
 try {
   & npm.cmd run build
   if($LASTEXITCODE -ne 0){throw 'Reading build failed'}
+  & npm.cmd run qa:seo
+  if($LASTEXITCODE -ne 0){throw 'Canonical sitemap and whole page metadata QA failed'}
   & npm.cmd run qa:reading
   if($LASTEXITCODE -ne 0){throw 'Reading data QA failed'}
   & node --test tools/build_reading_graph.test.mjs
