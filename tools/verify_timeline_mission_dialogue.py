@@ -75,7 +75,9 @@ def iter_scenes(data):
             yield mission, scene
 
 
-def artifact_check(data, site, row_check, privacy_check, audit=None, joins=None, contexts=None):
+def artifact_check(data, site, row_check, privacy_check, audit=None, joins=None, contexts=None,
+                   expected_counts=None, expected_conditions=4, expected_options=6,
+                   expected_repeats=None, owner_kind='EXPLICIT_MAIN_MISSION_ID'):
     require(not sys.flags.optimize, 'Gate must run without Python -O')
     privacy_check(data)
     same(data['schema'], 'starrail-timeline-mission-dialogue.v1', 'schema')
@@ -92,7 +94,8 @@ def artifact_check(data, site, row_check, privacy_check, audit=None, joins=None,
     counts = {'missions': len(data['missions']), 'scenes': len(scenes), 'rows': len(rows),
               'uniqueTalkIds': len({r['talk_id'] for r in rows})}
     same(data['counts'], counts, 'counts')
-    same(counts, {'missions': 30, 'scenes': 80, 'rows': 1120, 'uniqueTalkIds': 1119}, 'frozen typed cohort')
+    same(counts, expected_counts if expected_counts is not None else
+         {'missions': 30, 'scenes': 80, 'rows': 1120, 'uniqueTalkIds': 1119}, 'frozen typed cohort')
     cache = {}
     def document(relative, expected_sha):
         if relative not in cache:
@@ -105,7 +108,7 @@ def artifact_check(data, site, row_check, privacy_check, audit=None, joins=None,
         require(scene['recordType'] == 'TIMELINE_DIALOGUE' and
                 scene['mapping'] == 'EXACT_TYPED_TIMELINE_TO_OFFICIAL_KOREAN_TALK', 'Source kind mislabelled')
         owner = scene['ownership'][0]
-        require(owner['kind'] == 'EXPLICIT_MAIN_MISSION_ID', 'Missing explicit ownership seed')
+        require(owner['kind'] == owner_kind, 'Missing explicit ownership seed')
         canonical = 'quest-' + str(owner['canonicalMissionId'])
         same(aliases.get(canonical, canonical), mission, 'owner alias target')
         doc = read(site / 'data/documents' / (mission + '.json'))
@@ -155,10 +158,11 @@ def artifact_check(data, site, row_check, privacy_check, audit=None, joins=None,
                 same(str(row[key]) if key == 'hash' else row[key], str(local[key]) if key == 'hash' else local[key], 'preserved row ' + key)
             target = '대사/' + Path(preserved['file']).stem + '.html#talk-' + str(row['talk_id'])
             same(row['url'], target, 'original dialogue link')
-    same(sum(len(s['triggerContext']['conditions']) for _, s in scenes), 4, 'recognized trigger conditions')
-    same(sum(len(s['optionReferences']) for _, s in scenes), 6, 'nonspoken option refs')
+    same(sum(len(s['triggerContext']['conditions']) for _, s in scenes), expected_conditions, 'recognized trigger conditions')
+    same(sum(len(s['optionReferences']) for _, s in scenes), expected_options, 'nonspoken option refs')
     repeat = Counter(r['talk_id'] for r in rows)
-    same({tid: n for tid, n in repeat.items() if n > 1}, {154010409: 2}, 'actual repeated clip occurrences')
+    same({tid: n for tid, n in repeat.items() if n > 1}, expected_repeats if expected_repeats is not None else
+         {154010409: 2}, 'actual repeated clip occurrences')
     if audit is not None:
         require(joins is not None and contexts is not None, 'Audit requires joins and contexts')
         lookup = {r['talkID']: r for r in joins['joins']}

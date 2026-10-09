@@ -1,0 +1,31 @@
+---
+import {href} from '../lib/data';
+import {disclosureAttributes,sourceLinkAttributes} from '../lib/reading-kit/reader.mjs';
+const {links=[]}=Astro.props;
+---
+{links.length>0&&<section class="native-related-message" aria-label="이 임무와 연결된 메시지">
+ <h3>함께 읽는 메시지</h3>
+ {links.map(link=><article data-native-mission-message={link.id}>
+  <a id={'native-related-'+link.id} href={href(link.url)} {...sourceLinkAttributes({reading:true,variant:'inline'})}>{link.title} ↗</a>
+  <p>{link.excerpt}</p>
+  <p class="muted">이 임무의 완료 설정에서 참조한 메시지 원문입니다. 메시지의 실제 재생 시점은 확인 중입니다.</p>
+  <details {...disclosureAttributes({className:'source-details'})} data-pagefind-ignore>
+   <summary>임무와 메시지의 원문 연결</summary>
+   <ol>{link.sourceEdges.map(edge=><li>
+    {edge.source||edge.tableSource||edge.identity?.source}<br/>{edge.pointer||edge.rowPointer||edge.taskPointer}
+    {edge.value!==undefined&&<><br/>임무 {edge.value}</>}
+    {edge.target&&<><br/>{edge.target}</>}
+    {edge.trigger&&<><br/>연출 {edge.trigger.PerformanceID} · {edge.trigger.PerformanceTypeLabel}</>}
+    {edge.task&&<><br/>하위 임무 {edge.task.SubmissionID} · 메시지 {edge.task.MessageSectionID}</>}
+    {edge.sourceUrl&&<><br/><a href={edge.sourceUrl}>{edge.packFile?'공식 설정 팩 원문':'연출 표 원문'} ↗</a></>}
+    {edge.packFile&&<><br/>{edge.packFile} · {edge.packOffset}–{edge.packOffset+edge.packLength}<br/>엔트리 SHA-256 · {edge.sourceSha256}<br/>팩 SHA-256 · {edge.packSha256}</>}
+    {edge.tableSha256&&<><br/>표 SHA-256 · {edge.tableSha256}</>}
+   </li>)}</ol>
+   <p>보존 메시지 SHA-256 · {link.documentSha256}</p>
+  </details>
+ </article>)}
+</section>}
+<style>
+ .native-related-message{margin-block:2rem;padding-block:1rem;border-block-start:1px solid var(--sl-color-hairline)}
+ article>p{line-height:1.8}.muted{font-size:.85rem}li{margin-block:.6rem;overflow-wrap:anywhere}
+</style>

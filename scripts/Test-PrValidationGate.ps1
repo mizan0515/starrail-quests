@@ -47,6 +47,8 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Official mission source disclosure HTML QA failed'}
   & python -B -X utf8 tools/verify_timeline_mission_dialogue.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Typed Timeline original dialogue and mission reader QA failed'}
+  & python -B -X utf8 tools/verify_native_timeline_mission_dialogue.py --dist dist --self-test
+  if($LASTEXITCODE -ne 0){throw 'Native Timeline owner, original choices and reader QA failed'}
   & python -B -X utf8 tools/verify_official_video_captions.py --artifact-only --self-test
   if($LASTEXITCODE -ne 0){throw 'Official video caption artifact and ownership QA failed'}
   & python -B -X utf8 tools/verify_official_caption_site.py

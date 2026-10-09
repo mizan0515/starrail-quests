@@ -16,6 +16,13 @@ export function missionRowLinked(section,row,coverage={}){
    &&Array.isArray(owner.chain)&&owner.chain.length>0;
  }
  const chain=section.relatedDocument?.ownership||coverage.sourceOwnership?.[section.source]||section.ownership;
+ if(chain?.[0]?.kind==='EXPLICIT_NATIVE_MAIN_MISSION_ID'){
+  const seed=chain[0];
+  return ['TIMELINE_DIALOGUE','NATIVE_TIMELINE_CHOICES'].includes(section.recordType)
+   &&seed.value===seed.missionId&&seed.missionId===seed.canonicalMissionId
+   &&seed.pointer==='/OwnerMainMissionID'&&section.nativeOwnership?.edges?.length===5
+   &&Array.isArray(coverage.missionIds)&&coverage.missionIds.some(id=>String(id)===String(seed.missionId));
+ }
  if(chain?.[0]?.kind!=='EXPLICIT_MAIN_MISSION_ID')return false;
  const scope=section.relatedDocument?undefined:coverage.sourceTalkScopes?.[section.source];
  if(!section.relatedDocument&&chain.some(edge=>edge.kind==='EXPLICIT_SUBMISSION_FINISH_SCOPE'&&edge.target===section.source)&&!scope)throw Error('Missing proved dialogue scope: '+section.source);
