@@ -15,3 +15,21 @@ test('direct proof anchors open the current template and focus its summary, incl
   context.location.hash='#%ZZ';assert.doesNotThrow(()=>listeners.hashchange());
  }
 });
+
+test('Back restores the clicked visible source link when earlier hidden proofs have the same URL',()=>{
+ const href='https://example.test/source.html#field';
+ const hidden={href,focused:false,getClientRects:()=>[],focus(){this.focused=true;}};
+ const clicked={href,focused:false,getClientRects:()=>[{}],focus(){this.focused=true;}};
+ const details=[{open:false},{open:true}],listeners={},events={};let stored=null,scroll=null;
+ class Element {closest(){return clicked;}}
+ const context={Element,location:{pathname:'/setting.html',search:'',hash:'',origin:'https://example.test'},scrollY:735,
+  document:{getElementById(){return null;},querySelectorAll(selector){return selector==='main details'?details:[hidden,clicked];},addEventListener(name,handler){events[name]=handler;}},
+  window:{addEventListener(name,handler){listeners[name]=handler;},scrollTo(x,y){scroll=y;}},
+  sessionStorage:{getItem(){return stored;},setItem(key,value){stored=value;}},requestAnimationFrame:cb=>cb(),performance:{getEntriesByType(){return [{type:'back_forward'}];}},URL};
+ vm.runInNewContext(source,context);events.click({target:new Element()});
+ assert.equal(JSON.parse(stored).followedIndex,1);
+ details[1].open=false;listeners.pageshow({persisted:false});
+ assert.equal(details[1].open,true);assert.equal(clicked.focused,true);assert.equal(hidden.focused,false);assert.equal(scroll,735);
+ clicked.focused=false;stored=JSON.stringify({open:[false,true],followed:href,scrollY:735});listeners.pageshow({persisted:true});
+ assert.equal(clicked.focused,true);assert.equal(hidden.focused,false);
+});
