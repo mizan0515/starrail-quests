@@ -1,21 +1,31 @@
 // Restore the reader's disclosure and focus state when returning from a source.
 import './relation-layout.mjs';
-const key='reading-state.v1:'+location.pathname+location.search;
+const key=()=>'reading-state.v1:'+location.pathname+location.search;
 const disclosures=()=>[...document.querySelectorAll('main details')];
 let followed='';
 let followedIndex=-1;
-const save=()=>{try{sessionStorage.setItem(key,JSON.stringify({open:disclosures().map(d=>d.open),scrollY,followed,followedIndex}));}catch{}};
+const save=()=>{try{sessionStorage.setItem(key(),JSON.stringify({open:disclosures().map(d=>d.open),scrollY,followed,followedIndex}));}catch{}};
 const restore=()=>{
  try {
-  const state=JSON.parse(sessionStorage.getItem(key)||'null');
+  const state=JSON.parse(sessionStorage.getItem(key())||'null');
   if(!state)return;
   disclosures().forEach((d,i)=>{if(typeof state.open[i]==='boolean')d.open=state.open[i];});
   requestAnimationFrame(()=>{
-   const links=[...document.querySelectorAll('main a')];
-   const clicked=links[state.followedIndex];
-   const target=clicked?.href===state.followed?clicked:links.find(a=>a.href===state.followed&&a.getClientRects().length);
-   target?.focus({preventScroll:true});
+   const focus=()=>{
+    const links=[...document.querySelectorAll('main a')];
+    const clicked=links[state.followedIndex];
+    const target=clicked?.href===state.followed&&clicked.getClientRects().length?clicked:links.find(a=>a.href===state.followed&&a.getClientRects().length);
+    target?.focus({preventScroll:true});return !!target;
+   };
    window.scrollTo(0,state.scrollY);
+   if(state.followed&&!focus()){
+    // Filtered catalogs can render their links after pageshow. Restore the
+    // actual visible link when its source controller finishes rendering.
+    let timeout;
+    const pending=new MutationObserver(()=>{if(focus()){pending.disconnect();clearTimeout(timeout);window.scrollTo(0,state.scrollY);}});
+    pending.observe(document.querySelector('main')||document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['href','hidden']});
+    timeout=setTimeout(()=>pending.disconnect(),3000);
+   }
   });
  } catch{}
 };
