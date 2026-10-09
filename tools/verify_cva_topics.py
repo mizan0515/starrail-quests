@@ -157,6 +157,23 @@ def verify(dist):
             require('함께 읽는 순서' in ''.join(n['text'] for n in page.selected('data-universe-cluster')),
                     'Reading sequence label missing')
         counts['researchClusters'] += 1
+    # A dictionary alias is not evidence of entity identity in running prose.
+    # Keep the reviewed proper-name links, while ordinary memory preservation
+    # stays literal text. Explicit relation endpoints are checked separately.
+    paths = [dist / '세력.html', dist / '설정집.html', *sorted((dist / '맥락').glob('*.html'))]
+    proper_links = 0
+    for source in paths:
+        page = Page(source.read_text('utf8'))
+        for node in page.nodes:
+            if node['tag'] != 'a' or 'setting-entity-link' not in node['attrs'].get('class', '').split():
+                continue
+            require(node['text'].strip() != '보존', 'Ambiguous ordinary preservation auto-linked: ' + source.name)
+            if node['text'].strip() == '클리포트':
+                require(node['attrs']['href'].endswith('/preservation.html'), 'Reviewed proper-name destination differs')
+                proper_links += 1
+    require(proper_links > 0, 'Reviewed proper-name links were lost')
+    counts['entityContextPages'] = len(paths)
+    counts['preservedQlipothLinks'] = proper_links
     return dict(counts)
 
 
