@@ -3,6 +3,7 @@ import {readerDisclosure,sourceLink} from '../lib/reading-kit/reader.mjs';
 import {renderCvaModule} from '../lib/reading-kit/cva.mjs';
 import {createReadingKit,escapeHtml as E,cvaId} from '../lib/reading-kit/render.mjs';
 import {doc,docUrl} from '../lib/data';
+import {readingInline} from '../lib/atlas';
 const {cluster}=Astro.props;
 const proofUrl=e=>{const d=doc(e.docId),s=d.sections.find(s=>s.anchor===e.anchor);const index=s?.rows.findIndex(r=>e.talkId?r.talk_id===e.talkId:r.text===e.quote);if(index===undefined||index<0)throw Error('Missing cluster source: '+e.docId);return docUrl(e.docId)+'#'+e.anchor+'-row-'+(index+1);};
 const parts=p=>p.parts?`<div class="universe-role-split"><p>${E(p.partsRelation)}</p><div>${p.parts.map(part=>`<section><h4>${E(part.title)}</h4><p>${E(part.text)}</p></section>`).join('')}</div></div>`:'';
@@ -10,9 +11,9 @@ const panelExtras=p=>parts(p)+readerDisclosure(`이 설명의 원문 ${p.evidenc
 const sequence=cluster.layout==='sequence',parallel=cluster.layout==='split';
 const panels=renderCvaModule({id:cvaId('universe-'+cluster.id,cluster.panels),orientation:sequence?'vertical':'horizontal',type:sequence||parallel?'scene-composition':'comparison',variant:sequence?'scene-rail':parallel?'parallel-lanes':'columns',
  props:{title:'',body:'',...(sequence||parallel?{relationLabel:sequence?'함께 읽는 순서 · 연구 임무에서 두 제왕과 기물의 기록으로':'같은 질문을 서로 다른 기록에서 읽기',caption:''}:{})},
- items:cluster.panels.map((p,i)=>({id:'research-panel-'+i,title:p.title,body:p.text,label:p.author})),itemExtras:cluster.panels.map(panelExtras)
+ items:cluster.panels.map((p,i)=>({id:'research-panel-'+i,title:p.title,body:p.text,label:p.author})),itemBodies:cluster.panels.map(p=>readingInline(p.text)),itemExtras:cluster.panels.map(panelExtras)
 }).replace(/data-cva-item-index="(\d+)"/g,(_,i)=>`data-cva-item-index="${i}" data-cluster-panel="${E(cluster.id+'-'+i)}"`);
-const kit=createReadingKit();
+const kit=createReadingKit({inline:readingInline});
 
 ---
 <section id="research" class="universe-research not-content" data-universe-cluster={cluster.id}>

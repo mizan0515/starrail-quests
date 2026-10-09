@@ -1,6 +1,7 @@
 import atlas from '../../editorial/context-atlas.json';
 import explorer from '../../data/explorer.json';
 import {href,docUrl} from './data';
+import {escapeHtml} from './reading-kit/render.mjs';
 export {atlas};
 export const atlasUrl=(id:string)=>{const e=explorer.entries.find(e=>e.id===id);return e?e.axis==='concept'?docUrl(e.id):href(`대상/${e.id}.html`):href(`맥락/${id}.html`);};
 export const evidenceUrl=(e:any)=>`${docUrl(e.id)}#${e.anchor}`;
@@ -32,3 +33,4 @@ export function annotate(text:string){
   if(start<text.length)pieces.push({text:text.slice(start)});
   return pieces;
 }
+export const readingInline=(text:string)=>annotate(String(text)).map(piece=>piece.id?`<a class="setting-entity-link" data-reading-link href="${escapeHtml(atlasUrl(piece.id))}">${escapeHtml(piece.text)}</a>`:escapeHtml(piece.text)).join('');

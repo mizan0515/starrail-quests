@@ -31,6 +31,7 @@
 .cva-page[data-cva] .cva-item-extra{margin-block-start:1rem;line-height:1.8;color:var(--cva-copy);overflow-wrap:anywhere}
 .cva-page[data-cva] .cva-item-extra>:first-child{margin-block-start:0}
 .cva-page[data-cva] .cva-item-extra a{color:var(--cva-text);text-decoration-thickness:1px}
+.cva-page[data-cva] :is(.cva-item-body,.sc-item-body) a[data-reading-link]{color:inherit;text-decoration:underline;text-decoration-color:var(--cva-accent);text-decoration-thickness:1px;text-underline-offset:.2em}
 .cva-page[data-cva] :is(.cva-image-source,.sc-spotlight-nav a){min-block-size:44px;display:inline-flex;align-items:center}
 .cva-page[data-cva] :is(.cva-title,.cva-item-title,.sc-item-title) a{color:inherit;text-decoration:none}
 .cva-page[data-cva] :is(.cva-title,.cva-item-title,.sc-item-title) a:hover{text-decoration:underline;text-decoration-color:var(--cva-accent)}
@@ -214,6 +215,18 @@
 .rw-source-process .cva-page[data-cva] .sc-ring-members>li:not(:last-child)::after{content:'→';position:absolute;inset-inline-end:-1.5rem;inset-block-start:3.5rem;font-size:1.35rem;color:var(--cva-axis)}
 .rw-source-process .cva-page[data-cva] .sc-ring-members .sc-card{padding:1rem;border-radius:.5rem}
 .rw-source-process .cva-page[data-cva] .sc-ring-members .sc-item-title{font-size:1.2rem;line-height:1.5}
+/* Text-only stages use a small ordinal beside the content, without an image frame. */
+.rw-process .cva-page[data-cva] .sc-quest-rail{margin:0;padding:0;border:0;gap:1rem}
+.rw-process .cva-page[data-cva] .sc-quest-rail .sc-rail-entry:not(:has(.cva-media)){grid-template-columns:2.5rem minmax(0,1fr);gap:1rem;align-items:start}
+.rw-process .cva-page[data-cva] .sc-quest-rail .sc-rail-entry:not(:has(.cva-media)) .sc-rail-node{grid-column:1;grid-row:1;align-self:start}
+.rw-process .cva-page[data-cva] .sc-quest-rail .sc-rail-entry:not(:has(.cva-media)) .sc-node-token{inline-size:2.5rem;block-size:2.5rem;aspect-ratio:auto;font-size:1.1rem;font-weight:700;border-radius:50%}
+.rw-process .cva-page[data-cva] .sc-quest-rail .sc-rail-entry:not(:has(.cva-media)) .sc-copy{grid-column:2;grid-row:1;min-inline-size:0;padding:0 0 1rem;border-block-end:1px solid var(--cva-border)}
+.rw-process .cva-page[data-cva] .sc-quest-rail .sc-rail-entry:last-child .sc-copy{border-block-end:0;padding-block-end:0}
+.rw-process .cva-page[data-cva] .sc-quest-rail .sc-copy>.sc-item-title{margin-block:0;font-size:1.1rem}
+.rw-process .cva-page[data-cva] .sc-quest-rail .sc-copy>.sc-item-body{margin-block:.5rem 0}
+.rw-process .cva-page[data-cva] .sc-quest-rail .cva-item-extra{margin-block-start:.5rem}
+.rw-process .cva-page[data-cva] .sc-quest-rail .sc-copy>.cva-badge{margin-block:0 .35rem}
+@media(max-width:390px){.rw-process .cva-page[data-cva] .sc-quest-rail .sc-rail-entry:not(:has(.cva-media)){grid-template-columns:2rem minmax(0,1fr);gap:.65rem}.rw-process .cva-page[data-cva] .sc-quest-rail .sc-rail-entry:not(:has(.cva-media)) .sc-node-token{inline-size:2rem;block-size:2rem;font-size:.9rem}}
 .rw-process-return{display:flex;align-items:center;gap:.85rem;margin-block:1rem 0;padding:1rem 0 0;border:0;border-block-start:1px solid var(--line,var(--sl-color-hairline));border-radius:0;font-size:.9rem;line-height:1.8}
 .rw-process-return>span:first-child{flex:0 0 auto;font-size:1.75rem;color:var(--sl-color-text-accent)}
 @media(max-width:700px){
