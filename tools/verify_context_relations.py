@@ -1405,6 +1405,42 @@ def verify(site=SITE, atlas=None, graph=None, sources_only=False):
     for node in atlas['nodes']:
         require(node['id'] not in all_ids, 'Duplicate context entity')
         all_ids.add(node['id'])
+        require(('comparison' in node) != ('comparisonTopic' in node),
+                'Individual comparison scope must be explicit: ' + node['id'])
+        comparison = node.get('comparison')
+        if comparison is None:
+            require(node['comparisonTopic'] in atlas['comparisons'], 'Unknown explicit comparison topic')
+            comparison = atlas['comparisons'][node['comparisonTopic']]
+        if node['id'] == 'preservation':
+            require('comparison' in node and [p['evidence']['id'] for p in comparison['panels']] ==
+                    ['lore-10008', 'book-46', 'book-245'],
+                    'Memory policy comparison inherited by Preservation')
+            require(all(p['text'] == p['evidence']['quote'] for p in comparison['panels']),
+                    'Preservation comparison no longer contains its actual originals')
+        for panel in comparison['panels']:
+            evidence(panel['evidence'])
+        if not sources_only:
+            emitted_comparison = cluster_index['atlas/' + node['id']]['comparisons']
+            require(len(emitted_comparison) == len(comparison['panels']), 'Generated comparison scope differs')
+            for panel, emitted in zip(comparison['panels'], emitted_comparison):
+                claim = claims[emitted['claimId']]
+                require(emitted['title'] == panel['label'] and claim['text'] == panel['text'],
+                        'Generated comparison panel differs from its selected scope')
+                evs = [proof[e] for e in claim['evidenceIds']]
+                require(len(evs) == 1 and evs[0]['sourceId'] == panel['evidence']['id'] and
+                        evs[0]['quote'] == panel['evidence']['quote'], 'Generated comparison evidence differs')
+                e = panel['evidence']
+                original = evidence(e)
+                rows = next(s['rows'] for s in docs[e['id']]['sections'] if s['anchor'] == e['anchor'])
+                block_id = e['anchor'] + '-row-' + str(rows.index(original) + 1)
+                require(evs[0]['blockId'] == block_id and evs[0]['url'] ==
+                        '/starrail-quests/문서/' + e['id'] + '.html#' + block_id and
+                        evs[0]['sourceSha256'] == hashlib.sha256(original['text'].encode()).hexdigest(),
+                        'Generated comparison exact source identity differs')
+                speaker = panel.get('speaker') or e.get('speaker') or ('' if e.get('status') == '원문 서술' else e.get('status', ''))
+                kind = 'inference' if '편집' in panel.get('status', '') else ('attributed' if speaker else 'explicit')
+                require(claim['kind'] == kind and claim.get('speaker', '') == speaker,
+                        'Generated comparison attribution differs')
         timing = {'timeNote': node.get('timeNote', ''), 'timeline': [{k: e[k] for k in ('when', 'title', 'text')} for e in node.get('timeline', [])]}
         require(timing == REVIEWED_TIMING.get(node['id']), 'Original timing scope or event meaning differs: ' + node['id'])
         for e in node['evidence']:
@@ -1529,6 +1565,8 @@ def self_test(site, sources_only):
     atlas = read(site / 'editorial/context-atlas.json')
     rejected = rendered_relation_self_test()
     for label, mutate in [
+        ('IMPLICIT_TOPIC_COMPARISON', lambda a: next(n for n in a['nodes'] if n['id'] == 'paths').pop('comparisonTopic')),
+        ('MEMORY_POLICY_AS_PRESERVATION', lambda a: next(n for n in a['nodes'] if n['id'] == 'preservation').update(comparison=a['comparisons']['paths-and-factions'])),
         ('INCOMING_REVERSED', lambda a: next(n for n in a['nodes'] if n['id'] == 'swarm-research')['links'][1].update(direction='outgoing')),
         ('OUTGOING_REVERSED', lambda a: a['nodes'][0]['links'][0].update(direction='incoming')),
         ('UNKNOWN_DIRECTION', lambda a: a['nodes'][0]['links'][0].update(direction='sideways')),

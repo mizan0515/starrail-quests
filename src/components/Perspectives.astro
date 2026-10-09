@@ -1,9 +1,11 @@
 ---
 import {atlas} from '../lib/atlas';
+import {atlasComparison,comparisonReaderNode} from '../lib/atlas-comparison.mjs';
 import {readingGraph,readingKit,readingClaim} from '../lib/reading-data';
 const node=atlas.nodes.find(n=>n.id===Astro.props.nodeId);
-const comparison=node?.comparison||atlas.comparisons[Astro.props.topic];
-const cluster=readingGraph.clusters.find(c=>node?c.id==='atlas/'+node.id:c.topic===Astro.props.topic);
+const owner=comparisonReaderNode(atlas,node,Astro.props.topic);
+const comparison=atlasComparison(atlas,owner);
+const cluster=readingGraph.clusters.find(c=>c.id==='atlas/'+owner.id);
 ---
 {comparison?.panels.length>0&&<section class="perspective-section" id="perspectives">
   <p class="eyebrow">기록을 나란히 읽기</p><h2>{comparison.title}</h2>
