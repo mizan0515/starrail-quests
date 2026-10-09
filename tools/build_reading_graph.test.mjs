@@ -28,15 +28,15 @@ test('broad essays keep their reviewed comparison after a first reader overrides
  assert.notEqual(comparisonReaderNode(atlas,null,'paths-and-factions').id,'preservation');
 });
 test('incoming has the actual actor on the left while the reading context stays the destination',()=>{
- for(const [id,index,actor] of [['swarm-research',1,'ruan-mei'],['swarm-research',2,'person-1013'],['unknowable-research',1,'person-1013'],['ruan-mei',0,'person-1013'],['stellaron-hunters',0,'person-1005'],['genius-society',0,'lore-10222'],['memory-garden',0,'aeon-aeon-2'],['cremators',1,'memory-garden'],['mourning-actors',0,'aeon-aeon-7']]){
+ for(const [id,index,actor] of [['swarm-research',1,'ruan-mei'],['swarm-research',2,'person-1013'],['unknowable-research',1,'person-1013'],['ruan-mei',0,'person-1013'],['stellaron-hunters',0,'person-1005'],['stellaron-hunters',3,'lore-10021'],['stellaron-hunters',4,'lore-10022'],['stellaron-hunters',5,'lore-10023'],['stellaron-hunters',6,'lore-20025'],['stellaron-hunters',7,'lore-10151'],['genius-society',0,'lore-10222'],['memory-garden',0,'aeon-aeon-2'],['cremators',1,'memory-garden'],['mourning-actors',0,'aeon-aeon-7']]){
   const relation=atlas.nodes.find(n=>n.id===id).links[index];
   assert.equal(relation.direction,'incoming');
   assert.deepEqual(relationEndpoints(id,relation),{from:actor,to:id});
   assert.equal(claimAttribution(relation,[relation.evidence]).kind,['swarm-research','unknowable-research','memory-garden','cremators','mourning-actors'].includes(id)?'attributed':'explicit');
  }
 });
-test('all 81 reviewed source/target pairs have an explicit supported direction',()=>{
- const links=atlas.nodes.flatMap(n=>n.links.map(r=>[n.id,r]));assert.equal(links.length,81);
+test('all 86 reviewed source/target pairs have an explicit supported direction',()=>{
+ const links=atlas.nodes.flatMap(n=>n.links.map(r=>[n.id,r]));assert.equal(links.length,86);
  for(const [id,r] of links){assert.ok(['incoming','outgoing'].includes(r.direction));const pair=relationEndpoints(id,r);
   assert.deepEqual(new Set([pair.from,pair.to]),new Set([id,r.target]));
   assert.deepEqual(pair,r.direction==='incoming'?{from:r.target,to:id}:{from:id,to:r.target});}

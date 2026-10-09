@@ -1047,6 +1047,27 @@ REVIEWED_PROOFS = {'belobog/0': {'id': 'book-172',
                       'hash': '8398531447757381198',
                       'status': '원문 서술'}}
 
+# Additional member definitions reviewed from their complete LoadingDesc rows.
+# Each target keeps its own source title; this does not assert identity between
+# the Sam and Firefly records.
+for index, target, title, quote, source_hash, verb, why in [
+    (3, 'lore-10021', '은랑', '「스텔라론 헌터」의 멤버, 프로 해커.', '14562951342498353498',
+     '멤버·프로 해커로 소개된다', '은랑의 용어 기록은 그녀를 스텔라론 헌터의 멤버이자 프로 해커로 소개한다.'),
+    (4, 'lore-10022', '블레이드', '「스텔라론 헌터」의 멤버, 전장에 몸을 내던지는 검객', '5283593817727675108',
+     '멤버·검객으로 소개된다', '블레이드의 용어 기록은 그를 스텔라론 헌터의 멤버이자 검객으로 소개한다.'),
+    (5, 'lore-10023', '엘리오', '「운명의 노예」라고 불리는 「스텔라론 헌터」의 수장', '1343501224899969973',
+     '수장으로 소개된다', '엘리오의 용어 기록은 그를 「운명의 노예」라고 불리는 스텔라론 헌터의 수장으로 소개한다.'),
+    (6, 'lore-20025', '반디', '사실은 「스텔라론 헌터」의 일원이다.', '11948266266572970835',
+     '일원으로 기록된다', '반디의 용어 기록은 자신을 붓꽃 가문의 신인 엔터테이너라고 소개한 인물이 실제로는 스텔라론 헌터의 일원이라고 설명한다.'),
+    (7, 'lore-10151', '샘', '스텔라론 헌터 멤버로, 견고한 장갑을 장착한 전사다.', '15161422006678015479',
+     '멤버·전사로 소개된다', '샘의 용어 기록은 그를 스텔라론 헌터의 멤버이자 견고한 장갑을 장착한 전사로 소개한다.'),
+]:
+    reviewed_key = 'stellaron-hunters/' + str(index)
+    REVIEWED[reviewed_key] = [target, 'incoming', '원문 서술', verb, why]
+    REVIEWED_PROOFS[reviewed_key] = dict(id=target, title=title, anchor='section-1',
+                                        quote=quote, hash=source_hash, status='원문 서술')
+    INCOMING[('stellaron-hunters', index)] = (target, quote, None)
+
 REVIEWED_TOPOLOGIES = {'memory': {'id': 'memory-structure',
             'title': '기억 물질이 이루는 공간과 존재',
             'scaleNote': '용어 기록은 기억 영역과 기억 거품을 크기가 다른 집합체로 설명한다. 구체적인 크기와 비율은 미상이다.',
@@ -1451,7 +1472,7 @@ def verify(site=SITE, atlas=None, graph=None, sources_only=False):
             require(decision is not None and [relation.get(k) for k in ('target', 'direction', 'status', 'verb', 'why')] == decision,
                     'Actor/direction/setting-versus-editorial meaning differs from reviewed original context: ' + str(key))
             direction = relation.get('direction')
-            reviewed_structure = 'membership' if key in {('stellaron-hunters', 0), ('genius-society', 0)} else None
+            reviewed_structure = 'membership' if key in {('stellaron-hunters', i) for i in (0, 3, 4, 5, 6, 7)} | {('genius-society', 0)} else None
             require(relation.get('structure') == reviewed_structure, 'Relationship structure differs from source review: ' + str(key))
             require(direction in ('incoming', 'outgoing'), 'Explicit reviewed direction required')
             require((direction == 'incoming') == (key in INCOMING), 'Relation direction differs from semantic review: ' + str(key))

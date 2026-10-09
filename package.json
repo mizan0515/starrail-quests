@@ -5,7 +5,7 @@
   "scripts": {
     "build": "astro build",
     "preview": "astro preview",
-    "qa:reading": "node src/lib/reading-kit/integrity.mjs && node --test src/lib/reading-kit/*.test.mjs src/lib/directory-state.test.mjs src/lib/grouped-directory.test.mjs tools/mission-scope.test.mjs && node src/lib/reading-kit/qa.mjs public/reading-data",
+    "qa:reading": "node src/lib/reading-kit/integrity.mjs && node --test src/lib/reading-kit/*.test.mjs src/lib/directory-state.test.mjs src/lib/grouped-directory.test.mjs src/lib/source-identities.test.mjs tools/mission-scope.test.mjs && node src/lib/reading-kit/qa.mjs public/reading-data",
     "qa:seo": "python -B -X utf8 tools/verify_seo.py --self-test"
   },
   "devDependencies": {

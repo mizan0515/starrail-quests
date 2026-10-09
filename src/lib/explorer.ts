@@ -1,7 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import discoveryRegistry from '../../editorial/directory-discovery.json';
+import {applySourceIdentities} from './source-identities.mjs';
 // Preserve the exact source token for 64-bit hashes in older datasets.
-const dataset=JSON.parse(fs.readFileSync(path.resolve('data/explorer.json'),'utf8'),(_key:string,value:any,context?:{source:string})=>typeof value==='number'&&!Number.isSafeInteger(value)?context!.source:value);
+const preservedDataset=JSON.parse(fs.readFileSync(path.resolve('data/explorer.json'),'utf8'),(_key:string,value:any,context?:{source:string})=>typeof value==='number'&&!Number.isSafeInteger(value)?context!.source:value);
+const dataset=applySourceIdentities(preservedDataset,discoveryRegistry.identities);
 import dialogueData from '../../data/dialogue-index.json';
 import {href,docUrl} from './data';
 export {dataset,dialogueData};

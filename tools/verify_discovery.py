@@ -96,6 +96,51 @@ def check_registry(registry, explorer, docs):
     return index
 
 
+def check_identities(registry, explorer):
+    identities = registry.get('identities', [])
+    unique([i['id'] for i in identities], 'Source identities')
+    effective = copy.deepcopy(explorer)
+    by_id = {e['id']: e for e in effective}
+    for identity in identities:
+        entry = by_id.get(identity['id'])
+        require(entry is not None and entry['axis'] == 'person' and entry['source'] == 'StoryAtlas'
+                and not entry.get('nameVerified'), 'Identity source/subject differs')
+        stories = [s for s in entry['stories'] if s['story_id'] == identity['storyId']]
+        require(len(stories) == 1 and type(identity['storyId']) is int and identity['storyId'] > 0,
+                'Identity story missing/ambiguous')
+        name, quote, original_hash = identity['name'], identity['quote'], identity['hash']
+        require(isinstance(name, str) and name.strip() and isinstance(quote, str)
+                and isinstance(original_hash, str) and original_hash.isdecimal(), 'Identity format differs')
+        require(str(stories[0]['hash']) == original_hash and quote.startswith(name + ',')
+                and quote in stories[0]['text'], 'Identity quotation/hash differs')
+        entry['name'] = name
+    return effective
+
+
+def check_identity_html(dist, registry, explorer, docs):
+    endpoint = read(dist / 'atlas-data.json')
+    graph = {e['id']: e for e in read(dist / 'reading-data/graph.json')['entities']}
+    for identity in registry.get('identities', []):
+        rid = identity['id']
+        page = parsed((dist / '대상' / (rid + '.html')).read_text(encoding='utf-8'))
+        require(endpoint[rid]['name'] == graph[rid]['name'] == identity['name'], 'Reader identity endpoint differs')
+        require(any(n['tag'] == 'h1' and n['text'].strip() == identity['name'] for n in page.nodes), 'Identity heading missing')
+        require(any(n['tag'] == 'a' and n['attrs'].get('href') == '#story-' + str(identity['storyId']) for n in page.nodes), 'Identity evidence story link missing')
+        require(any(n['tag'] == 'a' and 'context-term' in n['attrs'].get('class', '').split()
+                    and n['attrs'].get('data-context-key') == rid
+                    and n['text'] == identity['name'] and address(n['attrs']['href']) == ('대상/' + rid + '.html', '')
+                    for n in page.nodes), 'Evidence-based name unavailable to original inline links')
+    for rid, anchor, wrong_target in [('lore-10035', 'section-1-row-1', '맥락/family.html'),
+                                      ('book-30', 'section-2-row-1', '대상/aeon-aeon-4.html')]:
+        page = parsed((dist / '문서' / (rid + '.html')).read_text(encoding='utf-8'))
+        rows = [n for n in page.nodes if n['attrs'].get('id') == anchor]
+        require(len(rows) == 1, 'Homonym source row missing')
+        require(not any(n['tag'] == 'a' and address(n['attrs']['href'])[0] == wrong_target for n in descendants(rows[0])),
+                rid + ': ordinary noun still links to unrelated subject')
+        require(page.original[anchor] == next(r['text'] for s in docs[rid]['sections'] for index, r in enumerate(s['rows'], 1)
+                                            if s['anchor'] + '-row-' + str(index) == anchor), 'Homonym original changed')
+
+
 def expected_discovery(explorer, registry, atlas, faction_doc):
     result = {}
     for entry in explorer:
@@ -410,6 +455,20 @@ def check_html(dist, expected, items, backgrounds, universe_discovery, sources):
 def self_test(registry, explorer, docs, universe_data, sources, official, source_bytes, official_bytes):
     rejected = []
     for label, mutate in [
+        ('identity-wrong-story', lambda d: d['identities'][0].update(storyId=1)),
+        ('identity-wrong-hash', lambda d: d['identities'][0].update(hash='1')),
+        ('identity-invented-name', lambda d: d['identities'][0].update(name='가상의 이름')),
+        ('identity-duplicate', lambda d: d['identities'].append(d['identities'][0])),
+    ]:
+        changed = copy.deepcopy(registry)
+        mutate(changed)
+        try:
+            check_identities(changed, explorer)
+        except (AssertionError, KeyError):
+            rejected.append(label)
+        else:
+            raise AssertionError('Accepted negative fixture: ' + label)
+    for label, mutate in [
         ("missing-original", lambda d: d["rows"].pop()),
         ("changed-quote", lambda d: d["rows"][0].update(quote=d["rows"][0]["quote"] + "x")),
         ("wrong-source-field", lambda d: d["rows"][0].update(source="LoadingDesc:10001.Title")),
@@ -479,7 +538,8 @@ def main():
     catalog = read(SITE / "data/catalog.json")
     docs = {d["id"]: read(SITE / "data/documents" / (d["id"] + ".json")) for d in catalog}
     rules = check_registry(registry, explorer, docs)
-    expected = expected_discovery(explorer, rules, read(SITE / "editorial/context-atlas.json"), docs["book-47"])
+    effective_explorer = check_identities(registry, explorer)
+    expected = expected_discovery(effective_explorer, rules, read(SITE / "editorial/context-atlas.json"), docs["book-47"])
     backgrounds = read(SITE / "data/relic-backgrounds.json")
     items = expected_items(catalog, read(SITE / "data/universe-catalog.json"), backgrounds, docs)
     source_bytes = (SITE / "data/universe-source-records.json").read_bytes()
@@ -501,6 +561,8 @@ def main():
     check_universe(universe, sources, official, source_bytes, official_bytes, metadata)
     negatives = self_test(registry, explorer, docs, universe, sources, official, source_bytes, official_bytes) if args.self_test else []
     rendered = {} if args.artifact_only else check_html(args.dist, expected, items, backgrounds, universe, sources)
+    if not args.artifact_only:
+        check_identity_html(args.dist, registry, explorer, docs)
     print(json.dumps({"status": "PASS", "scope": "artifact data" if args.artifact_only else "artifact data and generated HTML; browser runtime/layout not assessed",
                       "classifiedOriginals": len(rules), "discoverySubjects": len(expected), "axes": dict(Counter(e["axis"] for e in expected.values())),
                       "itemSubjects": len(items), "relicStories": 192, "relicSets": 62, "universeSourceRecords": 128,

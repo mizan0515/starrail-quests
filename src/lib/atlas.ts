@@ -1,5 +1,5 @@
 import atlas from '../../editorial/context-atlas.json';
-import explorer from '../../data/explorer.json';
+import {dataset as explorer} from './explorer';
 import {href,docUrl} from './data';
 import {escapeHtml} from './reading-kit/render.mjs';
 export {atlas};
@@ -11,8 +11,12 @@ export const atlasNode=(id:string)=>atlas.nodes.find(x=>x.id===id)||explorer.ent
 // per paragraph are annotated; the original text remains in the DOM unchanged.
 // Ordinary preservation of memories also uses 보존. The atlas alias is useful
 // for search, but only the proper names 클리포트/보천파 qualify for auto-linking.
-const curatedTerms=atlas.nodes.flatMap(n=>n.terms.filter(t=>t.length>1&&!['보존','생명','감정','선주','나부','파벌','헤르타','우주정거장','사냥단','티탄'].includes(t)).map(term=>({term,id:n.id})));
-const completeTerms=explorer.entries.filter(e=>e.axis!=='person'||e.nameVerified).filter(e=>!e.name.startsWith('개척자')&&!e.name.includes('{')).flatMap(e=>[...new Set([e.name,e.name.replace('•','·')])].filter(t=>t.length>=(e.axis==='concept'?4:2)).map(term=>({term,id:e.id})));
+// These source names also occur as ordinary nouns. Readers reach the named
+// faction/Aeon through explicit evidence links and discovery, not blind matches.
+const commonNouns=new Set(['가족','약사']);
+const unambiguousName=(term:string)=>!commonNouns.has(term.replace(/[「」『』]/g,''));
+const curatedTerms=atlas.nodes.flatMap(n=>n.terms.filter(t=>t.length>1&&unambiguousName(t)&&!['보존','생명','감정','선주','나부','파벌','헤르타','우주정거장','사냥단','티탄'].includes(t)).map(term=>({term,id:n.id})));
+const completeTerms=explorer.entries.filter(e=>e.axis!=='person'||e.nameVerified).filter(e=>!e.name.startsWith('개척자')&&!e.name.includes('{')).flatMap(e=>[...new Set([e.name,e.name.replace('•','·')])].filter(t=>unambiguousName(t)&&t.length>=(e.axis==='concept'?4:2)).map(term=>({term,id:e.id})));
 const termMap=new Map<string,string>();for(const t of [...curatedTerms,...completeTerms])if(!termMap.has(t.term))termMap.set(t.term,t.id);
 const terms=[...termMap].map(([term,id])=>({term,id})).sort((a,b)=>b.term.length-a.term.length);
 const termPattern=new RegExp(terms.map(t=>t.term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|'),'g');

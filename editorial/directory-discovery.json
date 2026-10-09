@@ -1,5 +1,14 @@
 {
   "schema": "starrail-directory-discovery.v1",
+  "identities": [
+    {
+      "id": "person-1509",
+      "name": "길가메시",
+      "storyId": 2,
+      "hash": "16429243332190848941",
+      "quote": "길가메시, 역사상 가장 오래된 영웅왕."
+    }
+  ],
   "groups": [
     {
       "id": "train",
