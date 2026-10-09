@@ -8,6 +8,7 @@ import MissionReader from '../../components/MissionReader.astro';
 import CatalogReturn from '../../components/CatalogReturn.astro';
 import {catalog,doc,docUrl,topicUrl,href,versionEvidence,missionDialogue,missionReading,missionMessages,missionCoverage,missionSectionLinked} from '../../lib/data';
 import aliases from '../../../data/aliases.json';
+import relicBackgrounds from '../../../data/relic-backgrounds.json';
 export function getStaticPaths(){return [...catalog.map(d=>({params:{id:d.id}})),...Object.keys(aliases).map(id=>({params:{id}}))];}
 if(aliases[Astro.params.id!])return Astro.redirect(encodeURI(docUrl(aliases[Astro.params.id!])),301);
 const d=doc(Astro.params.id!),quest=d.category==='퀘스트';
@@ -17,6 +18,7 @@ const stageGroups:any[]=[];
 for(const step of d.stages){const last=stageGroups.at(-1);if(last?.title===step.title)last.steps.push(step);else stageGroups.push({...step,steps:[step]});}
 const headings=[{depth:2,slug:'original',text:quest?'대사와 선택지':'원문 읽기'},...(d.stages.length?[{depth:2,slug:'progress',text:'임무의 흐름'}]:[]),...(d.topics.length?[{depth:2,slug:'connections',text:'관련 설정 읽기'}]:[])];
 const peers=d.collection?catalog.filter(x=>x.collection===d.collection&&x.id!==d.id):[];
+const backgrounds=relicBackgrounds.records.filter(r=>r.relatedItemIds.includes(d.id));
 const next=d.next?catalog.find(x=>x.id==='quest-'+d.next):null;
 const previous=quest?catalog.filter(x=>x.category==='퀘스트'&&x.kind===d.kind&&x.world===d.world&&x.chapter===d.chapter&&x.rank<d.rank).sort((a,b)=>b.rank-a.rank)[0]:null;
 ---
@@ -28,6 +30,7 @@ const previous=quest?catalog.filter(x=>x.category==='퀘스트'&&x.kind===d.kind
  {quest&&observedVersion&&<p class="document-meta" data-pagefind-ignore><a href={href(`versions/${observedVersion}.html`)}>임무 표에서 확인 · {observedVersion}</a>{release&&<><a href={href(`versions/${release.version}.html`)}>출시 확인 · {release.version}</a>{release.sources.map(s=><a href={s.url}>{s.title} ↗</a>)}</>}</p>}
  {peers.length>0&&<aside class="collection-panel" data-pagefind-ignore><strong>같은 세트 · {d.collection}</strong><ul>{peers.map(p=><li><a href={docUrl(p.id)}>{p.title}</a></li>)}</ul></aside>}
  {quest?<MissionReader document={d} supplements={supplements} messages={missionMessages[d.id]} coverage={missionCoverage[d.id]} reading={reading}/>:<><AnchorHeading level={2} id="original">원문 읽기</AnchorHeading>{d.sections.map(section=><Scene section={section}/>)}</>}
+ {backgrounds.length>0&&<section class="related-panel" id="background-story"><h2>이 유물의 배경 이야기</h2><p class="muted">유물 표의 세트·부위와 물품 식별자가 연결되는 장문 원문입니다.</p>{backgrounds.map(r=><a href={href('유물/'+r.id+'.html')} data-reading-link><strong>{r.storyTitle}</strong><span>{r.text.slice(0,180)}</span><span>배경 이야기 원문 읽기 →</span></a>)}</section>}
  {d.stages.length>0&&<section class="mission-progress" aria-labelledby="progress">
   <AnchorHeading level={2} id="progress">임무의 흐름</AnchorHeading>
   <p class="muted">임무 설정에 기록된 목표와 선행 조건입니다. 선택·동시 경로는 각 단계에 표시합니다.</p>

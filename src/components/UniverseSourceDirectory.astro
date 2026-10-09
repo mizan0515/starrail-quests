@@ -1,0 +1,135 @@
+---
+import discovery from '../../data/universe-discovery.json';
+import {renderDirectoryGroup} from '../lib/grouped-directory.mjs';
+import {createReadingKit,escapeHtml as E} from '../lib/reading-kit/render.mjs';
+import {disclosureAttributes} from '../lib/reading-kit/reader.mjs';
+import {href} from '../lib/data';
+import '../styles/discovery.css';
+
+const {records,modeId,modeName}=Astro.props;
+const source=discovery.items.find(item=>item.modeId===modeId);
+if(!source)throw Error('Missing universe source directory '+modeId);
+const byId=new Map(records.map(record=>[record.id,record]));
+const names=new Map(source.records.map(record=>[record.id,record]));
+const order=new Map(records.map((record,index)=>[record.id,index]));
+const listed=source.groups.flatMap(group=>group.recordIds);
+if(listed.length!==records.length||listed.some((id,index)=>id!==records[index].id)||new Set(listed).size!==listed.length)throw Error('Universe source directory must preserve every original record in order');
+const directoryId='universe-record-directory-'+modeId;
+const defaultLimit=12;
+const body=record=>record.scenes.flatMap(scene=>scene.rows.map(row=>row.text));
+const readerUrl=id=>href('우주/기록/'+id+'.html');
+const title=id=>names.get(id)?.title||byId.get(id).title;
+const excerpt=record=>{
+ const row=record.scenes.flatMap(scene=>scene.rows).find(row=>row.text?.trim());
+ if(!row)return '';
+ const text=[...row.text];
+ return (row.speaker?row.speaker+'\n':'')+text.slice(0,170).join('')+(text.length>170?'…':'');
+};
+const publicMetadata=table=>'https://github.com/DimbreathBot/TurnBasedGameData/blob/'+discovery.evidence.metadataCommit+'/'+table;
+const fieldEvidence=(e,label='원문 자료')=>`<div class="universe-field-evidence"><p><strong>${E(label)}</strong></p><dl><dt>자료</dt><dd><a href="${E(publicMetadata(e.table))}">${E(e.table)} ↗</a></dd><dt>위치</dt><dd><code>${E(e.pointer)}</code></dd><dt>항목</dt><dd><code>${E(e.field)}</code></dd><dt>값</dt><dd><code>${E(JSON.stringify(e.value===undefined?e.raw:e.value))}</code></dd>${e.hash?`<dt>한국어 문구 식별자</dt><dd><code>${E(e.hash)}</code></dd>`:''}</dl></div>`;
+const groupProof=group=>[...(group.nameEvidence?[fieldEvidence(group.nameEvidence,'묶음 이름의 원문')]:[]),...group.evidence.map(e=>fieldEvidence(e,'기록 묶음과 분류의 원문'))].join('');
+const groupLabel=(group,index)=>modeId==='swarm-disaster'?group.title+' · 묶음 '+String(index+1).padStart(2,'0'):group.title;
+const renderGroup=group=>{
+ const items=group.recordIds.map(id=>{
+  const original=byId.get(id),named=names.get(id),rows=body(original);
+  return {id,name:modeId==='swarm-disaster'?group.title+' · '+named.title:named.title,kind:(named.titleKind==='original'?'원문 제목':'식별용 제목')+' · '+rows.length+'행',summary:excerpt(original),searchText:rows.join(' '),url:readerUrl(id)};
+ });
+ let articleCursor=0,anchorCursor=0;
+ const html=renderDirectoryGroup(items,group.id,directoryId)
+  .replace(/<article\b[^>]*data-cva-item-index="\d+"[^>]*>/g,opening=>{
+   const id=items[articleCursor++].id;
+   return opening.slice(0,-1)+` data-universe-source-card="${E(id)}"${order.get(id)>=defaultLimit?' hidden':''}>`;
+  })
+  .replace(/<a id="[^"]+" data-reading-link href=/g,()=>{
+   const item=items[anchorCursor++],named=names.get(item.id);
+   return `<a id="universe-source-${E(item.id)}" data-reading-link data-source-record="${E(item.id)}" data-title-kind="${E(named.titleKind)}" data-source-group="${E(group.id)}" data-search="${E(body(byId.get(item.id)).join(' '))}"${order.get(item.id)>=defaultLimit?' hidden':''} href=`;
+  });
+ if(articleCursor!==items.length||anchorCursor!==items.length)throw Error('Universe CVA directory omitted records');
+ return html;
+};
+const kit=createReadingKit({evidence:items=>items.map(e=>{
+ const condition=e.condition;
+ return fieldEvidence(e,'이 기록의 진행 참조')+`<p><a data-reading-link href="${E(readerUrl(e.from))}">참조하는 기록의 전체 원문 ↗</a> · <a data-reading-link href="${E(readerUrl(e.to))}">참조된 기록의 전체 원문 ↗</a></p>`+(condition?fieldEvidence(condition,'참조된 기록의 조건 원문')+`<p>조건은 매개변수가 포함된 원문 문구로 수록되어 있다.</p><a data-reading-link href="${E(href('우주/설정/'+e.officialRecordId+'.html'))}">조건 원문 · 매개변수 포함 ↗</a>`:'');
+ }).join('')});
+const incoming=new Set(source.edges.map(edge=>edge.to));
+const roots=[...new Set(source.edges.map(edge=>edge.from))].filter(id=>!incoming.has(id));
+const branches=roots.map((root,index)=>{
+ const reached=new Set([root]),edges=[];
+ for(const id of reached)for(const edge of source.edges.filter(edge=>edge.from===id)){edges.push(edge);reached.add(edge.to);}
+ const relationships=edges.map(edge=>({id:'next-'+edge.from+'-'+edge.to,from:{id:edge.from,name:title(edge.from),url:readerUrl(edge.from),kind:'원문 기록'},to:{id:edge.to,name:title(edge.to),url:readerUrl(edge.to),kind:'원문 기록'},label:'진행 참조',reasonClaimId:'claim-next-'+edge.from+'-'+edge.to,claimKind:'explicit',reason:'원문 자료에 수록된 다음 기록 참조다.',evidence:[{...edge.evidence,from:edge.from,to:edge.to,condition:edge.conditionEvidence,officialRecordId:names.get(edge.to).officialRecordIds[0]}]}));
+ return {root,index,edges,html:kit.network(relationships,{id:directoryId+'-next-'+index,title:title(root)+'에서 이어지는 기록'})};
+});
+---
+<div class="grouped-directory universe-record-directory not-content" data-universe-source-directory data-universe-index data-query-key="recordQuery" data-group-key="recordGroup" data-limit-key="recordLimit" data-default-limit={defaultLimit}>
+ <header class="discovery-header"><h2>{modeId==='divergent-universe'?'방정식의 이야기 원문':'이 콘텐츠의 기록 원문'}</h2><p>대사와 선택지를 원본의 묶음과 분류에 따라 읽는다.</p></header>
+ <nav class="discovery-jump universe-record-jump" aria-label={modeName+' 기록 묶음'}>{source.groups.map((group,index)=><a href={'#'+directoryId+'-group-'+group.id} data-universe-group-jump={group.id}><strong>{groupLabel(group,index)}</strong><span>{group.recordIds.length}개 기록 <span aria-hidden="true">↓</span></span></a>)}</nav>
+ <form class="discovery-controls" role="search"><label for={directoryId+'-query'}>이름·원문 내용<input id={directoryId+'-query'} name="recordQuery" type="search" data-source-query placeholder="인물·사건·원문 구절" autocomplete="off" /></label><label for={directoryId+'-group'}>기록 묶음<select id={directoryId+'-group'} name="recordGroup" data-universe-group-select><option value="">모든 기록 묶음</option>{source.groups.map((group,index)=><option value={group.id}>{groupLabel(group,index)}</option>)}</select></label><button type="reset">초기화</button></form>
+ <p class="discovery-count" role="status" aria-live="polite" aria-atomic="true" data-source-count>{records.length}개 기록 · {Math.min(defaultLimit,records.length)}개 표시</p>
+ {source.groups.map((group,index)=><section id={directoryId+'-group-'+group.id} class="discovery-group universe-source-group" data-universe-source-group={group.id} data-group-title-kind={group.titleKind} tabindex="-1" hidden={group.recordIds.every(id=>order.get(id)>=defaultLimit)}><header><p class="universe-group-kind">{group.titleKind==='original'?'원문 묶음 이름':'원문 분류 · 편집한 묶음 이름'}{modeId==='swarm-disaster'&&' · 묶음 '+String(index+1).padStart(2,'0')}</p><h3>{group.title}<span class="universe-group-count">{group.recordIds.length}개 기록</span></h3><details {...disclosureAttributes({className:'universe-group-proof'})}><summary>이 묶음의 원문 근거</summary><Fragment set:html={groupProof(group)}/></details></header><Fragment set:html={renderGroup(group)}/></section>)}
+ <p class="discovery-empty" data-source-empty hidden>이 구절을 포함한 기록이 없습니다. 이름을 짧게 입력하거나 기록 묶음을 바꿔보세요.</p>
+ <button type="button" class="discovery-more" data-source-more hidden={records.length<=defaultLimit}>기록 더 보기 · {Math.min(defaultLimit,Math.max(0,records.length-defaultLimit))}개</button>
+ {branches.length>0&&<section class="universe-next-records"><header class="discovery-header"><h2>기록이 갈라지는 진행 참조</h2><p>각 기록의 다음 기록 참조를 갈래별로 읽는다. 기록 본문과 조건은 연결된 원문에서 확인할 수 있다.</p></header>{branches.map(branch=><section class="universe-next-branch" data-universe-next-root={branch.root}><Fragment set:html={branch.html}/></section>)}<div hidden aria-hidden="true" data-pagefind-ignore>{source.edges.map(edge=><span data-universe-next-from={edge.from} data-universe-next-to={edge.to} data-universe-next-pointer={edge.evidence.pointer} data-universe-next-value={String(edge.evidence.value)} data-universe-next-condition-subject={edge.conditionSubject} />)}</div></section>}
+</div>
+<script>
+ import {normalizeDirectoryText,readDirectoryState,writeDirectoryState} from '../lib/directory-state.mjs';
+ for(const root of document.querySelectorAll<HTMLElement>('[data-universe-source-directory]')){
+  const input=root.querySelector<HTMLInputElement>('[data-source-query]')!,select=root.querySelector<HTMLSelectElement>('[data-universe-group-select]')!,form=root.querySelector<HTMLFormElement>('form')!,more=root.querySelector<HTMLButtonElement>('[data-source-more]')!,count=root.querySelector<HTMLElement>('[data-source-count]')!,empty=root.querySelector<HTMLElement>('[data-source-empty]')!;
+  const entries=[...root.querySelectorAll<HTMLAnchorElement>('[data-source-record]')],cards=new Map([...root.querySelectorAll<HTMLElement>('[data-universe-source-card]')].map(card=>[card.dataset.universeSourceCard!,card])),groups=[...root.querySelectorAll<HTMLElement>('[data-universe-source-group]')],jumps=[...root.querySelectorAll<HTMLAnchorElement>('[data-universe-group-jump]')];
+  const options={queryKey:root.dataset.queryKey!,groupKey:root.dataset.groupKey!,limitKey:root.dataset.limitKey!,defaultLimit:Number(root.dataset.defaultLimit)};
+  const allowedGroups=new Set(groups.map(group=>group.dataset.universeSourceGroup));
+  const search=new Map(entries.map(entry=>[entry,normalizeDirectoryText((entry.textContent||'')+' '+(entry.dataset.search||'')+' '+(cards.get(entry.dataset.sourceRecord!)?.dataset.directorySearch||''))]));
+  let state=readDirectoryState(location.search,options),timer:number|undefined;
+  const sync=()=>{if(!allowedGroups.has(state.group))state.group='';input.value=state.query;select.value=state.group;jumps.forEach(jump=>jump.setAttribute('aria-current',jump.dataset.universeGroupJump===state.group?'location':'false'));};
+  const render=(save=true)=>{
+   const tokens=normalizeDirectoryText(state.query).split(' ').filter(Boolean),matches=entries.filter(entry=>(!state.group||entry.dataset.sourceGroup===state.group)&&tokens.every(token=>search.get(entry)!.includes(token)));
+   state.limit=Math.min(Math.max(options.defaultLimit,state.limit),Math.max(options.defaultLimit,entries.length));
+   const visible=new Set(matches.slice(0,state.limit));
+   entries.forEach(entry=>{entry.hidden=!visible.has(entry);cards.get(entry.dataset.sourceRecord!)!.hidden=entry.hidden;});
+   groups.forEach(group=>group.hidden=!matches.slice(0,state.limit).some(entry=>entry.dataset.sourceGroup===group.dataset.universeSourceGroup));
+   count.textContent=`${matches.length.toLocaleString()}개 기록 · ${visible.size.toLocaleString()}개 표시`;empty.hidden=!!matches.length;more.hidden=matches.length<=state.limit;more.textContent=`기록 더 보기 · ${Math.min(options.defaultLimit,matches.length-state.limit)}개`;
+   if(save)history.replaceState(null,'',writeDirectoryState(new URL(location.href),state,options));
+  };
+  const apply=()=>{clearTimeout(timer);state.query=input.value.trim();state.group=select.value;state.limit=options.defaultLimit;sync();render();};
+  form.addEventListener('submit',event=>{event.preventDefault();apply();});input.addEventListener('input',()=>{clearTimeout(timer);timer=window.setTimeout(apply,160);});select.addEventListener('change',apply);
+  form.addEventListener('reset',event=>{event.preventDefault();clearTimeout(timer);state={...state,query:'',group:'',limit:options.defaultLimit};sync();render();input.focus();});more.addEventListener('click',()=>{state.limit+=options.defaultLimit;render();});
+  jumps.forEach(jump=>jump.addEventListener('click',event=>{event.preventDefault();clearTimeout(timer);state={...state,query:'',group:jump.dataset.universeGroupJump!,limit:options.defaultLimit};sync();render();const target=groups.find(group=>group.dataset.universeSourceGroup===state.group)!;const url=writeDirectoryState(new URL(location.href),state,options);url.hash=target.id;history.replaceState(null,'',url);target.focus({preventScroll:true});target.scrollIntoView({block:'start',behavior:'auto'});}));
+  const restore=()=>{
+   clearTimeout(timer);state=readDirectoryState(location.search,options);sync();
+   const anchor=location.hash.startsWith('#universe-source-')?document.getElementById(decodeURIComponent(location.hash.slice(1))):null;
+   if(anchor&&root.contains(anchor)){
+    const tokens=normalizeDirectoryText(state.query).split(' ').filter(Boolean);
+    const matches=entries.filter(entry=>(!state.group||entry.dataset.sourceGroup===state.group)&&tokens.every(token=>search.get(entry)!.includes(token)));
+    let index=matches.indexOf(anchor as HTMLAnchorElement);
+    if(index<0){index=entries.indexOf(anchor as HTMLAnchorElement);if(index>=0){state.group='';state.query='';sync();}}
+    if(index>=0)state.limit=Math.max(state.limit,Math.ceil((index+1)/options.defaultLimit)*options.defaultLimit);
+   }
+   render(false);
+  };
+  window.addEventListener('popstate',restore);window.addEventListener('pageshow',restore);restore();
+ }
+</script>
+<style>
+ .universe-record-directory{min-width:0}
+ .universe-record-jump a[aria-current="location"]{background:var(--selected);border-color:var(--brass)}
+ .universe-group-kind{font-size:.75rem;color:var(--brass);margin-bottom:.4rem}
+ .universe-source-group>header h3{display:flex;align-items:baseline;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
+ .universe-group-count{font-size:.8125rem;font-weight:500;color:var(--muted);white-space:nowrap}
+ .universe-group-proof{margin-block:.75rem 1rem;font-size:.8125rem}
+ .universe-record-directory :global(.universe-field-evidence){min-width:0;padding-block:.65rem;border-bottom:1px solid var(--line);font-size:.8125rem}
+ .universe-record-directory :global(.universe-field-evidence p){margin-block:.25rem .6rem}
+ .universe-record-directory :global(.universe-field-evidence dl){display:grid;grid-template-columns:minmax(5rem,.28fr) minmax(0,1fr);gap:.4rem .75rem;margin:0;line-height:1.8}
+ .universe-record-directory :global(.universe-field-evidence dt){color:var(--muted)}
+ .universe-record-directory :global(.universe-field-evidence dd){min-width:0;margin:0;overflow-wrap:anywhere}
+ .universe-record-directory :global(.universe-field-evidence code){white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem}
+ .universe-record-directory :global(.cva-item-body){white-space:pre-line}
+ .universe-next-records{border-top:1px solid var(--line);padding-top:2rem;margin-top:3rem}
+ .universe-next-branch{min-width:0;margin-block:2rem}
+ .universe-next-branch :global(.rw-map>header h2){font-size:1.25rem;line-height:1.65}
+ .universe-next-branch :global(.rw-focus-relations[data-hub-shape="branch"] .cva-page[data-cva] .cva-module-flow[data-variant="hub"] .cva-flow-list .cva-node:first-child){align-self:start}
+ .universe-next-branch :global(.rw-focus-relations .cva-page[data-cva] .cva-module-flow[data-variant="hub"] .cva-flow-list){gap:1rem 2rem}
+ .universe-next-branch :global(.rw-focus-relations .cva-page[data-cva] .cva-item-title){font-size:1.05rem;margin-block:.4rem .5rem}
+ .universe-next-branch :global(.rw-focus-relations .cva-page[data-cva] .cva-item-title .rw-node-kind){display:none}
+ .universe-next-branch :global(.rw-focus-relations .cva-page[data-cva] .rw-edge-statement){font-size:.8125rem}
+ .universe-next-branch :global(.rw-focus-relations .cva-page[data-cva] .rw-relation-proof){margin-block:.5rem 0}
+ @container(max-width:26rem){.universe-record-directory :global(.universe-field-evidence dl){grid-template-columns:minmax(0,1fr);gap:.15rem}.universe-record-directory :global(.universe-field-evidence dd){margin-bottom:.6rem}}
+</style>

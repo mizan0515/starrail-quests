@@ -1,0 +1,55 @@
+---
+import {renderDirectoryGroup} from '../lib/grouped-directory.mjs';
+import '../styles/discovery.css';
+const {id='discovery',title='주제별로 찾아 읽기',lead='',groups,axes=[],axis='',queryKey='q',groupKey='group',limitKey='limit',axisKey='',defaultLimit=24,placeholder='이름이나 원문 구절',note='주제 묶음은 함께 읽기 위한 편집 분류입니다. 각 본문에서 원문과 출처를 확인할 수 있습니다.'}=Astro.props;
+const available=(g,a)=>g.items.filter(item=>!a||item.axis===a).length;
+const total=groups.reduce((n,g)=>n+available(g,axis),0);
+---
+<section id={id} class="grouped-directory not-content" data-grouped-directory data-default-axis={axis} data-query-key={queryKey} data-group-key={groupKey} data-limit-key={limitKey} data-axis-key={axisKey} data-default-limit={defaultLimit}>
+ <header class="discovery-header"><h2>{title}</h2>{lead&&<p>{lead}</p>}</header>
+ {axes.length>0&&<nav class="discovery-axes" aria-label="찾아 읽는 대상">{axes.map(a=>a.url?<a href={a.url} aria-current={a.id===axis?'page':undefined}>{a.name}<span>{groups.reduce((n,g)=>n+available(g,a.id),0)}</span></a>:<button type="button" data-directory-view={a.id} aria-pressed={a.id===axis}>{a.name}<span>{groups.reduce((n,g)=>n+available(g,a.id),0)}</span></button>)}</nav>}
+ <form class="discovery-controls" role="search"><label for={id+'-query'}>이름·원문 내용<input id={id+'-query'} name={queryKey} type="search" data-directory-query placeholder={placeholder} autocomplete="off" /></label><label for={id+'-group'}>주제<select id={id+'-group'} name={groupKey} data-directory-group-select><option value="">모든 주제</option>{groups.filter(g=>available(g,axis)>0).map(g=><option value={g.id}>{g.title}</option>)}</select></label><button type="reset">초기화</button></form>
+ <details class="discovery-topics" open={groups.filter(g=>available(g,axis)>0).length<=12}><summary>주제 바로가기 <span>{groups.filter(g=>available(g,axis)>0).length}개 묶음</span></summary><nav class="discovery-jump" aria-label="내용별 바로가기">{groups.filter(g=>available(g,axis)>0).map(g=><a href={'#'+id+'-group-'+g.id} data-directory-jump={g.id}><strong>{g.title}</strong><span data-jump-count>{available(g,axis)}개 본문 <span aria-hidden="true">↓</span></span></a>)}</nav></details>
+ <p class="discovery-count" role="status" aria-live="polite" aria-atomic="true" data-directory-count>{total.toLocaleString()}개 본문</p>
+ <p class="discovery-note">{note}</p>
+ {groups.filter(g=>available(g,axis)>0).map(g=><section id={id+'-group-'+g.id} class="discovery-group" data-directory-section={g.id} tabindex="-1"><header><h3>{g.title}</h3><p>{g.summary}</p></header><Fragment set:html={renderDirectoryGroup(g.items.filter(item=>!axis||item.axis===axis),g.id,id,axis)}/></section>)}
+ <p class="discovery-empty" data-directory-empty hidden>검색 결과가 없습니다. 이름을 짧게 입력하거나 주제 조건을 바꿔보세요.</p>
+ <button type="button" class="discovery-more" data-directory-more hidden>본문 더 보기</button>
+</section>
+<script>
+ import {normalizeDirectoryText,readDirectoryState,writeDirectoryState} from '../lib/directory-state.mjs';
+ for(const root of document.querySelectorAll<HTMLElement>('[data-grouped-directory]')){
+  const input=root.querySelector<HTMLInputElement>('[data-directory-query]')!,select=root.querySelector<HTMLSelectElement>('[data-directory-group-select]')!,more=root.querySelector<HTMLButtonElement>('[data-directory-more]')!,form=root.querySelector<HTMLFormElement>('form')!;
+  const entries=[...root.querySelectorAll<HTMLElement>('[data-directory-entry]')],groups=[...root.querySelectorAll<HTMLElement>('[data-directory-section]')],jumps=[...root.querySelectorAll<HTMLAnchorElement>('[data-directory-jump]')],buttons=[...root.querySelectorAll<HTMLButtonElement>('[data-directory-view]')];
+  const options={axis:root.dataset.defaultAxis||'',axes:buttons.map(b=>b.dataset.directoryView!),queryKey:root.dataset.queryKey!,groupKey:root.dataset.groupKey!,limitKey:root.dataset.limitKey!,axisKey:root.dataset.axisKey||'',defaultLimit:Number(root.dataset.defaultLimit)};
+  const search=new Map(entries.map(e=>[e,normalizeDirectoryText(e.dataset.directorySearch||'')]));
+  let state=readDirectoryState(location.search,options),timer:number|undefined;
+  const viewEntries=()=>entries.filter(e=>!state.axis||e.dataset.directoryAxis===state.axis);
+  const syncControls=()=>{
+   const allowed=new Set(viewEntries().map(e=>e.dataset.directoryGroup));
+   if(state.group&&!allowed.has(state.group))state.group='';
+   input.value=state.query;select.value=state.group;
+   for(const option of select.options){option.hidden=!!option.value&&!allowed.has(option.value);option.disabled=option.hidden;}
+   buttons.forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.directoryView===state.axis)));
+   jumps.forEach(a=>{const count=viewEntries().filter(e=>e.dataset.directoryGroup===a.dataset.directoryJump).length;a.hidden=!count;a.querySelector('[data-jump-count]')!.textContent=`${count}개 본문 ↓`;});
+  };
+  const render=(save=true)=>{
+   const tokens=normalizeDirectoryText(state.query).split(' ').filter(Boolean),matches=viewEntries().filter(e=>(!state.group||e.dataset.directoryGroup===state.group)&&tokens.every(t=>search.get(e)!.includes(t)));
+   state.limit=Math.min(Math.max(options.defaultLimit,state.limit),Math.max(options.defaultLimit,entries.length));
+   entries.forEach(e=>e.hidden=true);matches.slice(0,state.limit).forEach(e=>e.hidden=false);
+   groups.forEach(g=>g.hidden=!matches.slice(0,state.limit).some(e=>e.dataset.directoryGroup===g.dataset.directorySection));
+   root.querySelector('[data-directory-count]')!.textContent=`${matches.length.toLocaleString()}개 본문 · ${Math.min(state.limit,matches.length).toLocaleString()}개 표시`;
+   (root.querySelector('[data-directory-empty]') as HTMLElement).hidden=!!matches.length;more.hidden=matches.length<=state.limit;more.textContent=`본문 더 보기 · ${Math.min(options.defaultLimit,matches.length-state.limit)}개`;
+   if(save)history.replaceState(null,'',writeDirectoryState(new URL(location.href),state,options));
+  };
+  const applyQuery=()=>{clearTimeout(timer);state.query=input.value.trim();state.group=select.value;state.limit=options.defaultLimit;render();};
+  form.addEventListener('submit',e=>{e.preventDefault();applyQuery();});input.addEventListener('input',()=>{clearTimeout(timer);timer=window.setTimeout(applyQuery,160);});select.addEventListener('change',applyQuery);
+  form.addEventListener('reset',e=>{e.preventDefault();clearTimeout(timer);state={...state,query:'',group:'',limit:options.defaultLimit};syncControls();render();input.focus();});
+  more.addEventListener('click',()=>{state.limit+=options.defaultLimit;render();});
+  buttons.forEach(b=>b.addEventListener('click',()=>{clearTimeout(timer);state={axis:b.dataset.directoryView!,query:'',group:'',limit:options.defaultLimit};syncControls();render();}));
+  jumps.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();clearTimeout(timer);state={...state,query:'',group:a.dataset.directoryJump!,limit:options.defaultLimit};syncControls();render();const target=groups.find(g=>g.dataset.directorySection===state.group)!;const url=writeDirectoryState(new URL(location.href),state,options);url.hash=target.id;history.replaceState(null,'',url);target.focus({preventScroll:true});target.scrollIntoView({block:'start',behavior:'auto'});}));
+  const restore=()=>{clearTimeout(timer);state=readDirectoryState(location.search,options);syncControls();render(false);};
+  window.addEventListener('popstate',restore);window.addEventListener('pageshow',restore);
+  syncControls();render(false);
+ }
+</script>

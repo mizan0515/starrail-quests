@@ -227,8 +227,8 @@ REVIEWED = {'belobog/0': ['preservation',
  'swarm-research/1': ['ruan-mei',
                       'incoming',
                       '헤르타의 발언',
-                      '타이츠론스 몰락 전 시대를 선택했다',
-                      '헤르타는 완·매가 타이츠론스의 몰락 전 시대를 선택했다고 설명한다.'],
+                      '타이츠론스 몰락 전 시대로 고정할 계획이라고 전해진다',
+                      '헤르타는 완·매가 타이츠론스의 몰락 전 시대로 연산을 고정하겠다고 전한다.'],
  'swarm-research/2': ['person-1013',
                       'incoming',
                       '헤르타의 발언',
@@ -1459,6 +1459,19 @@ def verify(site=SITE, atlas=None, graph=None, sources_only=False):
             require(relation['evidence'] == REVIEWED_PROOFS.get(node['id'] + '/' + str(index)),
                     'Original proof binding differs from reviewed context: ' + str(key))
             original = evidence(relation['evidence'])
+            if key == ('swarm-research', 1):
+                require(node.get('intro') ==
+                        '헤르타는 역사 단편에 시간을 고정해 연구 범위를 좁힌다고 설명한다. 완·매가 타이츠론스의 몰락 전 시대로 연산을 고정하겠다고 전한다. 결말에서 헤르타는 연산의 누락 가능성과 남아 있는 곤충떼에 관한 의문을 제기한다.',
+                        'Herta-reported plan became an unattributed completed choice in the introduction')
+                require(relation['evidence']['id'] == 'quest-8013104' and
+                        relation['evidence']['anchor'] == 'scene-1' and
+                        original.get('speaker') == '헤르타' and
+                        original.get('talk_id') == 403055012 and
+                        str(original.get('hash')) == '12232344479880999215' and
+                        original.get('pointer') == '/OnStartSequece/3/TaskList/1/SimpleTalkList/2' and
+                        original.get('text') ==
+                        '뭐, 완•매는 자기 생각이 있는 모양이야. 「충황」 타이츠론스가 몰락하기 전 시대로 고정하겠대',
+                        'Reviewed planned-action original speaker/TalkID/hash/pointer/text differs')
             if key == ('sanctus-medicus', 1):
                 require(relation['target'] == 'lore-10054' and relation['status'] == '편집자의 연결' and
                         relation['verb'] == '풍요의 백성의 축복·육체 설명', 'Related definition promoted to inferred membership')
@@ -1581,6 +1594,7 @@ def self_test(site, sources_only):
         ('READING_CONNECTION_AS_SETTING_FACT', lambda a: next(n for n in a['nodes'] if n['id'] == 'herta')['links'][0].update(status='원문 서술')),
         ('MEMBER_DIRECTION_REVERSED', lambda a: next(n for n in a['nodes'] if n['id'] == 'genius-society')['links'][0].update(direction='outgoing')),
         ('FORECAST_AS_ARMY_ACTION', lambda a: next(n for n in a['nodes'] if n['id'] == 'stellaron-hunters')['links'][2].update(status='카프카의 발언')),
+        ('PLAN_AS_COMPLETED_IN_INTRO', lambda a: next(n for n in a['nodes'] if n['id'] == 'swarm-research').update(intro='헤르타는 역사 단편에 시간을 고정해 연구 범위를 좁힌다고 설명한다. 완·매는 타이츠론스의 몰락 전 시대를 선택했다. 결말에서 헤르타는 연산의 누락 가능성과 남아 있는 곤충떼에 관한 의문을 제기한다.')),
         ('UNSUPPORTED_COMPARISON_HYPOTHESIS', lambda a: a['comparisons']['herta-life-and-knowledge'].update(reading='창조·측정·공감은 서로 다른 능력일 수 있다.')),
         ('TIMELINE_ARBITRARY_DATE', lambda a: next(n for n in a['nodes'] if n['id'] == 'ruan-mei')['timeline'][0].update(when='성력 4000년')),
         ('TIMELINE_ABSTRACT_EDITORIAL_META', lambda a: next(n for n in a['nodes'] if n['id'] == 'belobog')['timeline'][2].update(text='하나의 공식 서사 안에 겹친다.')),

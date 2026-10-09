@@ -20,46 +20,55 @@ const categories=['서적·문서','캐릭터 이야기','에이언즈·운명�
  </form>
  {isQuest&&!kind&&<div class="catalog-kind-buttons" role="group" aria-label="임무 종류 바로 선택">{['',...Object.values(kinds)].map(k=><button type="button" data-kind-choice={k} aria-pressed={k===''?'true':'false'}>{k||'전체'}<span data-kind-count/></button>)}</div>}
  <div class="result-bar"><p class="result-count" role="status" aria-live="polite">{total.toLocaleString()}개 {isQuest?'임무':'자료'}</p><div class="catalog-results-actions"><span>{isQuest?'버전 · 지역 · 챕터별':'종류 · 지역별'}</span><button class="reset-button" type="button">초기화 <span aria-hidden="true">↺</span></button></div></div>
- <div class="catalog-results">{initial.map(d=><a class="catalog-row" href={docUrl(d.id)}><span class="row-type">{d.kind||d.category}</span><span class="row-content"><strong class="row-title">{d.title}</strong><span class="row-detail">{d.world} · {d.id.replace('quest-','')} · {isQuest?(d.dialogueCount||d.captionCount)?`대사 ${d.dialogueCount.toLocaleString()}행 · 선택지 ${d.choiceCount.toLocaleString()}개${d.captionCount?` · 영상 자막 ${d.captionCount.toLocaleString()}행`:""}`:d.choiceCount?`선택지 ${d.choiceCount.toLocaleString()}개 · 대사 연결 확인 중`:'임무 개요 · 대사 연결 확인 중':`${d.count.toLocaleString()}개 원문 항목`}</span></span><span class="row-arrow" aria-hidden="true">→</span></a>)}</div>
+ <div class="catalog-results">{initial.map(d=><a id={'catalog-entry-'+mode+'-'+d.id} class="catalog-row" href={docUrl(d.id)} data-reading-link><span class="row-type">{d.kind||d.category}</span><span class="row-content"><strong class="row-title">{d.title}</strong><span class="row-detail">{d.world} · {d.id.replace('quest-','')} · {isQuest?(d.dialogueCount||d.captionCount)?`대사 ${d.dialogueCount.toLocaleString()}행 · 선택지 ${d.choiceCount.toLocaleString()}개${d.captionCount?` · 영상 자막 ${d.captionCount.toLocaleString()}행`:""}`:d.choiceCount?`선택지 ${d.choiceCount.toLocaleString()}개 · 대사 연결 확인 중`:'임무 개요 · 대사 연결 확인 중':`${d.count.toLocaleString()}개 원문 항목`}</span></span><span class="row-arrow" aria-hidden="true">→</span></a>)}</div>
  <button class="load-more" type="button" hidden>더 보기</button>
  <noscript><p>위 목록에서 원문을 읽을 수 있습니다. 검색·필터와 추가 목록은 JavaScript로 표시합니다.</p></noscript>
 </section>
 <script>
+ import {readDirectoryState} from '../lib/directory-state.mjs';
+ import {sourceReadingOrigin} from '../lib/reading-return.mjs';
  for(const root of document.querySelectorAll<HTMLElement>('.browse')){
   const form=root.querySelector<HTMLFormElement>('form')!,container=root.querySelector<HTMLElement>('.catalog-results')!,count=root.querySelector<HTMLElement>('.result-count')!,more=root.querySelector<HTMLButtonElement>('.load-more')!,reset=root.querySelector<HTMLButtonElement>('.reset-button')!;
-  const quest=root.dataset.mode==='quests',versionOrder=JSON.parse(root.dataset.order!),params=new URLSearchParams(location.search);
-  let data:any[]=[],limit=Math.min(1500,Math.max(60,Number(params.get('limit'))||60));
+  const quest=root.dataset.mode==='quests',versionOrder=JSON.parse(root.dataset.order!);
+  const base=decodeURIComponent(new URL(root.dataset.base!,location.href).pathname).replace(/\/문서\/$/,'');
+  const readingOrigin=(anchor:string)=>sourceReadingOrigin(location.pathname+location.search+anchor,new URLSearchParams(location.search).get('from'),{origin:location.origin,base});
+  let data:any[]=[],limit=60,loaded=false;
   const field=(name:string)=>form.elements.namedItem(name) as HTMLInputElement|HTMLSelectElement|null;
-  for(const name of ['q','world','version','kind','category']){const input=field(name);if(input&&params.has(name)){input.value=params.get(name)!;if(input instanceof HTMLSelectElement&&input.selectedIndex<0)input.selectedIndex=0;}}
   const el=(tag:string,cls:string,text:string)=>{const n=document.createElement(tag);n.className=cls;n.textContent=text;return n;};
   const normalize=(s:string)=>s.normalize('NFKC').toLocaleLowerCase('ko').replace(/\s/g,'');
   const versionName=(v:string)=>v==='early'?'1.0~2.6':v==='unknown'?'버전 미확인':v;
   const state=()=>Object.fromEntries(new FormData(form));
   const save=()=>{const u=new URL(location.href);for(const name of ['q','world','version','kind','category']){const input=field(name);if(input){input.value?u.searchParams.set(name,input.value):u.searchParams.delete(name);}}limit>60?u.searchParams.set('limit',String(limit)):u.searchParams.delete('limit');history.replaceState(history.state,'',u);};
   const render=(persist=true)=>{
-   if(persist)save();const f=state(),q=normalize(String(f.q||'')),selectedKind=root.dataset.kind||f.kind;
+   if(persist)save();if(!loaded)return;const f=state(),q=normalize(String(f.q||'')),selectedKind=root.dataset.kind||f.kind;
    const filtered=data.filter(d=>(quest?d.category==='퀘스트'&&(!f.version||d.versions.includes(f.version)):d.category===f.category)&&(!f.world||d.world===f.world)&&(!q||normalize(d.title+' '+d.id).includes(q)));
    for(const button of root.querySelectorAll<HTMLButtonElement>('[data-kind-choice]')){button.setAttribute('aria-pressed',String(button.dataset.kindChoice===String(selectedKind||'')));button.querySelector('[data-kind-count]')!.textContent=String(filtered.filter(d=>!button.dataset.kindChoice||d.kind===button.dataset.kindChoice).length);}
    const kindOrder=['개척 임무','개척 후문','동행 임무','모험 임무','일일 임무'];
    const primary=(d:any)=>f.version||versionOrder.find((v:string)=>d.versions.includes(v))||'unknown';
    const result=filtered.filter(d=>!quest||!selectedKind||d.kind===selectedKind).sort((a,b)=>quest?versionOrder.indexOf(primary(a))-versionOrder.indexOf(primary(b))||kindOrder.indexOf(a.kind)-kindOrder.indexOf(b.kind)||a.worldRank-b.worldRank||a.chapterRank-b.chapterRank||a.rank-b.rank||a.title.localeCompare(b.title,'ko'):a.title.localeCompare(b.title,'ko'));
    container.replaceChildren();count.textContent=`${result.length.toLocaleString()}개 ${quest?'임무':'자료'} · ${Math.min(limit,result.length)}개 표시`;
-   reset.disabled=!f.q&&!f.world&&!f.kind&&String(f.version||'')===(root.dataset.version||'')&&(!f.category||f.category==='서적·문서');
-   if(!result.length){const empty=el('div','empty-state','');empty.append(el('h2','','찾는 자료가 없습니다'),el('p','','검색어를 짧게 바꾸거나 검색 조건을 초기화해 보세요.'));const clear=el('button','reset-button','검색 조건 초기화');clear.addEventListener('click',restore);empty.append(clear);container.append(empty);}
+   reset.disabled=limit===60&&!f.q&&!f.world&&!f.kind&&String(f.version||'')===(root.dataset.version||'')&&(!f.category||f.category==='서적·문서');
+   if(!result.length){const empty=el('div','empty-state','');empty.append(el('h2','','찾는 자료가 없습니다'),el('p','','검색어를 짧게 바꾸거나 검색 조건을 초기화해 보세요.'));const clear=el('button','reset-button','검색 조건 초기화');clear.addEventListener('click',resetFilters);empty.append(clear);container.append(empty);}
    const groups=new Map<string,any[]>();for(const d of result.slice(0,limit)){const key=quest?primary(d):(f.category==='유물 이야기'?d.collection:d.world);if(!groups.has(key))groups.set(key,[]);groups.get(key)!.push(d);}
    for(const [title,rows] of groups){const section=el('section','catalog-group',''),heading=el('h2',quest&&root.dataset.version&&f.version?'sr-only':'group-heading',quest?versionName(title):title),list=el('ul','catalog-list','');heading.append(el('span','group-count',`${rows.length}개 ${quest?'임무':'자료'} 표시`));section.append(heading);
     let lastChapter='';for(const d of rows){const li=document.createElement('li');const chapter=quest?[d.world,d.chapter==='챕터 미지정'?'':d.chapter].filter(Boolean).join(' · '):'';if(chapter!==lastChapter&&chapter){li.append(el('p','catalog-chapter',chapter));lastChapter=chapter;}
-     const a=document.createElement('a');a.className='catalog-row';const u=new URL(root.dataset.base+d.id+'.html',location.href);u.searchParams.set('from',location.pathname+location.search);a.href=u.href;
+     const a=document.createElement('a');a.id='catalog-entry-'+root.dataset.mode+'-'+d.id;a.className='catalog-row';a.setAttribute('data-reading-link','');const u=new URL(root.dataset.base+d.id+'.html',location.href),origin=readingOrigin('#'+a.id);if(origin)u.searchParams.set('from',origin);a.href=u.href;
      const detail=quest?(d.dialogueCount||d.captionCount)?`대사 ${d.dialogueCount.toLocaleString()}행 · 선택지 ${d.choiceCount.toLocaleString()}개${d.captionCount?` · 영상 자막 ${d.captionCount.toLocaleString()}행`:""}`:d.choiceCount?`선택지 ${d.choiceCount.toLocaleString()}개 · 대사 연결 확인 중`:'임무 개요 · 대사 연결 확인 중':`${d.count.toLocaleString()}개 원문 항목`;
      const content=el('span','row-content','');content.append(el('strong','row-title',d.title),el('span','row-detail',[d.id.replace('quest-',''),detail].join(' · ')));
      const arrow=el('span','row-arrow','→');arrow.setAttribute('aria-hidden','true');a.append(el('span','row-type',quest?d.kind:d.category),content,arrow);li.append(a);list.append(li);
     }section.append(list);container.append(section);
    }more.hidden=result.length<=limit;more.textContent=`더 보기 · ${Math.min(60,result.length-limit)}개`;
   };
-  function restore(){form.reset();limit=60;render();field('q')?.focus();}
-  form.addEventListener('submit',e=>e.preventDefault());form.addEventListener('input',()=>{limit=60;render();});reset.addEventListener('click',restore);more.addEventListener('click',()=>{limit+=60;render();});
+  function restoreFromURL(){
+   form.reset();const params=new URLSearchParams(location.search);
+   for(const name of ['q','world','version','kind','category']){const input=field(name);if(input&&params.has(name)){input.value=params.get(name)!;if(input instanceof HTMLSelectElement&&input.selectedIndex<0)input.selectedIndex=0;}}
+   limit=Math.min(1500,Math.max(60,readDirectoryState(location.search,{queryKey:'q',groupKey:'',limitKey:'limit',defaultLimit:60}).limit));render(false);
+  }
+  function resetFilters(){form.reset();limit=60;render();field('q')?.focus();}
+  form.addEventListener('submit',e=>e.preventDefault());form.addEventListener('input',()=>{limit=60;render();});reset.addEventListener('click',resetFilters);more.addEventListener('click',()=>{limit+=60;render();});
   if(/\/versions\/[^/]+\.html$/.test(location.pathname))field('version')?.addEventListener('change',()=>{const u=new URL(location.href);u.pathname=u.pathname.replace(/\/versions\/[^/]+\.html$/,`/versions/${field('version')!.value||'index'}.html`);u.searchParams.delete('version');u.searchParams.delete('limit');location.assign(u);});
   for(const button of root.querySelectorAll<HTMLButtonElement>('[data-kind-choice]'))button.addEventListener('click',()=>{field('kind')!.value=button.dataset.kindChoice||'';limit=60;render();});
-  Promise.all([fetch(root.dataset.catalog!).then(r=>{if(!r.ok)throw new Error();return r.json();}),quest?fetch(root.dataset.versions!).then(r=>{if(!r.ok)throw new Error();return r.json();}):Promise.resolve({})]).then(([x,v])=>{data=x.map((d:any)=>({...d,versions:v[d.id]||[]}));render(false);}).catch(()=>{count.textContent='목록을 불러오지 못했습니다. 위 원문 링크를 이용하거나 새로고침해 주세요.';});
+  window.addEventListener('popstate',restoreFromURL);window.addEventListener('pageshow',restoreFromURL);restoreFromURL();
+  Promise.all([fetch(root.dataset.catalog!).then(r=>{if(!r.ok)throw new Error();return r.json();}),quest?fetch(root.dataset.versions!).then(r=>{if(!r.ok)throw new Error();return r.json();}):Promise.resolve({})]).then(([x,v])=>{data=x.map((d:any)=>({...d,versions:v[d.id]||[]}));loaded=true;restoreFromURL();}).catch(()=>{count.textContent='목록을 불러오지 못했습니다. 위 원문 링크를 이용하거나 새로고침해 주세요.';});
  }
 </script>
