@@ -51,6 +51,8 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Official video caption artifact and ownership QA failed'}
   & python -B -X utf8 tools/verify_official_caption_site.py
   if($LASTEXITCODE -ne 0){throw 'Official video caption original HTML QA failed'}
+  & python -B -X utf8 tools/verify_native_video_captions.py --dist dist --self-test
+  if($LASTEXITCODE -ne 0){throw 'Native video source and Korean caption reader QA failed'}
   & python -B -X utf8 tools/verify_official_talk_library.py --artifact-only --self-test
   if($LASTEXITCODE -ne 0){throw 'Whole official Talk library source QA failed'}
   & python -B -X utf8 tools/verify_official_talk_library_site.py

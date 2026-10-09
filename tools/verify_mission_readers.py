@@ -265,6 +265,8 @@ def main(dist):
     quests=[d for d in source_catalog if d['category']=='퀘스트']
     supplements_data=read(root/'data/mission-dialogue-supplements.json')
     original_captions=read(root/'data/official-video-captions.json')['missions']
+    for owner,scenes in read(root/'data/native-video-captions.json')['missions'].items():
+        original_captions.setdefault(owner,[]).extend(scenes)
     source_aliases=read(root/'data/aliases.json')
     captions={}
     for owner,scenes in original_captions.items():

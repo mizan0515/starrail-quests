@@ -377,7 +377,8 @@ def main(dist):
         found_anchors.update(re.findall(r'\bdata-official-caption-proof="([^"]+)"', content))
         all_caption_rows += len(re.findall(r'\bdata-passage="caption"', content))
     require(found_anchors == expected_anchors, 'whole-site caption proof coverage or uniqueness differs')
-    require(all_caption_rows == source['counts']['rows'], 'whole-site caption row coverage differs')
+    native = read_json(ROOT / 'data/native-video-captions.json')
+    require(all_caption_rows == source['counts']['rows'] + native['counts']['rows'], 'whole-site caption row coverage differs')
     mutations = mapping_mutations(source, aliases, documents)
     for mission_id, scenes in sorted(grouped.items()):
         path = dist / '문서' / (mission_id + '.html')

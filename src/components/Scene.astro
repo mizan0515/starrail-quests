@@ -5,6 +5,7 @@ import MissionOwnershipProof from './MissionOwnershipProof.astro';
 import SourceParagraphs from './SourceParagraphs.astro';
 import OfficialTalkProof from './OfficialTalkProof.astro';
 import OfficialCaptionProof from './OfficialCaptionProof.astro';
+import NativeVideoCaptionProof from './NativeVideoCaptionProof.astro';
 import TimelineDialogueProof from './TimelineDialogueProof.astro';
 import timelineDialogue from '../../data/timeline-mission-dialogue.json';
 const {section,quest=false}=Astro.props;
@@ -20,7 +21,7 @@ const targetChoices=(talkId:any)=>s.rows.filter((row:any)=>passage(row)==='choic
 ---
 <section {...readerAttributes({variant:'scene',className:'source-section',id:s.anchor})}>
   <h3>{s.title}</h3>
-  {caption&&<OfficialCaptionProof section={s}/>}
+  {caption&&(s.nativePlaybackSource?<NativeVideoCaptionProof section={s}/>:<OfficialCaptionProof section={s}/>)}
   {timeline&&<TimelineDialogueProof section={s}/>}
   {s.relatedDocument&&<p class="mission-message-source"><a href={href(s.originalDocumentUrl)} {...sourceLinkAttributes({reading:true,id:s.anchor+'-original-message'})}>메시지 원문 · {s.sourceTitle} ↗</a></p>}
   {s.relatedDocument&&<details {...disclosureAttributes({className:'source-details'})} data-pagefind-ignore><summary>임무와 메시지의 연결 근거</summary><dl><dt>메시지 식별자</dt><dd>MessageSectionID · {s.relatedDocument.messageSectionId}</dd><dt>임무 구조의 참조</dt><dd><a href={missionStructureUrl(s.relatedDocument.referenceSource)} {...sourceLinkAttributes({variant:'inline'})}>{s.relatedDocument.referenceSource} ↗</a> · {s.relatedDocument.pointer}</dd><dt>임무 구조 SHA-256</dt><dd>{s.relatedDocument.referenceSourceSha256}</dd><dt>보존된 메시지 자료 SHA-256</dt><dd>{s.relatedDocument.sha256}</dd></dl></details>}
