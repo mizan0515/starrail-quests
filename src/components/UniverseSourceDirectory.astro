@@ -19,6 +19,29 @@ const defaultLimit=12;
 const body=record=>record.scenes.flatMap(scene=>scene.rows.map(row=>row.text));
 const readerUrl=id=>href('우주/기록/'+id+'.html');
 const title=id=>names.get(id)?.title||byId.get(id).title;
+const firstPassage=id=>{
+ const record=byId.get(id);
+ for(const scene of record.scenes){
+  const index=scene.rows.findIndex(row=>row.text?.trim());
+  if(index>=0){
+   const row=scene.rows[index],text=[...row.text];
+   return {row,anchor:row.readerRowAnchor||`${scene.anchor}-row-${index+1}`,text:text.slice(0,170).join(''),truncated:text.length>170};
+  }
+ }
+ throw Error('Universe relation needs an original passage '+id);
+};
+// Add source context at the adapter boundary; the shared CVA renderer stays intact.
+const contextualizeNodes=(html,branchIndex)=>{
+ const byUrl=new Map([...byId.keys()].map(id=>[E(readerUrl(id)),id]));
+ let occurrence=0;
+ return html.replace(/(<h3 class="cva-item-title">[\s\S]*?<a data-reading-link href="([^"]+)">[\s\S]*?<\/h3>)/g,(match,heading,url)=>{
+  const id=byUrl.get(url);
+  if(!id)throw Error('Universe relation node has no canonical source '+url);
+  const nodeId=directoryId+'-branch-'+branchIndex+'-node-'+occurrence+++'-'+id;
+  const passage=firstPassage(id),source=passage.row;
+  return heading.replace('<a data-reading-link href=',`<a id="${E(nodeId)}" data-reading-link href=`)+`<div class="universe-node-context" data-universe-node-record="${E(id)}" data-universe-quote-anchor="${E(passage.anchor)}" data-universe-quote-hash="${E(source.hash||'')}" data-universe-quote-speaker="${E(source.speaker||'')}"><p class="universe-node-attribution">${names.get(id).titleKind==='original'?'원문 제목':'식별용 제목'} · 원문 발췌${source.speaker?' · '+E(source.speaker):''}</p><blockquote><p>${E(passage.text)}</p></blockquote>${passage.truncated?'<span class="universe-node-continuation" aria-label="원문은 다음 구절로 이어집니다">…</span>':''}<a id="${E(nodeId+'-quote')}" data-reading-link href="${E(readerUrl(id)+'#'+passage.anchor)}" class="universe-node-original">이 구절의 원문 ↗</a></div>`;
+ });
+};
 const excerpt=record=>{
  const row=record.scenes.flatMap(scene=>scene.rows).find(row=>row.text?.trim());
  if(!row)return '';
@@ -57,7 +80,7 @@ const branches=roots.map((root,index)=>{
  const reached=new Set([root]),edges=[];
  for(const id of reached)for(const edge of source.edges.filter(edge=>edge.from===id)){edges.push(edge);reached.add(edge.to);}
  const relationships=edges.map(edge=>({id:'next-'+edge.from+'-'+edge.to,from:{id:edge.from,name:title(edge.from),url:readerUrl(edge.from),kind:'원문 기록'},to:{id:edge.to,name:title(edge.to),url:readerUrl(edge.to),kind:'원문 기록'},label:'진행 참조',reasonClaimId:'claim-next-'+edge.from+'-'+edge.to,claimKind:'explicit',reason:'원문 자료에 수록된 다음 기록 참조다.',evidence:[{...edge.evidence,from:edge.from,to:edge.to,condition:edge.conditionEvidence,officialRecordId:names.get(edge.to).officialRecordIds[0]}]}));
- return {root,index,edges,html:kit.network(relationships,{id:directoryId+'-next-'+index,title:title(root)+'에서 이어지는 기록'})};
+ return {root,index,edges,html:contextualizeNodes(kit.network(relationships,{id:directoryId+'-next-'+index,title:title(root)+'에서 이어지는 기록'}),index)};
 });
 ---
 <div class="grouped-directory universe-record-directory not-content" data-universe-source-directory data-universe-index data-query-key="recordQuery" data-group-key="recordGroup" data-limit-key="recordLimit" data-default-limit={defaultLimit}>
@@ -131,5 +154,11 @@ const branches=roots.map((root,index)=>{
  .universe-next-branch :global(.rw-focus-relations .cva-page[data-cva] .cva-item-title .rw-node-kind){display:none}
  .universe-next-branch :global(.rw-focus-relations .cva-page[data-cva] .rw-edge-statement){font-size:.8125rem}
  .universe-next-branch :global(.rw-focus-relations .cva-page[data-cva] .rw-relation-proof){margin-block:.5rem 0}
+ .universe-next-branch :global(.universe-node-context){min-width:0;margin-block:.5rem .75rem}
+ .universe-next-branch :global(.universe-node-attribution){font-size:.75rem;line-height:1.7;color:var(--muted);margin:0 0 .5rem}
+ .universe-next-branch :global(.universe-node-context blockquote){margin:0;padding:0;border:0;font-size:.875rem;line-height:1.85;overflow-wrap:anywhere}
+ .universe-next-branch :global(.universe-node-context blockquote p){margin:0;white-space:pre-line}
+ .universe-next-branch :global(.universe-node-continuation){color:var(--muted)}
+ .universe-next-branch :global(.universe-node-original){display:inline-flex;align-items:center;min-height:2.75rem;font-size:.8125rem;margin-top:.25rem}
  @container(max-width:26rem){.universe-record-directory :global(.universe-field-evidence dl){grid-template-columns:minmax(0,1fr);gap:.15rem}.universe-record-directory :global(.universe-field-evidence dd){margin-bottom:.6rem}}
 </style>
