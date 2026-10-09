@@ -29,7 +29,11 @@ import {href} from '../lib/data';
  if(inherited&&(!catalogueParent||!document.querySelector('[data-catalog-return]'))){document.body.append(returnNav);returnNav.hidden=false;returnNav.querySelector('a')!.setAttribute('href',inherited);}
  const withReturn=(href:string,from:string|null)=>{const url=new URL(href,location.href);if(from){const origin=new URL(from,location.origin);if(url.origin===origin.origin&&url.pathname===origin.pathname)return origin.href;url.searchParams.set('from',from);}return url.href;};
  const currentReadingOrigin=(anchor=location.hash||'#original')=>sourceReadingOrigin(location.pathname+location.search+anchor,inherited,returnOptions);
- document.querySelectorAll<HTMLAnchorElement>('a[data-reading-link]').forEach(a=>{const origin=currentReadingOrigin(a.id?'#'+a.id:location.hash||'#original');if(origin)a.href=withReturn(a.href,origin);});
+ // A source CTA returns to the link that was followed, including links in
+ // expanded evidence. Editorial dossiers do not all have an #original block.
+ document.querySelectorAll<HTMLAnchorElement>('a[data-reading-link]').forEach((a,index)=>{if(!a.id)a.id='reading-link-'+index;const origin=currentReadingOrigin('#'+a.id);if(origin)a.href=withReturn(a.href,origin);});
+ const restoreReadingLink=()=>{let id:string;try{id=decodeURIComponent(location.hash.slice(1));}catch{return;}const link=document.getElementById(id);if(!(link instanceof HTMLAnchorElement)||!link.hasAttribute('data-reading-link'))return;for(let parent=link.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;requestAnimationFrame(()=>{link.scrollIntoView({block:'center'});link.focus({preventScroll:true});});};
+ restoreReadingLink();window.addEventListener('hashchange',restoreReadingLink);
  const close=()=>{dialog.close();trigger?.focus({preventScroll:true});};
  dialog.querySelector('.context-close')!.addEventListener('click',close);
  dialog.addEventListener('cancel',()=>trigger?.focus({preventScroll:true}));

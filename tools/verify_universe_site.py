@@ -99,17 +99,19 @@ def main():
                     assert page.original[f"{ref['id']}-{s['anchor']}-row-{i}"]==row['text']
                     originals+=1
     assert count==catalogue['counts']['reviewedDialogueRows']
-    supplements=read(ROOT/'data/mission-dialogue-supplements.json');mission_rows=caption_rows=message_rows_checked=0
+    supplements=read(ROOT/'data/mission-dialogue-supplements.json');mission_rows=caption_rows=timeline_rows=message_rows_checked=0
+    timelines=read(ROOT/'data/timeline-mission-dialogue.json')
     caption_source=read(ROOT/'data/official-video-captions.json');aliases=read(ROOT/'data/aliases.json')
     targets={aliases.get(owner,owner) for owner in caption_source['missions']}
     originals_by_id={target:read(ROOT/'data/documents'/(target+'.json')) for target in targets}
     captions=canonical_scenes(caption_source,aliases,originals_by_id)
     published_catalogue={d['id']:d for d in read(ROOT/'dist/reading-catalog.json')}
     versions=read(ROOT/'dist/versions-data.json')
-    checked_missions=set(supplements['missions'])|set(captions)
+    checked_missions=set(supplements['missions'])|set(captions)|set(timelines['missions'])
     for mid in sorted(checked_missions):
         dialogue_scenes=supplements['missions'].get(mid,[]);caption_scenes=captions.get(mid,[])
-        scenes=[*dialogue_scenes,*caption_scenes]
+        timeline_scenes=timelines['missions'].get(mid,[])
+        scenes=[*dialogue_scenes,*caption_scenes,*timeline_scenes]
         page=Page();page.feed((ROOT/'dist/문서'/(mid+'.html')).read_text('utf8'))
         assert not page.duplicates,(mid,page.duplicates)
         assert 'linked-dialogue' in page.ids,mid
@@ -146,8 +148,13 @@ def main():
             for i,row in enumerate(s['rows'],1):
                 assert page.original[f"{s['anchor']}-row-{i}"]==row['text'],(mid,row['hash'])
                 caption_rows+=1
+        for s in timeline_scenes:
+            for i,row in enumerate(s['rows'],1):
+                assert page.original[f"{s['anchor']}-row-{i}"]==row['text'],(mid,row['talk_id'])
+                timeline_rows+=1
     assert mission_rows==supplements['counts']['rows']
     assert caption_rows==caption_source['counts']['rows']
+    assert timeline_rows==timelines['counts']['rows']
     print(json.dumps({'status':'PASS','modePages':len(catalogue['modes']),'originalDialogueRows':count,'documentRows':originals,'missionsWithDialogue':len(supplements['missions']),'missionDialogueRowsPreserved':mission_rows,'missionPagesChecked':len(checked_missions),'captionSourceMissionIds':len(caption_source['missions']),'canonicalCaptionMissionPages':len(captions),'captionScenes':caption_source['counts']['scenes'],'captionRowsPreserved':caption_rows,'messageRowsChecked':message_rows_checked}))
 
 if __name__=='__main__':main()

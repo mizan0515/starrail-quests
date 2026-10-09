@@ -1,0 +1,28 @@
+---
+import {disclosureAttributes} from '../lib/reading-kit/reader.mjs';
+import {missionStructureUrl} from '../lib/data';
+const {section:s}=Astro.props;
+const source=s.timelineSource;
+const conditions=s.triggerContext.conditions;
+const stateLabel={Started:'진행 중',Finish:'완료'};
+---
+<p class="muted timeline-context">연출 파일의 대사 시작 시각순으로 읽습니다. 임무 전체의 장면 순서와 선택지에 따른 재생 경로는 확인 중입니다.</p>
+{conditions.length>0&&<ul class="timeline-conditions">{conditions.map(condition=><li data-timeline-condition={condition.predicatePointer}>파일의 호출 조건 · 하위 임무 {condition.predicate.SubMissionID} {stateLabel[condition.predicate.SubMissionState]||condition.predicate.SubMissionState} · {condition.branch==='SuccessTaskList'?'조건 충족 경로':'조건 미충족 경로'}</li>)}</ul>}
+<details {...disclosureAttributes({className:'source-details'})} data-timeline-proof={s.anchor} data-pagefind-ignore>
+ <summary>연출 장면과 대사의 원문 연결</summary>
+ <dl>
+  <dt>연출을 호출한 임무 기록</dt><dd><a href={missionStructureUrl(s.triggerContext.source)}>{s.triggerContext.source} ↗</a><br/>{s.triggerContext.referencePointer}<br/>연출 {s.triggerContext.performanceId}<br/>SHA-256 · {s.triggerContext.sourceSha256}</dd>
+  <dt>연출 파일</dt><dd>{s.source}</dd>
+  <dt>연출 설정의 명시 경로</dt><dd>{source.logicalJsonPath}<br/>{source.timelineFieldPointer}<br/>문자열 위치 {source.timelineFieldByteProof.start}–{source.timelineFieldByteProof.end}<br/>SHA-256 · {source.entrySha256}</dd>
+  <dt>설치본의 장면 자료</dt><dd>{source.blockFile}<br/>{source.cabName} · {source.bundleOffset}–{source.bundleOffset+source.bundleBytes}<br/>SHA-256 · {source.blockSha256}</dd>
+  <dt>장면과 대사 트랙의 참조</dt><dd>{source.containerKey}<br/>{source.parentRouteTalkToRoot.join(' → ')}<br/>트랙 SHA-256 · {source.trackRawSha256}</dd>
+  <dt>관찰 버전</dt><dd>설치본의 출시 버전은 미확인입니다. 한국어 본문은 별도의 공식 4.6 원문과 보존 대사표를 대조했습니다.</dd>
+ </dl>
+ {conditions.length>0&&<ul>{conditions.map(condition=><li>조건 {condition.predicatePointer}<br/>분기 {condition.branchPointer}<pre>{JSON.stringify(condition.predicate,null,2)}</pre></li>)}</ul>}
+ {s.optionReferences.length>0&&<><p>선택지 참조 · 장면 파일과 같은 연출 설정의 선택지 목록에서 확인한 원문입니다. 이후 재생되는 대사의 경로는 확인 중입니다.</p><ul>{s.optionReferences.map(option=><li data-timeline-option={option.talk_id}>{option.text}<br/>대사 식별자 {option.talk_id} · 문자열 {option.hash}<br/>{option.references.map(reference=><span>{reference.source} · {reference.pointer}<br/></span>)}</li>)}</ul></>}
+ <ol>{s.rows.map(row=><li data-timeline-clip={row.timelineClip.trackClipIndex}>대사 {row.talk_id} · 연출 안의 시작 {row.timelineClip.start}초<br/>트랙 배열 위치 {row.timelineClip.trackClipIndex} · 클립 {row.timelineClip.pathID}<br/>대사 식별자 위치 {row.timelineClip.talkIDSpan.join('–')} · SHA-256 {row.timelineClip.objectSha256}</li>)}</ol>
+</details>
+<style>
+ .timeline-conditions{font-size:.85rem;line-height:1.7;color:var(--sl-color-gray-2);padding-inline-start:1.2rem}
+ .source-details dd,.source-details li{overflow-wrap:anywhere}
+</style>

@@ -272,7 +272,8 @@ def main(dist):
         original=read(root/'data/documents'/(target+'.json'))
         assert owner in original.get('missionParts',[target]),'Caption owner missing from preserved mission parts: '+owner
         captions.setdefault(target,[]).extend(scenes)
-    supplement={mid:[*supplements_data['missions'].get(mid,[]),*captions.get(mid,[])] for mid in set(supplements_data['missions'])|set(captions)}
+    timelines=read(root/'data/timeline-mission-dialogue.json')['missions']
+    supplement={mid:[*supplements_data['missions'].get(mid,[]),*captions.get(mid,[]),*timelines.get(mid,[])] for mid in set(supplements_data['missions'])|set(captions)|set(timelines)}
     coverage=supplements_data.get('coverage',{})
     built_catalog=read(dist/'reading-catalog.json')
     built_quests={d['id']:d for d in built_catalog if d['category']=='퀘스트'}

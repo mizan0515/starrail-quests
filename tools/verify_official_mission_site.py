@@ -77,7 +77,12 @@ def check(html,rows,e):
 def main(dist):
     original=json.loads((SITE/'data/official-mission-talks.json').read_text('utf8'))
     supplements=json.loads((SITE/'data/mission-dialogue-supplements.json').read_text('utf8'))
-    expected={mid:[r for s in scenes for r in s['rows'] if r.get('officialSource')] for mid,scenes in supplements['missions'].items()}
+    timelines=json.loads((SITE/'data/timeline-mission-dialogue.json').read_text('utf8'))
+    assert timelines['evidence']['officialKorean']['talkTable']==original['evidence']['talkTable']
+    assert timelines['evidence']['officialKorean']['entry']==original['evidence']['entry']
+    missions={mid:[*supplements['missions'].get(mid,[]),*timelines['missions'].get(mid,[])]
+              for mid in set(supplements['missions'])|set(timelines['missions'])}
+    expected={mid:[r for s in scenes for r in s['rows'] if r.get('officialSource')] for mid,scenes in missions.items()}
     expected={mid:rows for mid,rows in expected.items() if rows}
     count=mutations=0
     for mid,rows in expected.items():
@@ -88,7 +93,7 @@ def main(dist):
                         ('공식 한국어 원문 · 4.6.0','공식 한국어 원문 · 4.5.0'),
                         (canary['officialSource']['tableRecord']['TalkSentenceText']['Hash'].__str__(),'1'),
                         (original['evidence']['koreanPack']['sha256'],'0'*64),
-                        ('data-source-condition=','data-removed-condition=')]:
+                        *([('data-source-condition=','data-removed-condition=')] if any(r.get('sourceConditions') for r in rows) else [])]:
             assert old in html
             try:check(html.replace(old,new),rows,original['evidence'])
             except AssertionError:mutations+=1

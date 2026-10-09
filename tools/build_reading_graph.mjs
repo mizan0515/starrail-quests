@@ -2,6 +2,7 @@ import fs from 'node:fs';import path from 'node:path';import {createReadingGraph
 import {writeReadingGraph} from '../src/lib/reading-kit/write.mjs';
 import {pathToFileURL} from 'node:url';
 import {atlasComparison} from '../src/lib/atlas-comparison.mjs';
+import {applySourceIdentities} from '../src/lib/source-identities.mjs';
 export function claimAttribution(item,evidence){
  const speaker=item.speaker||[...new Set(evidence.map(e=>e.speaker||(e.status==='원문 서술'?'':e.status)).filter(Boolean))].join(' · ');
  return {kind:item.status?.includes('편집')?'inference':speaker?'attributed':'explicit',speaker};
@@ -13,7 +14,9 @@ export function relationEndpoints(contextId,relation){
  return direction==='incoming'?{from:relation.target,to:contextId}:{from:contextId,to:relation.target};
 }
 export async function buildReadingGraph(){
-const read=p=>JSON.parse(fs.readFileSync(p,'utf8')),base='/starrail-quests',atlas=read('editorial/context-atlas.json'),explorer=read('data/explorer.json');
+const read=p=>JSON.parse(fs.readFileSync(p,'utf8')),base='/starrail-quests',atlas=read('editorial/context-atlas.json');
+const preservedExplorer=JSON.parse(fs.readFileSync('data/explorer.json','utf8'),(_key,value,context)=>typeof value==='number'&&!Number.isSafeInteger(value)?context.source:value);
+const explorer=applySourceIdentities(preservedExplorer,read('editorial/directory-discovery.json').identities);
 const documents=fs.readdirSync('data/documents').filter(n=>n.endsWith('.json')).map(n=>read('data/documents/'+n));
 const sources=documents.map(d=>({id:d.id,title:d.title,kind:d.category,url:base+'/문서/'+d.id+'.html',blocks:d.sections.flatMap(s=>s.rows.map((r,i)=>({id:s.anchor+'-row-'+(i+1),anchor:s.anchor,hash:r.hash,text:r.text,url:base+'/문서/'+d.id+'.html#'+s.anchor+'-row-'+(i+1),locator:{documentId:d.id,section:s.anchor,row:i+1,stringHash:r.hash,talkId:r.talk_id||null}})))}));
 const entities=explorer.entries.map(e=>({id:e.id,name:e.name,kind:e.axis,url:base+'/'+(e.axis==='concept'?'문서':'대상')+'/'+e.id+'.html'}));
