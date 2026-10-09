@@ -102,6 +102,12 @@ def main():
     supplements=read(ROOT/'data/mission-dialogue-supplements.json');mission_rows=caption_rows=timeline_rows=message_rows_checked=0
     timelines=read(ROOT/'data/timeline-mission-dialogue.json')
     caption_source=read(ROOT/'data/official-video-captions.json');aliases=read(ROOT/'data/aliases.json')
+    native_captions=read(ROOT/'data/native-video-captions.json')
+    for owner,scenes in native_captions['missions'].items():
+        caption_source['missions'].setdefault(owner,[]).extend(scenes)
+    for field in ('scenes','rows'):
+        caption_source['counts'][field]+=native_captions['counts'][field]
+    caption_source['counts']['missions']=len(caption_source['missions'])
     targets={aliases.get(owner,owner) for owner in caption_source['missions']}
     originals_by_id={target:read(ROOT/'data/documents'/(target+'.json')) for target in targets}
     captions=canonical_scenes(caption_source,aliases,originals_by_id)

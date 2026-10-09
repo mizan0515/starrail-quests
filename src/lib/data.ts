@@ -9,11 +9,12 @@ import editedTopics from '../../editorial/topics.json';
 import stats from '../../data/stats.json';
 import dialogueSupplements from '../../data/mission-dialogue-supplements.json';
 import videoCaptions from '../../data/official-video-captions.json';
+import nativeVideoCaptions from '../../data/native-video-captions.json';
 import timelineDialogue from '../../data/timeline-mission-dialogue.json';
 import {partitionMissionSections,missionRowLinked} from './mission-scope.mjs';
 const missionPartIds=Object.fromEntries(originalCatalog.filter(d=>d.category==='퀘스트').map(d=>{const original=JSON.parse(fs.readFileSync(path.resolve('data/documents',d.id+'.json'),'utf8'));return [d.id,(original.missionParts||[d.id]).map(id=>id.replace(/^quest-/,''))];})) as Record<string,string[]>;
 const captionScenes:Record<string,any[]>={};
-for(const [id,scenes] of Object.entries(videoCaptions.missions)){
+for(const [id,scenes] of [...Object.entries(videoCaptions.missions),...Object.entries(nativeVideoCaptions.missions)]){
  const target=aliases[id]||id;
  if(!missionPartIds[target]?.includes(id.replace(/^quest-/,'')))throw Error('Caption owner is not a preserved mission part: '+id);
  (captionScenes[target]??=[]).push(...scenes);
