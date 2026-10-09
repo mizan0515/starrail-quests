@@ -31,6 +31,7 @@ class SourcePage(Page):
         self.controls = []
         self.pending_choices = []
         self.choice_links = []
+        self.universe_node_contexts = []
         self.nested_p = 0
 
     @staticmethod
@@ -48,6 +49,9 @@ class SourcePage(Page):
             self.nested_p += 1
         if self.stack:
             self.stack[-1]['children'].append(n)
+        if 'data-universe-node-record' in a:
+            n['heading'] = next((child for child in reversed(self.stack[-1]['children'][:-1]) if child['tag'] == 'h3'), None) if self.stack else None
+            self.universe_node_contexts.append(n)
         if tag == 'section' and 'source-section' in self.classes(a):
             self.scenes[a.get('id')] = a
         if tag == 'p' and 'original-body' in self.classes(a):
@@ -117,6 +121,7 @@ def main():
     repo = Path(__file__).resolve().parents[1]
     dist = args.dist or repo / 'dist'
     records_data = json.loads((repo / 'data/universe-source-records.json').read_text(encoding='utf-8'))
+    discovery = json.loads((repo / 'data/universe-discovery.json').read_text(encoding='utf-8'))
     clusters_data = json.loads((repo / 'data/universe-reading-clusters.json').read_text(encoding='utf-8'))
     catalog = json.loads((repo / 'data/catalog.json').read_text(encoding='utf-8'))
     coverage = json.loads((repo / 'data/mission-dialogue-supplements.json').read_text(encoding='utf-8'))['coverage']
@@ -169,6 +174,49 @@ def main():
     for mode in records_data['modes']:
         mode_page = page(f"우주/{mode['id']}.html")
         if mode_page:
+            source_directory = next(item for item in discovery['items'] if item['modeId'] == mode['id'])
+            edges = source_directory['edges']
+            expected_nodes = Counter(edge['to'] for edge in edges)
+            expected_nodes.update(set(edge['from'] for edge in edges))
+            contexts = mode_page.universe_node_contexts
+            check(Counter(n['attrs']['data-universe-node-record'] for n in contexts) == expected_nodes, f"{mode['id']}: branch passage membership differs")
+            by_id = {record['id']: record for record in mode['records']}
+            for node in contexts:
+                attrs = node['attrs']
+                record_id = attrs['data-universe-node-record']
+                record = by_id.get(record_id)
+                label = f"{mode['id']}/{record_id}/branch-passage"
+                if not record:
+                    check(False, f'{label}: unknown original record')
+                    continue
+                candidates = [(scene, index, row) for scene in record['scenes'] for index, row in enumerate(scene['rows'], 1) if row.get('text', '').strip()]
+                check(bool(candidates), f'{label}: no original text')
+                if not candidates:
+                    continue
+                scene, index, row = candidates[0]
+                anchor = row.get('readerRowAnchor') or f"{scene['anchor']}-row-{index}"
+                check(attrs.get('data-universe-quote-anchor') == anchor and attrs.get('data-universe-quote-hash') == row.get('hash', '') and attrs.get('data-universe-quote-speaker') == row.get('speaker', ''), f'{label}: source identity or speaker differs')
+                quotes = [child for child in node['children'] if child['tag'] == 'blockquote']
+                check(len(quotes) == 1 and quotes[0]['text'] == row['text'][:170], f'{label}: exact original prefix differs')
+                attribution = [child for child in node['children'] if 'universe-node-attribution' in SourcePage.classes(child['attrs'])]
+                title = next(item for item in source_directory['records'] if item['id'] == record_id)
+                expected_attribution = ('원문 제목' if title['titleKind'] == 'original' else '식별용 제목') + ' · 원문 발췌' + (' · ' + row['speaker'] if row.get('speaker') else '')
+                check(len(attribution) == 1 and attribution[0]['text'] == expected_attribution, f'{label}: title provenance or quotation attribution differs')
+                continued = [child for child in node['children'] if 'universe-node-continuation' in SourcePage.classes(child['attrs'])]
+                check(bool(continued) == (len(row['text']) > 170) and all(child['text'] == '…' for child in continued), f'{label}: truncation mark differs')
+                links = [child for child in node['children'] if child['tag'] == 'a']
+                heading = node.get('heading') or {'children': []}
+                title_links = [child for child in heading['children'] if child['tag'] == 'a']
+                check(len(links) == 1 and len(title_links) == 1, f'{label}: source/title link missing')
+                if len(links) == 1 and len(title_links) == 1:
+                    link, title_link = links[0]['attrs'], title_links[0]['attrs']
+                    check(link.get('href') == f'/starrail-quests/우주/기록/{record_id}.html#{anchor}', f'{label}: quotation target differs')
+                    check(title_link.get('href') == f'/starrail-quests/우주/기록/{record_id}.html', f'{label}: title target differs')
+                    check(bool(title_link.get('id')) and link.get('id') == title_link.get('id') + '-quote' and 'data-reading-link' in link and 'data-reading-link' in title_link, f'{label}: stable reading return anchors missing')
+                    target = page(f'우주/기록/{record_id}.html')
+                    if target:
+                        check(target.original.get(anchor) == row['text'], f'{label}: quotation does not reach the full original row')
+                counts['branchPassages'] += 1
             check('source-records' in mode_page.ids, f"{mode['id']}: source-records anchor missing")
             check([a.get('data-source-record') for a in mode_page.record_links] == [r['id'] for r in mode['records']], f"{mode['id']}: record membership/order differs")
             for key, tag in (('data-source-query', 'input'), ('data-source-more', 'button'), ('data-source-count', 'p'), ('data-source-empty', 'p')):
