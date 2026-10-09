@@ -1,5 +1,5 @@
 {
-  "version": "1.12.4",
+  "version": "1.12.5",
   "files": {
     "body-slots.test.mjs": "efbef8846e0b7d85056100d96e5042ff2c6cf39d54e4ffb8f2ce518e6d9a737e",
     "cva/provenance.json": "c8937a7c16d08c9217075505e105c51b553242057d7327326e7b550bc02dcad8",
@@ -27,7 +27,7 @@
     "reading.css": "6b235a2b7f88aaf363021384ce0c286232492c46ae9a8d0f41688d3d166888b0",
     "relation-layout.mjs": "6114d57c134af76c1d401db2ebcb536dc16fb70f10d192a6f9f737e86a343b57",
     "relation-layout.test.mjs": "3ea29be82d70800a65f1045cf1adc19050eb00343d4c629fa92beda8ac13fa2b",
-    "render.mjs": "4f7ac249ad836d67d9b421a397a580d7b4bd68a002a49d9395bb04e805e7d878",
+    "render.mjs": "cba8414915e738e86b7e3d37e86f160d38376b671c02817c472b9e99fc658fcc",
     "render.test.mjs": "df7e677a8f93722a3816eb115434bbea9301b91c8682200f0273d68661dc083f",
     "search-dialog.css": "88b37caaee760b830cb134221a766784e2b42a50029d35174ae0a8dd255eeeb9",
     "search-dialog.mjs": "1b7ee1ea311704ca5c160c64ea4106a6979aa8f20a000f6f4dc15c7adee2008d",
