@@ -7,12 +7,12 @@ const order=(d:any)=>Math.min(...d.versions.map((v:string)=>versions.indexOf(v))
 const initial=source.filter(d=>(!kind||d.kind===kind)&&(!version||d.versions.includes(version))).sort((a,b)=>(isQuest?order(a)-order(b):0)||a.worldRank-b.worldRank||a.chapterRank-b.chapterRank||a.rank-b.rank).slice(0,60);
 const total=source.filter(d=>(!kind||d.kind===kind)&&(!version||d.versions.includes(version))).length;
 const worlds=[...new Set(catalog.filter(d=>isQuest?d.category==='퀘스트':d.category!=='퀘스트').map(d=>d.world))].filter(w=>w&&w!=='분류 미확인');
-const categories=['서적·문서','캐릭터 이야기','에이언즈·운명의 길','세계관·용어','광추 이야기','유물 이야기','아이템 설정','시뮬레이션 우주 설정','메시지','기타 장면'];
+const categories=['서적·문서','캐릭터 이야기','에이언즈·운명의 길','세계관·용어','광추 이야기','유물 이야기','아이템 설정','시뮬레이션 우주 설정','메시지','기타 장면','적 기록','업적 기록','축복·메아리 원문','시점·장면 안내'];
 ---
 <section class="browse" data-mode={mode} data-kind={kind} data-version={version} data-order={JSON.stringify(versions)} data-versions={href('versions-data.json')} data-catalog={href('reading-catalog.json')+'?v='+readingCatalogVersion} data-base={href('문서/')} data-pagefind-ignore>
  {isQuest&&kind&&<nav class="type-tabs" aria-label="임무 종류">{Object.entries(kinds).map(([key,name])=><a aria-current={kind===name?'page':undefined} href={href(`quests/${key}.html`)}>{name}</a>)}</nav>}
  <form class="browse-filters" role="search" aria-label={isQuest?'임무 목록 필터':'원문 자료 필터'}>
-  <label class="query-label">{isQuest?'임무 제목 또는 ID':'원문 자료 찾기'}<input type="search" name="q" placeholder={isQuest?'다시 읽을 임무 제목, ID':'서적·인물·설정 제목, ID'} autocomplete="off"/></label>
+  <label class="query-label">{isQuest?'임무 제목 또는 ID':'원문 자료 찾기'}<input type="search" name="q" placeholder={isQuest?'다시 읽을 임무 제목, ID':'서적·인물·설정 제목, 새 원문 구절, ID'} autocomplete="off"/></label>
   {isQuest&&<label>버전<select name="version"><option value="">모든 버전</option>{versions.map(v=><option value={v} selected={v===version}>{versionLabel(v)}</option>)}</select></label>}
   {isQuest&&!kind&&<label>임무 종류<select name="kind"><option value="">모든 임무</option>{Object.values(kinds).map(k=><option>{k}</option>)}</select></label>}
   <label>지역<select name="world"><option value="">모든 지역</option>{worlds.map(w=><option>{w}</option>)}<option value="분류 미확인">지역 미분류</option></select></label>
@@ -41,7 +41,7 @@ const categories=['서적·문서','캐릭터 이야기','에이언즈·운명�
   const save=()=>{const u=new URL(location.href);for(const name of ['q','world','version','kind','category']){const input=field(name);if(input){input.value?u.searchParams.set(name,input.value):u.searchParams.delete(name);}}limit>60?u.searchParams.set('limit',String(limit)):u.searchParams.delete('limit');history.replaceState(history.state,'',u);};
   const render=(persist=true)=>{
    if(persist)save();if(!loaded)return;const f=state(),q=normalize(String(f.q||'')),selectedKind=root.dataset.kind||f.kind;
-   const filtered=data.filter(d=>(quest?d.category==='퀘스트'&&(!f.version||d.versions.includes(f.version)):d.category===f.category)&&(!f.world||d.world===f.world)&&(!q||normalize(d.title+' '+d.id).includes(q)));
+   const filtered=data.filter(d=>(quest?d.category==='퀘스트'&&(!f.version||d.versions.includes(f.version)):d.category===f.category)&&(!f.world||d.world===f.world)&&(!q||normalize(d.title+' '+d.id+' '+(d.searchText||'')).includes(q)));
    for(const button of root.querySelectorAll<HTMLButtonElement>('[data-kind-choice]')){button.setAttribute('aria-pressed',String(button.dataset.kindChoice===String(selectedKind||'')));button.querySelector('[data-kind-count]')!.textContent=String(filtered.filter(d=>!button.dataset.kindChoice||d.kind===button.dataset.kindChoice).length);}
    const kindOrder=['개척 임무','개척 후문','동행 임무','모험 임무','일일 임무'];
    const primary=(d:any)=>f.version||versionOrder.find((v:string)=>d.versions.includes(v))||'unknown';

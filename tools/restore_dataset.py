@@ -3,6 +3,18 @@ import argparse,hashlib,io,json,zipfile
 from pathlib import Path
 
 def digest(x):return hashlib.sha256(x).hexdigest()
+def handbook_pending(root):
+    """Hydrate the checked public overlay without changing preserved bundle files."""
+    manifest=root/'editorial/handbook-originals-manifest.json'
+    if not manifest.exists():return []
+    record=json.loads(manifest.read_text('utf8'))
+    if record.get('path')!='public/handbook-originals.json' or record.get('target')!='data/handbook-originals.json' or record.get('schemaVersion')!='starrail-handbook-originals.v1':raise ValueError('Unknown handbook hydration profile')
+    body=(root/record['path']).read_bytes()
+    if len(body)!=record['size'] or digest(body)!=record['sha256']:raise ValueError('Handbook public input hash mismatch')
+    if json.loads(body)['schemaVersion']!=record['schemaVersion']:raise ValueError('Handbook schema mismatch')
+    target=root/record['target']
+    if target.exists() and target.read_bytes()!=body:raise ValueError('Refusing to overwrite changed handbook data')
+    return [(target,body)]
 def main():
     p=argparse.ArgumentParser();p.add_argument('--bundle',type=Path,default=Path('dataset'));p.add_argument('--target',type=Path,default=Path('.'));a=p.parse_args();m=json.loads((a.bundle/'manifest.json').read_text('utf8'));parts=[]
     for part in m['parts']:
@@ -23,6 +35,7 @@ def main():
             if len(body)!=entry['size'] or digest(body)!=entry['sha256']:raise ValueError('File hash mismatch')
             if target.exists() and target.read_bytes()!=body:raise ValueError('Refusing to overwrite changed data')
             pending.append((target,body))
+    pending.extend(handbook_pending(root))
     for target,body in pending:target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(body)
     catalog=root/'data/catalog.json';(root/'public').mkdir(exist_ok=True);(root/'public/catalog.json').write_bytes(catalog.read_bytes())
     print(f'Restored {len(pending)} verified curated files')
