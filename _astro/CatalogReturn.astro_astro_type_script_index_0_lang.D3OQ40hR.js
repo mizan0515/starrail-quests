@@ -1,1 +1,0 @@
-import{n as e}from"./reading-return.BFWKsNnH.js";var t=`/starrail-quests`.replace(/\/$/,``),n=e(location.pathname+location.search+location.hash,{origin:location.origin,base:t}),r=n&&new URL(n,location.origin).searchParams.get(`from`);if(r)for(let e of document.querySelectorAll(`[data-catalog-return]`))e.href=r,e.hidden=!1;
