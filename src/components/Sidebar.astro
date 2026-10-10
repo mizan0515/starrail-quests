@@ -7,13 +7,16 @@ import atlas from '../../editorial/context-atlas.json';
 import discovery from '../../editorial/directory-discovery.json';
 import versionEvidence from '../../editorial/mission-versions.json';
 import aliases from '../../data/aliases.json';
+import handbook from '../../data/handbook-originals.json';
+import {extendExplorer} from '../lib/handbook-originals.mjs';
+const explorerView=extendExplorer(explorer,handbook);
 const base=import.meta.env.BASE_URL.replace(/\/$/,'');
 const href=(path:string)=>`${base}/${path}`;
 const decodePath=(path:string)=>{try{return decodeURIComponent(path);}catch{return path;}};
 const pathname=decodePath(Astro.url.pathname),localRoute=pathname.startsWith(base+'/')?pathname.slice(base.length):pathname,route=localRoute==='/'?'/index.html':localRoute;
 const sourceId=route.match(/^\/(?:대상|맥락|문서)\/([^/]+)\.html$/)?.[1];
 const directoryAxes=new Map(discovery.rows.map(row=>[row.id,row.kind==='person'?(row.subjectType==='aeon'?'aeon':'person'):row.kind==='mechanic'||row.kind==='reading-instruction'?'reference':row.kind]));
-const entry=sourceId?explorer.entries.find(entry=>entry.id===sourceId):undefined;
+const entry=sourceId?explorerView.entries.find(entry=>entry.id===sourceId):undefined;
 const node=sourceId?atlas.nodes.find(node=>node.id===sourceId):undefined;
 const currentAxis=sourceId?directoryAxes.get(sourceId)||entry?.axis||(node?.directoryKind==='종족'?'concept':node?.axis==='bridge'?'faction':node?.axis):undefined;
 const original=sourceId?catalog.find(document=>document.id===sourceId):undefined;
@@ -30,6 +33,7 @@ const versions=[...new Set(availableVersions)].filter(version=>/^\d+\.\d+$/.test
 const main=[
  {url:'index.html',title:'퀘스트 목록',ancestor:route.startsWith('/quests/')||original?.category==='퀘스트'},
  {url:'설정집.html',title:'설정집',ancestor:route.startsWith('/설정/')},
+ {url:'도감.html',title:'도감과 새 원문',ancestor:!!sourceId&&handbook.documents.some(d=>d.id===sourceId)},
  {url:'관점/region.html',title:'지역',ancestor:axisFor('region')},
  {url:'관점/person.html',title:'인물',ancestor:axisFor('person')||original?.category==='캐릭터 이야기'},
  {url:'세력.html',title:'세력',ancestor:axisFor('faction')||sourceId==='book-47'},

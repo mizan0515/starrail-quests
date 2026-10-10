@@ -1,5 +1,5 @@
 /** Preserve a reading location and one validated catalogue return, without chains. */
-const directoryPath=/^(?:index\.html|versions\/[^/]+\.html|quests\/[^/]+\.html|설정집\.html|세력\.html|우주\.html|대사\.html|관점\/(?:region|person|faction|concept|aeon|reference)\.html|유물\.html|우주\/[a-z][a-z0-9-]*\.html|대사\/official-4\.6\.html)$/;
+const directoryPath=/^(?:index\.html|versions\/[^/]+\.html|quests\/[^/]+\.html|설정집\.html|도감\.html|세력\.html|우주\.html|대사\.html|관점\/(?:region|person|faction|concept|aeon|reference)\.html|유물\.html|우주\/[a-z][a-z0-9-]*\.html|대사\/official-4\.6\.html)$/;
 
 export function isReadingCatalogue(value,{origin,base}){
  const safe=safeReadingReturn(value,{origin,base});

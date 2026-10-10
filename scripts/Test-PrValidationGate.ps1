@@ -5,6 +5,12 @@ Push-Location $Root
 try {
   & npm.cmd run build
   if($LASTEXITCODE -ne 0){throw 'Reading build failed'}
+  & python -B -X utf8 tools/verify_handbook_originals.py --artifact-only --verify-only --self-test
+  if($LASTEXITCODE -ne 0){throw 'Handbook original preservation and binding QA failed'}
+  & python -B -X utf8 tools/verify_handbook_site.py --root dist
+  if($LASTEXITCODE -ne 0){throw 'Handbook whole original HTML and navigation QA failed'}
+  & node --test src/lib/handbook-originals.test.mjs src/lib/source-strikes.test.mjs
+  if($LASTEXITCODE -ne 0){throw 'Handbook overlay and source projection QA failed'}
   & npm.cmd run qa:seo
   if($LASTEXITCODE -ne 0){throw 'Canonical sitemap and whole page metadata QA failed'}
   & npm.cmd run qa:reading

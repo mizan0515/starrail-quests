@@ -372,7 +372,7 @@ def check_html(dist, expected, items, backgrounds, universe_discovery, sources):
         check_directory(rendered, "explore", subset, axis)
         discovered.extend(n["attrs"]["data-directory-entry"] for n in descendants(rendered.roots["explore"]) if "data-directory-entry" in n["attrs"])
     unique(discovered, "Six-axis SSR source membership")
-    require(set(discovered) == set(expected) and len(discovered) == 587, "Six-axis SSR union must preserve all 587 original and curated subjects exactly once")
+    require(set(discovered) == set(expected), "Six-axis SSR union must preserve every original, curated and verified added subject exactly once")
     check_directory(page("세력.html"), "factions", {i: e for i, e in expected.items() if e["axis"] == "faction"})
     item_page = page("우주.html")
     check_directory(item_page, "item-library", items)
@@ -542,6 +542,19 @@ def main():
     expected = expected_discovery(effective_explorer, rules, read(SITE / "editorial/context-atlas.json"), docs["book-47"])
     backgrounds = read(SITE / "data/relic-backgrounds.json")
     items = expected_items(catalog, read(SITE / "data/universe-catalog.json"), backgrounds, docs)
+    # Preserve the exact baseline membership checks above, then add the manifest-
+    # bound handbook originals. Their raw source replay is a separate strong gate.
+    handbook = read(SITE / "data/handbook-originals.json")
+    from verify_handbook_originals import artifact_check
+    artifact_check(handbook)
+    for d in handbook['documents']:
+        if d['category']=='캐릭터 이야기':
+            aid=d['sections'][0]['rows'][0]['avatar_id'];rid='person-'+str(aid)
+            require(rid not in expected,'Handbook person overwrites a preserved discovery subject')
+            expected[rid]={'id':rid,'name':d['title'],'axis':'person','group':'source-person','url':'대상/'+rid+'.html','search':d['sections'][0]['rows'][0]['text'][:220]}
+        if d['category'] in ('광추 이야기','아이템 설정'):
+            require(d['id'] not in items,'Handbook item overwrites a preserved subject')
+            items[d['id']]={'id':d['id'],'name':d['title'],'axis':'','group':'light-cones' if d['category']=='광추 이야기' else 'items','url':d['url'],'search':d['sections'][0]['rows'][0]['text']}
     source_bytes = (SITE / "data/universe-source-records.json").read_bytes()
     official_bytes = (SITE / "data/official-universe-texts.json").read_bytes()
     sources, official = json.loads(source_bytes), json.loads(official_bytes)

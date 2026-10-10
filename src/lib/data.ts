@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import originalCatalog from '../../data/catalog.json';
+import handbook from '../../data/handbook-originals.json';
+import {extendCatalog,extendDocument,handbookDocument} from './handbook-originals.mjs';
 import versionEvidence from '../../editorial/mission-versions.json';
 import aliases from '../../data/aliases.json';
 import resolvedTopics from '../../data/topics.json';
@@ -64,13 +66,13 @@ export const displayMissionTitle=(d:any)=>{
  }
  return d.title;
 };
-export const catalog=originalCatalog.map(d=>{const observed=d.category==='퀘스트'?[...new Set([versionMap[d.id]||'unknown',...(partVersions.get(d.id)||[])])]:[];const addedDialogue=(missionDialogue[d.id]||[]).reduce((count,s)=>count+s.rows.length,0);return {...d,title:displayMissionTitle(d),count:d.count+addedDialogue+(missionReading[d.id]?.messageRows||0),addedDialogue,...missionReading[d.id],versions:[...observed,...(observed.some(v=>/^\d+\.\d+$/.test(v)&&Number(v)<=2.6)?['early']:[])]};});
+export const catalog=extendCatalog(originalCatalog,handbook).map(d=>{const observed=d.category==='퀘스트'?[...new Set([versionMap[d.id]||'unknown',...(partVersions.get(d.id)||[])])]:[];const addedDialogue=(missionDialogue[d.id]||[]).reduce((count,s)=>count+s.rows.length,0);return {...d,title:displayMissionTitle(d),count:d.count+addedDialogue+(missionReading[d.id]?.messageRows||0),addedDialogue,...missionReading[d.id],versions:[...observed,...(observed.some(v=>/^\d+\.\d+$/.test(v)&&Number(v)<=2.6)?['early']:[])]};});
 export const readingCatalogVersion=createHash('sha256').update(JSON.stringify(catalog)).digest('hex').slice(0,12);
 export {topics,stats,versionEvidence};
 export const versionLabel=(v:string)=>v==='early'?'1.0~2.6':v==='unknown'?'버전 미확인':v;
 export const versions=[...new Set(catalog.flatMap(d=>d.versions))].sort((a,b)=>a==='early'?1:b==='early'?-1:a==='unknown'?1:b==='unknown'?-1:b.localeCompare(a,undefined,{numeric:true}));
 export const kinds={main:'개척 임무',continuance:'개척 후문',companion:'동행 임무',adventure:'모험 임무',daily:'일일 임무'};
 export const href=(p:string)=>`${import.meta.env.BASE_URL.replace(/\/$/,'')}/${p}`;
-export const doc=(id:string)=>{const original=JSON.parse(fs.readFileSync(path.resolve('data/documents',id+'.json'),'utf8'));return {...original,title:displayMissionTitle(original)};};
+export const doc=(id:string)=>{const fresh=handbookDocument(id,handbook),original=fresh?null:JSON.parse(fs.readFileSync(path.resolve('data/documents',id+'.json'),'utf8')),combined=extendDocument(original,id,handbook);return {...combined,title:displayMissionTitle(combined)};};
 export const docUrl=(id:string)=>href('문서/'+id+'.html');
 export const topicUrl=(id:string)=>href('설정/'+id+'.html');

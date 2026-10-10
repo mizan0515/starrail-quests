@@ -25,7 +25,7 @@ export default defineConfig({
     customCss:['./src/styles/library.css','./src/styles/context.css','./src/styles/complete-library.css','./src/styles/reading-system.css','./src/lib/reading-kit/reading.css','./src/styles/universe.css','./src/styles/mission-reader.css','./src/lib/reading-kit/reader.css','./src/lib/reading-kit/search-dialog.css','./src/lib/reading-kit/cva.css'],
     tableOfContents:{minHeadingLevel:2,maxHeadingLevel:2},
     sidebar:[
-      {label:'자료집',items:[{label:'이야기 찾아보기',link:link('index.html')},{label:'설정집 · 연결해서 읽기',link:link('설정집.html')}]},
+      {label:'자료집',items:[{label:'이야기 찾아보기',link:link('index.html')},{label:'설정집 · 연결해서 읽기',link:link('설정집.html')},{label:'도감과 새 원문',link:link('도감.html')}]},
       {label:'설정을 읽는 관점',items:[{label:'지역 · 역사와 사건',link:link('관점/region.html')},{label:'인물 · 행적과 관계',link:link('관점/person.html')},{label:'세계관 · 법칙과 사례',link:link('관점/concept.html')},{label:'에이언즈 · 운명의 길',link:link('관점/aeon.html')}]},
       {label:'임무 종류',items:[['main','개척 임무'],['continuance','개척 후문'],['companion','동행 임무'],['adventure','모험 임무'],['daily','일일 임무']].map(([k,label])=>({label,link:link(`quests/${k}.html`)}))},
       {label:'버전으로 찾기',items:[{label:'버전별 임무 전체',link:link('versions/index.html')},...['4.5','4.4','4.3','4.2','4.1','4.0'].map(v=>({label:v+' 버전',link:link(`versions/${v}.html`)})),{label:'3.x · 2.x',collapsed:true,items:[...['3.8','3.7','3.6','3.5','3.4','3.3','3.2','3.1','3.0','2.7'].map(v=>({label:v+' 버전',link:link(`versions/${v}.html`)})),{label:'2.6 및 이전 · 미확인',link:link('versions/early.html')}]}]},

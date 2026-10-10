@@ -1,0 +1,21 @@
+---
+import handbook from '../../data/handbook-originals.json';
+import {disclosureAttributes,sourceLinkAttributes} from '../lib/reading-kit/reader.mjs';
+const {row,proof,relations=[]}=Astro.props;
+const source=row.handbookSource,pinned=source.kind==='PINNED_METADATA_HASH_REFERENCE';
+const table=handbook.evidence.nativePack.tables[source.table];
+const metadata=handbook.evidence.metadata,ko=handbook.evidence.officialKorean;
+const link=`https://github.com/DimbreathBot/TurnBasedGameData/blob/${metadata.commit}/ExcelOutput/${source.table}.json`;
+---
+<details {...disclosureAttributes({className:'source-details handbook-original-proof'})} data-pagefind-ignore>
+ <summary>이 원문의 표 항목과 한국어 출처</summary>
+ <dl><dt>표의 관찰 범위</dt><dd>{pinned?'고정된 구조 자료의 항목':'공식 4.6 자료에서 읽은 표 항목'} · {source.table} · 행 {source.row}</dd>
+ {pinned&&<><dt>구조 자료</dt><dd><a href={link} {...sourceLinkAttributes({variant:'inline'})}>고정된 구조 파일 ↗</a> · 커밋 {metadata.commit}</dd><dt>구조 파일 SHA-256</dt><dd>{metadata.files[`ExcelOutput/${source.table}.json`]}</dd></>}
+ {!pinned&&<><dt>표 엔트리와 행</dt><dd>엔트리 {table.entryKey} · 행 바이트 {source.tableStart??proof?.tableStart}–{source.tableEnd??proof?.tableEnd}</dd><dt>표 엔트리 SHA-256</dt><dd>{table.sha256}</dd></>}
+ <dt>원문 필드</dt><dd>{source.pointer} · 문자열 {row.hash}</dd>
+ <dt>한국어 원문</dt><dd>{ko.clientVersion} · 바이트 {source.koreanOffset}–{source.koreanEnd}</dd><dt>한국어 TextMap SHA-256</dt><dd>{ko.entry.sha256}</dd>
+ {relations.length>0&&<><dt>명시된 표 연결</dt><dd>{relations.map(r=><p>{r.sourceTable} {r.sourcePointer} → {r.targetTable} {r.targetPointer}</p>)}</dd></>}
+ {source.hasParams!==0&&<><dt>수치 자리표시</dt><dd>원문의 자리표시와 서식을 보존했습니다. 게임 내 수치 대입은 확인하지 않았습니다.</dd></>}
+ </dl>
+ <details><summary>표시 정리 전 한국어 원문</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere">{row.raw}</pre></details>
+</details>

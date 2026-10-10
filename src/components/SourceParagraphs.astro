@@ -1,5 +1,5 @@
 ---
 import {sourceParagraphs} from '../lib/source-paragraphs';
-const {text,anchor}=Astro.props;
+const {text,anchor,strikeRanges=[]}=Astro.props;
 ---
-<Fragment set:html={sourceParagraphs(text,anchor)}/>
+<Fragment set:html={sourceParagraphs(text,anchor,strikeRanges)}/>
