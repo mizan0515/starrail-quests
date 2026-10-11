@@ -3,8 +3,19 @@ param([string]$Root=(Split-Path $PSScriptRoot -Parent),[int]$MaxTotalSeconds=600
 $ErrorActionPreference='Stop'
 Push-Location $Root
 try {
-  & npm.cmd run build
+  & python -B -X utf8 tools/verify_dialogue_contexts.py
+  if($LASTEXITCODE -ne 0){throw 'Whole dialogue attribution and preserved corpus QA failed'}
+  $taskPublicationOld=$env:STARRAIL_VALIDATE_UNOPTIMIZED
+  try {
+    $env:STARRAIL_VALIDATE_UNOPTIMIZED='1'
+    & npm.cmd run build
+  } finally {
+    if($null -eq $taskPublicationOld){Remove-Item Env:STARRAIL_VALIDATE_UNOPTIMIZED -ErrorAction SilentlyContinue}
+    else {$env:STARRAIL_VALIDATE_UNOPTIMIZED=$taskPublicationOld}
+  }
   if($LASTEXITCODE -ne 0){throw 'Reading build failed'}
+  & python -B -X utf8 tools/verify_dialogue_contexts.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Whole dialogue context original HTML and return links QA failed'}
   & python -B -X utf8 tools/verify_handbook_originals.py --artifact-only --verify-only --self-test
   if($LASTEXITCODE -ne 0){throw 'Handbook original preservation and binding QA failed'}
   & python -B -X utf8 tools/verify_handbook_site.py --root dist
@@ -71,5 +82,11 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Primary reader source and classification QA failed'}
   & node --test tools/reading_return.test.mjs
   if($LASTEXITCODE -ne 0){throw 'Reading return context QA failed'}
+  & python -B -X utf8 tools/optimize_publication.py
+  if($LASTEXITCODE -ne 0){throw 'Publication size or exact shared UI reconstruction failed'}
+  & python -B -X utf8 tools/verify_dialogue_contexts.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Optimized whole context static original HTML QA failed'}
+  & python -B -X utf8 tools/verify_site.py --root dist --base /starrail-quests
+  if($LASTEXITCODE -ne 0){throw 'Optimized whole preserved static original HTML and links QA failed'}
   Write-Output 'RESULT: PASS'
 } finally {Pop-Location}

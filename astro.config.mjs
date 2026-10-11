@@ -4,6 +4,7 @@ import sitemap from '@astrojs/sitemap';
 import fs from 'node:fs';
 import {canonicalPageUrl} from './src/lib/seo.mjs';
 import {buildReadingGraph} from './tools/build_reading_graph.mjs';
+import {publicationIntegration} from './tools/publication_integration.mjs';
 await buildReadingGraph();
 
 const base=process.env.SITE_BASE || '/starrail-quests';
@@ -34,5 +35,5 @@ export default defineConfig({
     ],
     components:{Sidebar:'./src/components/Sidebar.astro',Footer:'./src/components/Footer.astro',Search:'./src/components/Search.astro',Head:'./src/components/Head.astro'},
     pagination:false,lastUpdated:false
-  })]
+  }),publicationIntegration(base)]
 });

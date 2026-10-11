@@ -6,3 +6,5 @@ public/catalog.json
 verification/
 .DS_Store
 .runtime/
+.codex-work/publication-build-report.json
+tools/__pycache__/

@@ -36,6 +36,15 @@ def main():
             if target.exists() and target.read_bytes()!=body:raise ValueError('Refusing to overwrite changed data')
             pending.append((target,body))
     pending.extend(handbook_pending(root))
+    context_manifest=root/'editorial/dialogue-contexts-manifest.json'
+    if context_manifest.exists():
+        context=json.loads(context_manifest.read_text('utf8'))
+        if context.get('schema')!='starrail-dialogue-contexts.v1' or context.get('path')!='public/dialogue-contexts.json' or context.get('target')!='data/dialogue-contexts.json':raise ValueError('Unknown dialogue context hydration profile')
+        body=(root/context['path']).read_bytes()
+        if len(body)!=context['size'] or digest(body)!=context['sha256'] or json.loads(body)['schema']!=context['schema']:raise ValueError('Dialogue context input mismatch')
+        target=root/context['target']
+        if target.exists() and target.read_bytes()!=body:raise ValueError('Refusing to overwrite changed dialogue context data')
+        pending.append((target,body))
     for target,body in pending:target.parent.mkdir(parents=True,exist_ok=True);target.write_bytes(body)
     catalog=root/'data/catalog.json';(root/'public').mkdir(exist_ok=True);(root/'public/catalog.json').write_bytes(catalog.read_bytes())
     print(f'Restored {len(pending)} verified curated files')

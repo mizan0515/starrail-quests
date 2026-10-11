@@ -1,5 +1,5 @@
 /** Preserve a reading location and one validated catalogue return, without chains. */
-const directoryPath=/^(?:index\.html|versions\/[^/]+\.html|quests\/[^/]+\.html|설정집\.html|도감\.html|세력\.html|우주\.html|대사\.html|관점\/(?:region|person|faction|concept|aeon|reference)\.html|유물\.html|우주\/[a-z][a-z0-9-]*\.html|대사\/official-4\.6\.html)$/;
+const directoryPath=/^(?:index\.html|versions\/[^/]+\.html|quests\/[^/]+\.html|설정집\.html|도감\.html|세력\.html|우주\.html|대사\.html|대화\.html|관점\/(?:region|person|faction|concept|aeon|reference)\.html|유물\.html|우주\/[a-z][a-z0-9-]*\.html|대사\/official-4\.6\.html|대화\/(?:목록-\d+(?:-\d+)?)\.html)$/;
 
 export function isReadingCatalogue(value,{origin,base}){
  const safe=safeReadingReturn(value,{origin,base});
@@ -29,7 +29,7 @@ export function safeReadingReturn(value, {origin, base}) {
     } catch {return null;}
   }
   const reading=parse(value);
-  const reader=/^(?:(?:문서|대사|대상)\/[^/]+|맥락\/[a-z][a-z0-9-]*|유물\/relic-background-[a-z0-9-]+|우주\/(?:(?:기록|설정)\/)?[a-z][a-z0-9-]*)\.html$/;
+  const reader=/^(?:(?:문서|대사|대상)\/[^/]+|대화\/context-[0-9a-f]{16}|맥락\/[a-z][a-z0-9-]*|유물\/relic-background-[a-z0-9-]+|우주\/(?:(?:기록|설정)\/)?[a-z][a-z0-9-]*)\.html$/;
   if (!reading || !(reader.test(reading.relative)||directoryPath.test(reading.relative))) return null;
   const nested=reading.url.searchParams.get('from');
   reading.url.searchParams.delete('from');

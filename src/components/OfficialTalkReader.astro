@@ -11,6 +11,7 @@ import {readerAttributes,rowAttributes,disclosureAttributes,sourceLinkAttributes
 import {renderCvaModule} from '../lib/reading-kit/cva.mjs';
 import {sourceParagraphs} from '../lib/source-paragraphs';
 import {escapeHtml as E,safeHref} from '../lib/reading-kit/render.mjs';
+import {contextLinks} from '../lib/dialogue-contexts';
 const {row}=Astro.props;
 const previous=row.previous;
 const previousUrl=previous?href(previous.url):null;
@@ -31,6 +32,7 @@ const comparison=previous?renderCvaModule({id:'cva-talk-compare-'+row.talk_id,ty
   </div>
  </section>
  {previous&&<section class="talk-version-comparison" aria-labelledby="version-comparison"><h2 id="version-comparison">수록본의 표기 대조</h2><p>같은 대사 식별자의 본문과 화자를 수록본별로 읽습니다.</p><Fragment set:html={comparison}/></section>}
+ {contextLinks.has(row.talk_id)&&<section><h2>이 문구가 쓰인 장면</h2><ul class="entity-document-list">{contextLinks.get(row.talk_id).map(context=><li><a href={href('대화/'+context.id+'.html#talk-'+row.talk_id)} data-reading-link><strong>{context.title}</strong><span>{context.kind}</span></a></li>)}</ul></section>}
  {missions.length>0?<section id="mission-links"><h2>이 대사를 참조하는 임무</h2><p>임무 구조의 직접 참조로 연결된 자료입니다. 아래 근거에서 호출 경로와 조건을 확인할 수 있습니다.</p><ul class="entity-document-list">{missions.map(m=><li><a href={docUrl(m.missionId)} data-reading-link><strong>{titles[m.missionId]||m.missionId}</strong><span>같은 대사 식별자의 명시 참조</span></a><details {...disclosureAttributes({className:'source-details'})} data-pagefind-ignore data-talk-mission-proof={m.missionId}><summary>임무와 대사의 연결 근거</summary><ol>{m.ownership.map(edge=><MissionOwnershipProof edge={edge}/>)}</ol><p><a href={missionStructureUrl(m.source)} {...sourceLinkAttributes({variant:'inline'})}>{m.source} ↗</a> · {m.referencePointer}</p>{m.conditions?.length>0&&<><p>이 대사의 호출 조건</p><pre>{JSON.stringify(m.conditions,null,2)}</pre></>}</details></li>)}</ul></section>:<p class="muted" data-talk-unassigned>임무 연결 · 현재 대조한 구조 자료에서 미확인</p>}
  <nav class="reading-next" aria-label="원문 목록"><a href={href('대사/official-4.6.html')}><span>한국어 수록본 4.6</span><strong>대사 목록에서 찾기</strong></a></nav>
 </StarlightPage>
