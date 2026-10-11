@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-112#relic-library-group-relic-set-112\">황무지의 도적, 황야인</a><span>/</span><span>황야인의 황무지 단자</span></nav>");

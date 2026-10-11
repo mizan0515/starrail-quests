@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 추락한 별의 출항지</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33276.html\">출항지의 꿈이 깃든 은하 궤도</a></li></ul></aside>");

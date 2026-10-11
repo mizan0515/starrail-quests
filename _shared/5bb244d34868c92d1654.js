@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 영원의 땅 앰포리어스</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33236.html\">앰포리어스의 영원한 시편</a></li></ul></aside>");

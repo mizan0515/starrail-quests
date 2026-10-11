@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 기묘한 나나 낙원</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33185.html\">나나 낙원의 중앙 광장</a></li></ul></aside>");

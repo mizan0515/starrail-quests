@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-325#relic-library-group-relic-set-325\">0호 스테이지 펑크 로드</a><span>/</span><span>펑크 로드의 네온 시티</span></nav>");

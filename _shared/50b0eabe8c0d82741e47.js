@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-319#relic-library-group-relic-set-319\">고요한 습골지</a><span>/</span><span>아이도니아의 무명 비석</span></nav>");

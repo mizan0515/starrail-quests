@@ -1,0 +1,1 @@
+document.write("<header><p class=\"eyebrow\">퀘스트 · 원문</p><h2>곤충 떼 재난: 「숨겨진 정보 교환」</h2><a href=\"/starrail-quests/문서/quest-8013107.html\" class=\"rw-source-link\" data-reading-template=\"source-link\" data-source-link-variant=\"cta\" data-reading-link=\"true\">개별 원문과 출처 ↗</a></header>");

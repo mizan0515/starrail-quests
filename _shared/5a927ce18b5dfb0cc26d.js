@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/설정집.html#atlas\">설정집</a><span>/</span><a href=\"/starrail-quests/설정집.html?axis=bridge#atlas\">세력·종족</a><span>/</span><span>보리인과 여우족</span></nav>");

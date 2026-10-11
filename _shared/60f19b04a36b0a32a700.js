@@ -1,0 +1,1 @@
+document.write("<header><p class=\"eyebrow\">캐릭터 이야기 · 원문</p><h2>완•매</h2><a href=\"/starrail-quests/문서/avatar-1303.html\" class=\"rw-source-link\" data-reading-template=\"source-link\" data-source-link-variant=\"cta\" data-reading-link=\"true\">개별 원문과 출처 ↗</a></header>");

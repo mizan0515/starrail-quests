@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-318#relic-library-group-relic-set-318\">기묘한 나나 낙원</a><span>/</span><span>나나 낙원의 중앙 광장</span></nav>");

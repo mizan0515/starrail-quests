@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 0호 스테이지 펑크 로드</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33255.html\">펑크 로드의 네온 시티</a></li></ul></aside>");

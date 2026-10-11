@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 불로인의 선주</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33025.html\">나부 선주의 천외 누선</a></li></ul></aside>");

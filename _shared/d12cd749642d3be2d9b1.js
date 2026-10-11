@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-302#relic-library-group-relic-set-302\">불로인의 선주</a><span>/</span><span>나부 선주의 불멸의 거목 가지</span></nav>");

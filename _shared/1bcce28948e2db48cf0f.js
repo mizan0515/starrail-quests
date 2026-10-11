@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-121#relic-library-group-relic-set-121\">고행의 길에 다시 오른 사제</a><span>/</span><span>사제의 환영 장갑</span></nav>");

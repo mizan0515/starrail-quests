@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-322#relic-library-group-relic-set-322\">즐거움에 취한 바다의 일각</a><span>/</span><span>노래의 해안의 암초섬 등대</span></nav>");

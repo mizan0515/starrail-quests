@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 부러진 용골</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33106.html\">인스머스의 해진 밧줄</a></li></ul></aside>");

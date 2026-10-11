@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 우주 봉인 정거장</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33015.html\">「헤르타」의 우주정거장</a></li></ul></aside>");

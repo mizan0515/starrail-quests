@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 주인 없는 황폐한 별 츠가냐</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33136.html\">츠가냐의 윤회 매듭</a></li></ul></aside>");

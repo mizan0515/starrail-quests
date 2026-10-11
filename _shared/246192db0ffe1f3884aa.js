@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 사색하는 거목</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33206.html\">깨달음의 나무 정원의 지식을 잇는 잎사귀 길</a></li></ul></aside>");

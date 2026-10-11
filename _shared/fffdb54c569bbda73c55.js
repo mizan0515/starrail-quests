@@ -1,0 +1,1 @@
+document.write("<header><p class=\"eyebrow\">시뮬레이션 우주 설정 · 원문</p><h2>루버트 제국 차분기관</h2><a href=\"/starrail-quests/문서/miracle-123.html\" class=\"rw-source-link\" data-reading-template=\"source-link\" data-source-link-variant=\"cta\" data-reading-link=\"true\">개별 원문과 출처 ↗</a></header>");

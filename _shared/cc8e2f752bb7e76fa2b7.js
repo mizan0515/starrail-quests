@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 도적국 탈리아</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33076.html\">탈리아의 벗겨진 전선</a></li></ul></aside>");

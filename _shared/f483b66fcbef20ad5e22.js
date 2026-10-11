@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-118#relic-library-group-relic-set-118\">꿈을 조작하는 시계공</a><span>/</span><span>시계공의 행운 손목시계</span></nav>");

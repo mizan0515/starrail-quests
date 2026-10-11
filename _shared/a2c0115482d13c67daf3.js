@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 회전을 멈춘 살소토</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33065.html\">살소토의 움직이는 도시</a></li></ul></aside>");

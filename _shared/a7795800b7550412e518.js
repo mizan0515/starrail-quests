@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-129#relic-library-group-relic-set-129\">빛나는 공훈의 마법 소녀</a><span>/</span><span>마법 소녀의 빛나는 훈장</span></nav>");

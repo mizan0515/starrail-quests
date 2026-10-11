@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 부러진 용골</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33105.html\">인스머스의 고래 낙하선</a></li></ul></aside>");

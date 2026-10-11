@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 축성가의 벨로보그</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33045.html\">벨로보그 보존의 보루</a></li></ul></aside>");

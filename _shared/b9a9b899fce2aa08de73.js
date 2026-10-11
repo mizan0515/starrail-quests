@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-109#relic-library-group-relic-set-109\">뇌전을 울리는 밴드</a><span>/</span><span>밴드의 리벳 숏부츠</span></nav>");

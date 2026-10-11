@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 뭇별 경기장</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33096.html\">타이키얀 아크라이트 트랙</a></li></ul></aside>");

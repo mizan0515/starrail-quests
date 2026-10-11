@@ -1,0 +1,1 @@
+document.write("<header><p class=\"eyebrow\">퀘스트 · 원문</p><h2>곤충 떼 재난: 경고! 데이터 보관 용량 초과!</h2><a href=\"/starrail-quests/문서/quest-8013105.html\" class=\"rw-source-link\" data-reading-template=\"source-link\" data-source-link-variant=\"cta\" data-reading-link=\"true\">개별 원문과 출처 ↗</a></header>");

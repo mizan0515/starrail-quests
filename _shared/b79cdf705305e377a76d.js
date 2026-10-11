@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-127#relic-library-group-relic-set-127\">천지를 재창조한 구세주</a><span>/</span><span>구세주의 보호 장갑</span></nav>");

@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 유성을 쫓는 괴도</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-31111.html\">괴도의 천인 가면</a></li><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-31113.html\">괴도의 쇠갈고리</a></li><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-31114.html\">괴도의 유성 부츠</a></li></ul></aside>");

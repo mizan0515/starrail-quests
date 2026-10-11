@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/대사.html\">대사 원문 자료실</a><span>/</span><a href=\"/starrail-quests/대사/official-4.6.html\">4.6 한국어 수록본</a></nav>");

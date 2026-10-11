@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 이즈모 현세와 타카마 신국</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33146.html\">이즈모의 종시일도</a></li></ul></aside>");

@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 꿈을 엮는 요정의 낙원</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33216.html\">비밀 미궁의 소원 피리</a></li></ul></aside>");

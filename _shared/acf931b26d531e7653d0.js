@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-327#relic-library-group-relic-set-327\">추락한 별의 출항지</a><span>/</span><span>출항지의 꿈이 깃든 은하 궤도</span></nav>");

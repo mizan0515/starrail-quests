@@ -1,0 +1,1 @@
+function e(){let e=decodeURIComponent(location.hash.slice(1));if(!e.startsWith(`stage-`))return;let t=document.getElementById(e);if(!t)return;let n=t;for(;n;)n instanceof HTMLDetailsElement&&(n.open=!0),n=n.parentElement;t.scrollIntoView({block:`start`})}window.addEventListener(`hashchange`,e),e();

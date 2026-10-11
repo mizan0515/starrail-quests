@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/설정집.html#atlas\">설정집</a><span>/</span><a href=\"/starrail-quests/설정집.html?axis=concept#atlas\">세계관</a><span>/</span><span>스텔라론</span></nav>");

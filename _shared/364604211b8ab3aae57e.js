@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-305#relic-library-group-relic-set-305\">천체 차분기관</a><span>/</span><span>스크루별의 기계 태양</span></nav>");

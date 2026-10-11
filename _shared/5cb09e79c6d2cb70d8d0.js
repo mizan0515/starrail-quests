@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/대사.html\">대사 원문 자료실</a><span>/</span><a href=\"/starrail-quests/대화.html\">장면으로 읽는 대화</a><span>/</span><a href=\"/starrail-quests/대화/목록-10.html\">거리의 대화</a></nav>");

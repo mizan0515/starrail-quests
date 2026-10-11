@@ -1,0 +1,1 @@
+document.write("<header class=\"cva-module-head\"><h3 class=\"cva-title\"><small class=\"rw-node-kind\">세력·종족</small><a data-reading-link href=\"/starrail-quests/맥락/genius-society.html\">지니어스 클럽</a></h3></header>");

@@ -1,0 +1,1 @@
+document.write("<header><p class=\"eyebrow\">세계관·용어 · 원문</p><h2>곤충 떼 재난</h2><a href=\"/starrail-quests/문서/lore-10144.html\" class=\"rw-source-link\" data-reading-template=\"source-link\" data-source-link-variant=\"cta\" data-reading-link=\"true\">개별 원문과 출처 ↗</a></header>");

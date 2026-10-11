@@ -1,0 +1,1 @@
+document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-131#relic-library-group-relic-set-131\">별을 갈망하는 항법사 아집</a><span>/</span><span>항법사의 게임 주사위</span></nav>");

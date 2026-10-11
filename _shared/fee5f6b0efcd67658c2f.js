@@ -1,0 +1,1 @@
+var e=document.querySelector(`[data-reader-speaker]`);if(e){let t=[...document.querySelectorAll(`.original-row`)];e.value=new URLSearchParams(location.search).get(`speaker`)||``;let n=()=>{let n=0;t.forEach(t=>{t.hidden=!!e.value&&t.dataset.speaker!==e.value,t.hidden||n++}),document.querySelector(`[data-reader-count]`).textContent=`${n}개 대사`};e.addEventListener(`change`,n),n()}

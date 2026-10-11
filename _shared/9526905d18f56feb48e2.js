@@ -1,0 +1,1 @@
+document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 생명의 바커 공</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33086.html\">바커 공의 섬 둘레 해안</a></li></ul></aside>");
