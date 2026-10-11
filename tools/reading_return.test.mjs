@@ -7,6 +7,17 @@ const reading='/starrail-quests/문서/quest-1010203.html';
 const make=(path,from)=>path+'?speaker='+encodeURIComponent('단항')+'&passage=dialogue&from='+encodeURIComponent(from)+'#quest-1010203-scene-1-row-3';
 const resolved=value=>new URL(value,origin);
 
+test('dialogue use scene retains paginated source catalogue query and exact Talk anchor',()=>{
+ const catalogue=base+'/대화/목록-0-2.html?contextQuery='+encodeURIComponent('단항')+'&contextWorld='+encodeURIComponent('선주')+'&contextLimit=24#universe-source-context-8ca624144ab93fcc';
+ const source=base+'/대화/context-8ca624144ab93fcc.html?from='+encodeURIComponent(catalogue)+'#talk-156020600';
+ const out=resolved(safe(source));
+ assert.equal(out.hash,'#talk-156020600');
+ assert.equal(out.searchParams.get('from'),resolved(catalogue).pathname+resolved(catalogue).search+resolved(catalogue).hash);
+ assert.equal(isReadingCatalogue(catalogue,{origin,base}),true);
+ assert.equal(safe(base+'/대화/context-../../outside.html'),null);
+ assert.equal(safe(base+'/대화/not-a-context.html'),null);
+});
+
 test('setting → original retains Korean reading location, filters, exact anchor and version catalogue',()=>{
  const catalogue='/starrail-quests/versions/1.0.html?q='+encodeURIComponent('벨로보그')+'&kind=main&limit=840#results';
  const out=resolved(safe(make(reading,catalogue)));
@@ -91,7 +102,7 @@ test('invalid nested return is dropped without losing the valid original',()=>{
 });
 
 test('every grouped directory and relic reader retains its exact entry and expanded state',()=>{
- for(const path of ['index.html','versions/4.4.html','quests/main.html','우주.html','대사.html','설정집.html','세력.html','관점/person.html','관점/region.html','관점/concept.html','관점/aeon.html','관점/reference.html','유물.html']){
+ for(const path of ['index.html','versions/4.4.html','quests/main.html','우주.html','대사.html','대화.html','설정집.html','세력.html','관점/person.html','관점/region.html','관점/concept.html','관점/aeon.html','관점/reference.html','유물.html']){
   const catalogue=base+'/'+path+'?find='+encodeURIComponent('기억')+'&entityLimit=72#explore-entry-lore-10023';
   const direct=resolved(safe(catalogue));
   assert.equal(direct.hash,'#explore-entry-lore-10023');

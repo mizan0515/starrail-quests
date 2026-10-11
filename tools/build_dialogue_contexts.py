@@ -1,0 +1,220 @@
+"""Attribute every preserved unbound Talk ID through exact structure references.
+
+Scene use, geographic placement and mission ownership are distinct facts.
+Preserved Korean rows are never rewritten; the overlay contains ID references.
+"""
+import sys
+sys.dont_write_bytecode = True
+import argparse, hashlib, json, re, tarfile
+from collections import Counter, defaultdict, deque
+from pathlib import Path
+from build_mission_dialogue_supplements import refs, path_refs, objects, performance_matches
+from build_official_talk_library import reference_context
+from build_official_universe_texts import official_input
+
+SITE = Path(__file__).resolve().parents[1]
+SCHEMA = 'starrail-dialogue-contexts.v1'
+def read(p): return json.loads(p.read_text('utf8'))
+def sha(b): return hashlib.sha256(b).hexdigest()
+def write(p, value): p.write_text(json.dumps(value, ensure_ascii=False, separators=(',', ':')), 'utf8')
+
+KINDS = {'Mission':'임무에 함께 수록된 대화', 'MunicipalChatConfig':'거리의 대화', 'NPCDialogue':'인물과의 대화',
+ 'NPC':'인물 주변의 대화', 'PropDialogue':'사물 조사와 상호작용', 'GroupGraph':'현장의 대화와 상호작용',
+ 'RogueDialogue':'시뮬레이션 우주의 사건', 'Rogue':'시뮬레이션 우주의 사건', 'SubLevelGraph':'전투와 연출',
+ 'LINews':'소식과 방송', 'CrowdBubble':'거리의 목소리', 'TarotBook':'기록과 상호작용',
+ 'LevelInstanceGraph':'현장의 대화와 상호작용', 'GameplayMission':'콘텐츠의 대화', 'Maze':'콘텐츠의 대화',
+ 'LittleGame':'미니게임의 대화', 'AetherDivide':'에테르 배틀', 'EventMission':'현장의 사건',
+ 'Props':'사물 주변의 대화', 'SummonUnitGraph':'동행하는 존재의 대화', 'Raid':'도전과 전투',
+ 'GroupTemplateGraph':'현장의 대화와 상호작용', 'Tutorial':'진행 안내', 'Track':'현장의 대화와 상호작용'}
+def kind(path):
+ if path=='ExcelOutput/VisitorBehaviorConfig.json':return '방문객의 말풍선'
+ if path=='ExcelOutput/HeartDialDialogue.json':return '마음의 시계 대화'
+ if path=='ExcelOutput/HeartDialTalk.json':return '감정 조율의 표시 문구'
+ if path.startswith('Config/Level/'): return KINDS.get(path.split('/')[2], '콘텐츠의 대화')
+ if path.startswith('Story/'): return '연출과 선택지'
+ if path.startswith('ExcelOutput/'): return '콘텐츠 기록의 대화'
+ if path.startswith('Config/ConfigAbility/'): return '전투와 능력의 대화'
+ if path.startswith('Config/ConfigAnimEvents/'): return '동행하는 존재의 대화'
+ return '콘텐츠의 대화'
+def playable_reference(path):
+ return path.startswith(('Config/', 'Story/')) or path in ('ExcelOutput/InclinationText.json', 'ExcelOutput/ChimeraDuelMaster.json', 'ExcelOutput/MazePuzzleOrigamiColony.json','ExcelOutput/VisitorBehaviorConfig.json','ExcelOutput/HeartDialDialogue.json','ExcelOutput/HeartDialTalk.json')
+def content_refs(obj,path,pointer='',typed=''):
+ if isinstance(obj,dict):
+  typed=obj.get('$type',typed)
+  for key,value in obj.items():
+   p=pointer+'/'+key
+   direct=key=='TalkSentenceID' or (key=='NpcBubbleTalkSentenceID' and path=='ExcelOutput/VisitorBehaviorConfig.json')
+   if path=='ExcelOutput/HeartDialTalk.json' and key=='ID' and type(value) is int and ('VoiceID' not in obj or obj['VoiceID']==value) and isinstance(obj.get('SDFText'),dict):direct=True
+   device=key in ('MobileSentenceID','PcSentenceID','PadSentenceID') and typed=='RPG.GameCore.PlayMusicRhythmTalk' and 'SimpleTalkList' in pointer.split('/') and obj.get('IsMultiPlatform') is True
+   sentence=key=='SentenceID' and typed=='RPG.GameCore.PlayPenaconyEndmostSimpleTalk' and 'SimpleTalkList' in pointer.split('/')
+   setting=key=='LastToBeginTalkSentenceID' and typed=='RPG.GameCore.DebateInitialize' and 'TestimonySettingList' in pointer.split('/')
+   if (direct or device or sentence or setting) and type(value) is int:yield value,p,key
+   elif (key=='TalkSentenceIDList' or key=='ControlTalkList' and path=='ExcelOutput/HeartDialDialogue.json') and isinstance(value,list):
+    for i,v in enumerate(value):
+     if type(v) is int:yield v,p+'/'+str(i),key
+   elif isinstance(value,str) and re.fullmatch(r'TalkSentence_\d+',value):yield int(value.split('_')[1]),p,'TalkSentence event reference'
+   yield from content_refs(value,path,p,typed)
+ elif isinstance(obj,list):
+  for i,v in enumerate(obj):yield from content_refs(v,path,pointer+'/'+str(i),typed)
+def internal(path): return any(part.startswith('Test') or part=='MissionBeta' for part in path.split('/'))
+
+def corpus():
+ rows = {}; hashes = {}
+ for p in sorted((SITE/'data/dialogues').glob('*.json')):
+  hashes[p.relative_to(SITE).as_posix()] = sha(p.read_bytes())
+  for r in read(p)['section']['rows']:
+   assert r['talk_id'] not in rows
+   rows[r['talk_id']] = {**r, 'url':'대사/'+p.stem+'.html#talk-'+str(r['talk_id'])}
+ return rows, hashes
+
+def load(archive):
+ metadata={}; hashes={}; performance=defaultdict(list); scanned=0
+ with tarfile.open(archive,'r:gz') as tf:
+  for m in tf:
+   n=m.name.split('/',1)[-1]
+   if not m.isfile() or not n.endswith('.json') or n.startswith('TextMap'): continue
+   raw=tf.extractfile(m).read();o=json.loads(raw);scanned+=1
+   relevant=n.startswith(('Config/','Story/')) or n.startswith('ExcelOutput/Performance') or n in ('ExcelOutput/MazePlane.json','ExcelOutput/WorldDataConfig.json','ExcelOutput/MazeFloor.json','ExcelOutput/DialogueNPC.json','ExcelOutput/DialogueProp.json') or playable_reference(n)
+   if not relevant: continue
+   metadata[n]=o;hashes[n]=sha(raw)
+   if re.fullmatch(r'ExcelOutput/Performance(?:A|C|D|E|DS|CG|CLD|DLD|DSLD|Video|VideoLD)\.json',n):
+    for i,r in enumerate(o):
+     if type(r.get('PerformanceID')) is int and isinstance(r.get('PerformancePath'),str):performance[r['PerformanceID']].append({'target':r['PerformancePath'],'source':n,'idPointer':f'/{i}/PerformanceID','pathPointer':f'/{i}/PerformancePath'})
+ return metadata,hashes,performance,scanned
+
+def geography(metadata, hashes, performance, texts, project):
+ """An explicit RuntimeFloor FloorID and paths establish geographic use only."""
+ planes=metadata['ExcelOutput/MazePlane.json'];worlds={r['ID']:(i,r) for i,r in enumerate(metadata['ExcelOutput/WorldDataConfig.json'])}
+ dialogue_tables={domain:defaultdict(list) for domain in ('NPCList','PropList')}
+ for domain,table in (('NPCList','ExcelOutput/DialogueNPC.json'),('PropList','ExcelOutput/DialogueProp.json')):
+  for i,row in enumerate(metadata[table]):
+   if type(row.get('GroupID')) is int and isinstance(row.get('ActPath'),str):dialogue_tables[domain][row['GroupID']].append({'source':table,'idPointer':f'/{i}/GroupID','pathPointer':f'/{i}/ActPath','target':row['ActPath']})
+ labels={};reachable=defaultdict(dict)
+ for path,obj in metadata.items():
+  if not path.startswith('Config/LevelOutput/RuntimeFloor/') or type(obj.get('FloorID')) is not int:continue
+  fid=obj['FloorID'];matches=[(i,r) for i,r in enumerate(planes) if fid in r.get('FloorIDList',[])]
+  if len(matches)!=1:continue
+  pi,plane=matches[0];wi,world=worlds[plane['WorldID']]
+  def text(v):return project(texts[str(v['Hash'])]['raw']) if isinstance(v,dict) and str(v.get('Hash')) in texts else ''
+  name=text(plane.get('PlaneName'));world_name=text(world.get('WorldName'))
+  labels[fid]={'name':name or '지역 이름 미확인','world':world_name or '세계 이름 미확인','floorId':fid,
+   'proof':[{'source':path,'pointer':'/FloorID','value':fid},{'source':'ExcelOutput/MazePlane.json','pointer':f'/{pi}/FloorIDList/{plane["FloorIDList"].index(fid)}','value':fid},
+    {'source':'ExcelOutput/MazePlane.json','pointer':f'/{pi}/WorldID','value':plane['WorldID']}, {'source':'ExcelOutput/MazePlane.json','pointer':f'/{pi}/PlaneName/Hash','value':str(plane.get('PlaneName',{}).get('Hash',0))},
+    {'source':'ExcelOutput/WorldDataConfig.json','pointer':f'/{wi}/WorldName/Hash','value':str(world.get('WorldName',{}).get('Hash',0))}]}
+  queue=deque([(path,[])])
+  while queue:
+   source,chain=queue.popleft()
+   if source in reachable[fid] or source not in metadata:continue
+   reachable[fid][source]=chain
+   obj=metadata[source]
+   for target,ptr in path_refs(obj):
+    if target in metadata and target not in reachable[fid]:queue.append((target,chain+[{'source':source,'pointer':ptr,'target':target}]))
+   for task,ptr in objects(obj):
+    domains=[domain for domain in dialogue_tables if domain in ptr.split('/')]
+    if len(domains)==1:
+     for field in ('DialogueGroups','TalkDialogGroupIDList','FirstDialogueGroupID'):
+      value=task.get(field);ids=[(v,ptr+'/'+field+'/'+str(i)) for i,v in enumerate(value)] if isinstance(value,list) else [(value,ptr+'/'+field)]
+      for gid,idptr in ids:
+       matches=dialogue_tables[domains[0]].get(gid,[]) if type(gid) is int else []
+       if len({r['target'] for r in matches})==1:
+        r=matches[0]
+        if r['target'] in metadata:queue.append((r['target'],chain+[{'source':source,'pointer':idptr,'target':r['target'],'tableSource':r['source'],'idPointer':r['idPointer'],'pathPointer':r['pathPointer'],'domain':domains[0]}]))
+    if task.get('$type','').endswith('.TriggerPerformance') and type(task.get('PerformanceID')) is int:
+     matches,scope=performance_matches(performance,task['PerformanceID'],task.get('PerformanceType',''))
+     if len({r['target'] for r in matches})==1:
+      r=matches[0]
+      if r['target'] in metadata:queue.append((r['target'],chain+[{'source':source,'pointer':ptr+'/PerformanceID','target':r['target'],'tableSource':r['source'],'idPointer':r['idPointer'],'pathPointer':r['pathPointer']}]))
+ for label in labels.values():
+  for edge in label['proof']:edge['sourceSha256']=hashes[edge['source']]
+ reverse=defaultdict(list)
+ for fid,paths in reachable.items():
+  for path,chain in paths.items():reverse[path].append({'floorId':fid,'chain':[{**e,'sourceSha256':hashes[e['source']],**({'tableSha256':hashes[e['tableSource']]} if 'tableSource'in e else {})} for e in chain]})
+ return labels,reverse
+
+def build(archive, official_root, skill):
+ local,local_hashes=corpus();official=read(SITE/'data/official-talk-library.json');supp=read(SITE/'data/mission-dialogue-supplements.json')
+ assigned=set();strict=set();documents={}
+ for p in sorted((SITE/'data/documents').glob('quest-*.json')):
+  d=read(p);documents[d['id']]=sha(p.read_bytes());coverage=supp['coverage'][d['id']]
+  for s in d['sections']:
+   ids={r['talk_id'] for r in s['rows'] if r.get('talk_id')};assigned.update(ids)
+   chain=coverage.get('sourceOwnership',{}).get(s.get('source'),[])
+   if chain and chain[0]['kind']=='EXPLICIT_MAIN_MISSION_ID':strict.update(ids)
+ for scenes in supp['missions'].values():
+  for s in scenes:
+   ids={r['talk_id'] for r in s['rows']};assigned.update(ids)
+   if s['ownership'][0]['kind']=='EXPLICIT_MAIN_MISSION_ID':strict.update(ids)
+ baseline=set(local)-assigned;current={r['talk_id']:r for r in official['rows']};delta={tid:r for tid,r in current.items() if not r['missionLinks']};target=baseline|set(delta)
+ metadata,hashes,performance,scanned=load(archive)
+ texts,text_evidence,project=official_input(official_root,skill)
+ labels,regions=geography(metadata,hashes,performance,texts,project)
+ groups=[];classification=defaultdict(set);ref_types=Counter();all_sources={}
+ for path,obj in sorted(metadata.items()):
+  if not playable_reference(path):continue
+  found=defaultdict(list);unavailable=set()
+  for tid,ptr,k in content_refs(obj,path):
+   if path=='ExcelOutput/HeartDialTalk.json':
+    native=obj[int(ptr.split('/')[1])];source=texts.get(str(native['SDFText']['Hash']));row=current.get(tid) or local.get(tid)
+    if not source or not row or project(source['raw'])!=row['text']:continue
+   if tid in target:ref_types[k]+=1
+   if k=='TalkSentence event reference':
+    if tid in target:classification['EVENT_ONLY'].add(tid)
+    continue
+   context=reference_context(obj,ptr,k)
+   if not context['typedContainer'] and not path.startswith('ExcelOutput/'):continue
+   if tid not in local and tid not in current:unavailable.add(tid);continue
+   ancestors=ptr.split('/')
+   choice='OptionList' in ancestors or context['typedContainer'] and context['typedContainer']['type'].endswith('.OptionTalkInfo')
+   record={}
+   if k in ('NpcBubbleTalkSentenceID','ControlTalkList') or path=='ExcelOutput/HeartDialTalk.json':
+    parent_pointer=ptr.rsplit('/',2)[0] if k=='ControlTalkList' else ptr.rsplit('/',1)[0];native=obj[int(parent_pointer.strip('/'))]
+    record={'recordContext':{'pointer':parent_pointer,'fields':native,'serialized':json.dumps(native,ensure_ascii=False,indent=2)}}
+   usage={'MobileSentenceID':'모바일 안내','PcSentenceID':'PC 안내','PadSentenceID':'패드 안내','LastToBeginTalkSentenceID':'토론 설정 참조'}.get(k,'')
+   if path=='ExcelOutput/HeartDialTalk.json':usage='감정 조율의 표시 문구'
+   if k=='TalkSentenceID':
+    parent=obj
+    for part in ptr.strip('/').split('/')[:-1]:parent=parent[int(part)] if isinstance(parent,list) else parent[part]
+    if isinstance(parent,dict) and parent.get('IsMultiPlatform') is True:usage='기본 안내'
+   found[tid].append({'pointer':ptr,'kind':k,'displayKind':'선택지' if choice else '대사','usageLabel':usage,**context,**record})
+  audited=set(found)&target
+  if not audited:continue
+  internal_source=internal(path)
+  for tid in audited:classification['INTERNAL_REFERENCE' if internal_source else 'EXACT_READABLE_SOURCE_REFERENCE'].add(tid)
+  if internal_source:continue
+  source_id='context-'+sha(path.encode())[:16]
+  people=list(dict.fromkeys((current.get(tid) or local[tid])['speaker'] for tid in found))
+  people=[s for s in people if s!='화자 미지정']
+  first=(current.get(next(iter(found))) or local[next(iter(found))])['text'].replace('\n',' ')
+  title=' · '.join(people[:2]) if people else first[:36]+('…' if len(first)>36 else '')
+  if path=='ExcelOutput/VisitorBehaviorConfig.json':title='열차 방문객의 말풍선'
+  if path=='ExcelOutput/HeartDialDialogue.json':title='마음의 시계에 연결된 대화'
+  if path=='ExcelOutput/HeartDialTalk.json':title='감정 조율에 표시되는 문구'
+  if not title:title=kind(path)
+  group={'id':source_id,'title':title,'kind':kind(path),'source':path,'sourceSha256':hashes[path],
+   'rows':[{'talkId':tid,'edition':'official' if tid in current else 'preserved','references':records} for tid,records in found.items()],
+   'auditedTalkIds':sorted(audited),'unavailableTalkIds':sorted(unavailable),'regions':regions.get(path,[])}
+  groups.append(group);all_sources[path]=hashes[path]
+ classification['EVENT_ONLY']-=classification['EXACT_READABLE_SOURCE_REFERENCE']|classification['INTERNAL_REFERENCE']
+ classification['INTERNAL_REFERENCE']-=classification['EXACT_READABLE_SOURCE_REFERENCE']
+ classification['NO_EXACT_USAGE_REFERENCE']=target-set().union(*classification.values())
+ assert set().union(*classification.values())==target
+ assert sum(len(v) for v in classification.values())==len(target)
+ counts={'preservedKoreanRows':len(local),'previousMissionBodyRows':len(set(local)&assigned),'explicitMissionOwnerRows':len(set(local)&strict),
+  'baselineUnboundRows':len(baseline),'officialUnboundRows':len(delta),'distinctAuditIds':len(target),'scannedJsonFiles':scanned,
+  'sourceGroups':len(groups),'sourceRowMemberships':sum(len(g['rows']) for g in groups),'auditedSourceRowMemberships':sum(len(g['auditedTalkIds']) for g in groups),'readerDistinctTalkIds':len({r['talkId'] for g in groups for r in g['rows']}),'readableAttributedIds':len(classification['EXACT_READABLE_SOURCE_REFERENCE']),
+  'geographicSourceGroups':sum(bool(g['regions']) for g in groups),'geographicTalkIds':len({tid for g in groups if g['regions'] for tid in g['auditedTalkIds']}),
+  'classification':{k:len(v) for k,v in sorted(classification.items())},'baselineClassification':{k:len(v&baseline) for k,v in sorted(classification.items())},
+  'officialClassification':{k:len(v&set(delta)) for k,v in sorted(classification.items())}}
+ result={'schema':SCHEMA,'evidence':{'archiveSha256':sha(archive.read_bytes()),'commit':supp['evidence']['commit'],'repository':supp['evidence']['repository'],
+  'baselineFiles':local_hashes,'missionDocumentFiles':documents,'supplementsSha256':sha((SITE/'data/mission-dialogue-supplements.json').read_bytes()),
+  'officialTalkLibrarySha256':sha((SITE/'data/official-talk-library.json').read_bytes()),'regionKoreanSource':text_evidence},
+  'counts':counts,'audit':{k:sorted(v) for k,v in sorted(classification.items())},'regions':{str(k):v for k,v in labels.items()},'groups':groups}
+ body=json.dumps(result,ensure_ascii=False,separators=(',',':')).encode()
+ (SITE/'data/dialogue-contexts.json').write_bytes(body);(SITE/'public/dialogue-contexts.json').write_bytes(body)
+ write(SITE/'editorial/dialogue-contexts-manifest.json',{'schema':SCHEMA,'path':'public/dialogue-contexts.json','target':'data/dialogue-contexts.json','size':len(body),'sha256':sha(body)})
+ assert corpus()[1]==local_hashes
+ print(json.dumps(counts,ensure_ascii=False),flush=True)
+ return result
+
+if __name__=='__main__':
+ p=argparse.ArgumentParser();p.add_argument('--archive',type=Path,required=True);p.add_argument('--official-root',type=Path,required=True);p.add_argument('--skill',type=Path,required=True);a=p.parse_args();build(a.archive,a.official_root,a.skill)
