@@ -132,6 +132,14 @@ class AttributeTests(unittest.TestCase):
 
 
 class CSSTests(unittest.TestCase):
+    def test_style_literals_in_json_scripts_and_comments_remain_raw(self):
+        protected = '<!-- <style>.rw-source-row{color:red}</style> --><script type="application/json">{"text":"<style>.rw-source-body{color:red}</style>"}</script><script>const raw="<style>.rw-source-row{color:red}</style>";</script>'
+        style = '<style>.rw-source-row{color:red}</style>'
+        changed = A.html_styles(protected+style,A.css_aliases)
+        self.assertTrue(changed.startswith(protected))
+        self.assertNotEqual(changed,protected+style)
+        self.assertEqual(A.html_styles(changed,A.restore_css),protected+style)
+
     def test_selector_dual_forms_preserve_class_specificity_and_inverse(self):
         css = '.rw-source-row[data-reading-kind="choice"] .rw-source-body:hover{color:red}@media(max-width:40rem){.rw-source-body{font-size:1rem}}'
         changed = A.css_aliases(css)

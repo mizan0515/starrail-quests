@@ -84,7 +84,12 @@ def restore_css(text):
  return selector_edits(text,pattern,lambda m:inverse[m[0]])
 
 def html_styles(text,transform):
- return re.sub(r'(<style\b[^>]*>)([\s\S]*?)(</style\s*>)',lambda m:m[1]+transform(m[2])+m[3],text,flags=re.I)
+ pattern=re.compile(r'(<style\b[^>]*>)([\s\S]*?)(</style\s*>)',re.I)
+ def node(m):
+  if not m[0].lower().startswith('<style'):return m[0]
+  style=pattern.fullmatch(m[0])
+  return style[1]+transform(style[2])+style[3] if style else m[0]
+ return TOKENS.sub(node,text)
 
 SEARCH_CALL = re.compile(r'(<a\b[^>]*\bdata-search="")([^>]*>)<script>__ss\(([0-9]+)\);</script>')
 SEARCH_LOADER = re.compile(r'<script data-search-pool="([0-9a-f]{64})">__sl\("([A-Za-z0-9+/=]+)",([0-9]+)\);</script>')
