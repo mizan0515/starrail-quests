@@ -11,7 +11,7 @@ import math
 import re
 import sys
 from collections import Counter, defaultdict
-from publication_attributes import StaticHTMLParser as HTMLParser
+from publication_attributes import StaticHTMLParser as HTMLParser, static_html
 from pathlib import Path
 
 sys.dont_write_bytecode = True
@@ -70,6 +70,7 @@ class Node:
 class Dom(HTMLParser):
     def __init__(self, content):
         super().__init__(convert_charrefs=True)
+        content = static_html(content)
         self.content = content
         self.lines = [0]
         self.lines.extend(match.end() for match in re.finditer('\n', content))

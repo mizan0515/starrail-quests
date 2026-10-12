@@ -70,6 +70,16 @@ def pooled_fixture():
 
 
 class AttributeTests(unittest.TestCase):
+    def test_caption_dom_offsets_follow_normalized_class_lengths(self):
+        from verify_official_caption_site import Dom, by_attr, one
+        raw = '<section class="rw-reader"><p class="original-body rw-source-body" id="talk-9">한국어\n둘째 줄</p></section>'
+        aliased = A.class_attributes(raw,A.CLASS_ALIASES)
+        dom = Dom(aliased)
+        body = one(by_attr(dom.root,'id','talk-9'),'static caption body')
+        self.assertEqual(dom.content,raw)
+        self.assertEqual(body.text(),'한국어\n둘째 줄')
+        self.assertEqual(dom.content[body.start:body.closing_end],'<p class="original-body rw-source-body" id="talk-9">한국어\n둘째 줄</p>')
+
     def test_protected_semantic_classes_not_aliased(self):
         protected = {'original-body', 'original-paragraph', 'original-row', 'speaker', 'choice',
                      'original-text', 'reader-paragraph', 'reading-scene', 'rw-quotation'}
