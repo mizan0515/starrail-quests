@@ -106,11 +106,19 @@ def main():
                 dialogue_rows+=1
         if dialogue_rows!=idx['evidence']['displayed']:errors.append(('complete dialogue coverage mismatch',dialogue_rows))
         ex=json.loads((data/'explorer.json').read_text('utf8'))
+        # Only the technical source-row disclosure can be pooled; reading rows and anchors above remain raw HTML.
+        publication_expand=None
+        if (root/'_shared').is_dir():
+            from optimize_publication import expansion_function
+            publication_expand=expansion_function(json.loads((root.parent/'.codex-work/publication-build-report.json').read_text('utf8')))
         for e in ex['entries']:
             if e['axis']=='concept':continue
             file=(root/'대상'/(e['id']+'.html')).resolve()
             if file not in pages or 'local-source' not in pages[file].ids:errors.append((e['id'],'missing entity or local bottom evidence'));continue
-            if e.get('sourceRow') and str(e['sourceRow']['WorldName']['Hash']) not in file.read_text('utf8'):errors.append((e['id'],'world name hash lost integer precision'))
+            if e.get('sourceRow'):
+                proof_html=file.read_text('utf8')
+                if publication_expand:proof_html=publication_expand(proof_html)
+                if str(e['sourceRow']['WorldName']['Hash']) not in proof_html:errors.append((e['id'],'world name hash lost integer precision'))
             for story in e['stories']:
                 if pages[file].original.get('story-text-'+str(story['story_id'])+'-row-1')!=story['text']:errors.append((e['id'],story['story_id'],'character story differs'))
                 character_rows+=1
