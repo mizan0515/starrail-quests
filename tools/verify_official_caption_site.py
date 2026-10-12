@@ -11,7 +11,7 @@ import math
 import re
 import sys
 from collections import Counter, defaultdict
-from html.parser import HTMLParser
+from publication_attributes import StaticHTMLParser as HTMLParser
 from pathlib import Path
 
 sys.dont_write_bytecode = True

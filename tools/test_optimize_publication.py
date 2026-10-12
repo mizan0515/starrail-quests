@@ -9,6 +9,8 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+import sys
+sys.path.insert(0,str(Path(__file__).resolve().parent))
 spec=importlib.util.spec_from_file_location('publication_optimizer',Path(__file__).with_name('optimize_publication.py'))
 P=importlib.util.module_from_spec(spec);spec.loader.exec_module(P)
 
