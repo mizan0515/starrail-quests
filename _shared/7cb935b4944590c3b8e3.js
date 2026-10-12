@@ -1,1 +1,0 @@
-document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/설정집.html\">설정집</a><span>/</span><a href=\"/starrail-quests/관점/region.html\">지역</a><span>/</span><span>앰포리어스</span></nav>");

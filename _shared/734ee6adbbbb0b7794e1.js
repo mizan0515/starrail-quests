@@ -1,1 +1,0 @@
-document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-324#relic-library-group-relic-set-324\">텐고쿠@라이브스트리밍</a><span>/</span><span>라이브 스트리밍의 끊김 없는 채팅</span></nav>");

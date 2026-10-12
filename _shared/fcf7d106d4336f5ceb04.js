@@ -1,1 +1,0 @@
-document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 꿈의 땅 페나코니</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33126.html\">페나코니의 꿈을 좇는 궤도</a></li></ul></aside>");

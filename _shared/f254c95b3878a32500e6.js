@@ -1,1 +1,0 @@
-document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\" data-pagefind-ignore><a href=\"/starrail-quests/index.html\">임무</a><span>/</span><span>개척 임무</span><span>/</span><span>선주 「나부」</span></nav>");

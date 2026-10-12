@@ -1,1 +1,0 @@
-document.write("<header><p class=\"eyebrow\">서적·문서 · 원문</p><h2>헤르타의 원고</h2><a href=\"/starrail-quests/문서/book-57.html\" class=\"rw-source-link\" data-reading-template=\"source-link\" data-source-link-variant=\"cta\" data-reading-link=\"true\">개별 원문과 출처 ↗</a></header>");

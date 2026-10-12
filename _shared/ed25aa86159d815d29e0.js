@@ -1,1 +1,0 @@
-document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 고요한 습골지</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33196.html\">아이도니아의 저승 뼈사슬</a></li></ul></aside>");

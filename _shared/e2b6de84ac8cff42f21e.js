@@ -1,1 +1,0 @@
-document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/설정집.html\">설정집</a><span>/</span><a href=\"/starrail-quests/관점/person.html\">인물</a><span>/</span><span>스파키</span></nav>");

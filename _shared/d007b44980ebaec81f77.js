@@ -1,1 +1,0 @@
-document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 창공 전선 그라모스</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33115.html\">그라모스의 철기 군단</a></li></ul></aside>");

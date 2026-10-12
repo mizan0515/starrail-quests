@@ -1,1 +1,0 @@
-document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 천체 차분기관</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33056.html\">스크루별의 행성 고리</a></li></ul></aside>");

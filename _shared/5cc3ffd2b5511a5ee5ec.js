@@ -1,1 +1,0 @@
-document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-328#relic-library-group-relic-set-328\">우주 생명과학연구원</a><span>/</span><span>생명과학연구원의 외곽 파이프라인</span></nav>");

@@ -1,1 +1,0 @@
-document.write("<header><p class=\"eyebrow\">시뮬레이션 우주 설정 · 원문</p><h2>기계식 뻐꾸기 시계</h2><a href=\"/starrail-quests/문서/miracle-52.html\" class=\"rw-source-link\" data-reading-template=\"source-link\" data-source-link-variant=\"cta\" data-reading-link=\"true\">개별 원문과 출처 ↗</a></header>");

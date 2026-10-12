@@ -1,1 +1,0 @@
-document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-123#relic-library-group-relic-set-123\">개선가를 울리는 영웅</a><span>/</span><span>영웅의 황금 완갑</span></nav>");

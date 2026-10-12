@@ -1,1 +1,0 @@
-document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-115#relic-library-group-relic-set-115\">재와 뼈마저 불사르는 대공</a><span>/</span><span>대공의 지옥불 면류관</span></nav>");

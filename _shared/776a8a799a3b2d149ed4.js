@@ -1,1 +1,0 @@
-document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 바다에 잠긴 루샤카</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33175.html\">루샤카의 물에 잠긴 도시</a></li></ul></aside>");

@@ -1,1 +1,0 @@
-document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 축성가의 벨로보그</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33046.html\">벨로보그 철위대 방어선</a></li></ul></aside>");

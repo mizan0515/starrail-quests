@@ -1,1 +1,0 @@
-document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-122#relic-library-group-relic-set-122\">지식의 바다에 빠진 학자</a><span>/</span><span>학자의 보조 너클</span></nav>");

@@ -1,1 +1,0 @@
-document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-105#relic-library-group-relic-set-105\">스트리트 격투왕</a><span>/</span><span>격투왕의 가슴 보호대</span></nav>");

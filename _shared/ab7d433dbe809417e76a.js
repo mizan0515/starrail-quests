@@ -1,1 +1,0 @@
-document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-323#relic-library-group-relic-set-323\">영원의 땅 앰포리어스</a><span>/</span><span>앰포리어스의 영원한 시편</span></nav>");

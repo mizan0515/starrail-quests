@@ -1,1 +1,0 @@
-document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 질주하는 늑대의 도람 왕조</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33155.html\">도람의 궁륭 금빛 장막</a></li></ul></aside>");

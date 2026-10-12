@@ -1,1 +1,0 @@
-document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 겁화 연등의 연마궁</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33166.html\">연마궁의 염륜 비단</a></li></ul></aside>");

@@ -1,1 +1,0 @@
-document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-111#relic-library-group-relic-set-111\">유성을 쫓는 괴도</a><span>/</span><span>괴도의 쇠갈고리</span></nav>");

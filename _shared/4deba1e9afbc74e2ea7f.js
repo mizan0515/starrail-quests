@@ -1,1 +1,0 @@
-document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 천 개의 별이 모인 도시</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33265.html\">아스트로폴리스 미디어 본부</a></li></ul></aside>");

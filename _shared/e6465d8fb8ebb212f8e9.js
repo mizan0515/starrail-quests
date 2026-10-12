@@ -1,1 +1,0 @@
-document.write("<nav class=\"breadcrumbs\" aria-label=\"현재 위치\"><a href=\"/starrail-quests/우주.html#item-library\">우주 콘텐츠·아이템</a><span>/</span><a href=\"/starrail-quests/유물.html?relicSet=relic-set-101#relic-library-group-relic-set-101\">흔적을 남기지 않은 과객</a><span>/</span><span>과객의 뒤안길 유랑 신발</span></nav>");

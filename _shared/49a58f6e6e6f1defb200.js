@@ -1,1 +1,0 @@
-document.write("<aside class=\"collection-panel\" data-pagefind-ignore><strong>같은 세트 · 텐고쿠@라이브스트리밍</strong><ul><li><a href=\"/starrail-quests/문서/item-ItemConfigRelic-33245.html\">라이브 스트리밍의 수많은 창</a></li></ul></aside>");
