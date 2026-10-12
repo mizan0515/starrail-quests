@@ -1,0 +1,25 @@
+---
+import SourceParagraphs from './SourceParagraphs.astro';
+import {deepRows,luaTimeline} from '../lib/deep-timeline';
+import {href,missionStructureUrl} from '../lib/data';
+import {readerAttributes,rowAttributes,disclosureAttributes} from '../lib/reading-kit/reader.mjs';
+const {scene}=Astro.props;
+const rows=deepRows(scene),labels=['부제','제목','하단 제목','하단 본문'];
+const hasSnapshotOwner=scene.proof.references.some(ref=>luaTimeline.sourceProofs[ref.sourceIndex]?.callerSourceKind==='CALLER_SOURCE_PUBLIC_JSON_SNAPSHOT_NATIVE_EOF_BLOCKED');
+---
+<p class="muted" data-publication-ui="source-context">연출에서 자막 화면에 전달하는 네 문구입니다. 문구의 화면 위치를 함께 표시했습니다. 실제 표시 시간과 재생 조건은 확인 중입니다.</p>
+{scene.owners.length?<nav class="reading-next" aria-label="이 연출을 호출한 임무">{scene.owners.map(owner=><a href={href('문서/'+owner.canonicalMission+'.html#deep-timeline-originals')} data-reading-link><span>임무에서 함께 읽기</span><strong>{owner.title}</strong></a>)}</nav>:<p class="muted" data-publication-ui="source-context">연출 파일과 화면 문구의 연결을 확인했습니다. 이 연출을 호출한 임무는 확인 중입니다.</p>}
+<section {...readerAttributes({variant:'scene',className:'source-section',id:'original'})} data-lua-timeline={scene.id}>
+ {rows.map(row=><div {...{...rowAttributes('original'),class:'rw-source-row original-row'}} data-lua-talk={row.talk_id} data-passage="original" data-lua-role="SCREEN_TEXT" data-caption-slot={row.deepReference.slot}>
+  <span class="speaker rw-source-speaker">화면 문구 · {labels[row.deepReference.slot-1]}</span>
+  <SourceParagraphs text={row.text} anchor={row.deepReference.anchor}/>
+  <a href={href(row.url)} data-reading-link>대사표 원문 ↗</a>
+ </div>)}
+</section>
+<details {...disclosureAttributes({className:'source-details',id:'verified-sources'})} data-pagefind-ignore data-caller-source-kind={hasSnapshotOwner?'CALLER_SOURCE_PUBLIC_JSON_SNAPSHOT_NATIVE_EOF_BLOCKED':undefined}>
+ <summary>화면의 문구와 원문의 연결 근거</summary>
+ <dl><dt>연출 파일</dt><dd>{scene.source}</dd><dt>게임 자료</dt><dd>{scene.proof.receipt.blockFile}<br/>{scene.proof.receipt.cab}<br/>블록 SHA-256 · {scene.proof.receipt.blockSha256}<br/>CAB SHA-256 · {scene.proof.receipt.cabSha256}</dd><dt>자막을 채우는 호출</dt><dd>UIParam → ParseCaptionParam → TalkSentenceConfig.GetData → TalkSentenceText → SafeSetTextID</dd><dt>한국어 수록본</dt><dd>공식 4.6 자료표·한국어 문자열과 보존된 로컬 원문의 본문·화자·음성 필드를 대조했습니다. 설치본의 출시 버전은 미확인입니다.</dd></dl>
+ {scene.proof.references.map(ref=>{const source=luaTimeline.sourceProofs[ref.sourceIndex];return <div data-lua-owner-proof={ref.sourceIndex}><h2>임무와 연출의 연결</h2><p>{source.logicalJsonPath} · {ref.pointer}<br/>{ref.fieldSpan?'바이트 '+ref.fieldSpan.start+'–'+ref.fieldSpan.end:'공개 설정 JSON의 명시 참조'} · SHA-256 {source.entrySha256||source.sourceSha256}</p><ol>{source.ownerChain.map(edge=><li>{edge.source&&<a href={missionStructureUrl(edge.source)}>{edge.source} ↗</a>} · {edge.pointer}{edge.target&&<><br/>{edge.target}</>}{edge.sourceSha256&&<><br/>SHA-256 · {edge.sourceSha256}</>}</li>)}</ol></div>})}
+ {hasSnapshotOwner&&<p>임무와 연출의 호출 관계는 공개 설정 JSON의 작업 유형과 필드에서 확인했습니다. 호출자 바이너리의 전체 해석은 미지원 상태입니다.</p>}
+ <ol>{rows.map(row=><li data-lua-clip-proof={row.deepReference.anchor}><p>{labels[row.deepReference.slot-1]} · 본문 ID {row.talk_id}</p><dl><dt>클립의 원래 전달 인자</dt><dd>{row.deepReference.argument.raw}<br/>문자열 항목 {row.deepReference.argument.tokenIndex+1} · 바이트 {row.deepReference.argument.tokenByteSpanRelativeToObject.join('–')}</dd><dt>화면의 조회·표시 함수</dt><dd>{row.deepReference.uiField} → SafeSetTextID<br/>{row.deepReference.nativeConsumer.lookupClass}.{row.deepReference.nativeConsumer.lookupMethod}<br/>본문 필드 {row.deepReference.nativeConsumer.textField}</dd><dt>Lua의 직접 호출</dt><dd>{row.deepReference.luaConsumer.module.manifestPaths.join(' · ')}<br/>함수 {row.deepReference.luaConsumer.methodRole} · 명령 {row.deepReference.luaConsumer.call.pc}<br/>SHA-256 · {row.deepReference.luaConsumer.module.entrySha256}</dd><dt>한국어 원문</dt><dd>{row.deepKoreanProof.preservedSource.file} · {row.deepKoreanProof.preservedSource.pointer}<br/>본문 해시 {row.hash} · 화자 해시 {row.speaker_hash} · 음성 {row.voice}<br/>SHA-256 · {row.deepKoreanProof.preservedSource.sha256}</dd></dl></li>)}</ol>
+</details>

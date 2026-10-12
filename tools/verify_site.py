@@ -1,7 +1,7 @@
 """Verify generated document links, anchors, hidden technical labels and evidence."""
 import argparse,json,re
 from pathlib import Path
-from html.parser import HTMLParser
+from publication_attributes import StaticHTMLParser as HTMLParser
 from urllib.parse import urlsplit,unquote
 from functools import lru_cache
 

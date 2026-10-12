@@ -1,14 +1,15 @@
 ---
 import SourceParagraphs from './SourceParagraphs.astro';
-import {deepRows,deepTimeline} from '../lib/deep-timeline';
+import {deepRows,deepTimeline,freshTimeline,snapshotTimeline} from '../lib/deep-timeline';
 import {href,missionStructureUrl,missionSourceNotice} from '../lib/data';
 import {readerAttributes,rowAttributes,disclosureAttributes} from '../lib/reading-kit/reader.mjs';
 const {scene}=Astro.props;
-const rows=deepRows(scene),proof=scene.proof,official=deepTimeline.evidence.officialKorean;
+const library=scene.kind==='PUBLIC_JSON_TIMELINE'?snapshotTimeline:scene.kind==='FRESH_NATIVE_TIMELINE'?freshTimeline:deepTimeline;
+const rows=deepRows(scene),proof=scene.proof,official=library.evidence.officialKorean;
 const label=(r:any)=>missionSourceNotice(r)?'원문에 수록된 제작 안내':r.deepReference.role==='SCREEN_TEXT'?'화면 문구':r.isChoice?'선택지 참조':r.speaker==='화자 미지정'?'원문':r.speaker;
 ---
-<p class="muted">연출 파일 안의 시작 시각순으로 모은 원문입니다. 임무 전체의 장면 순서와 선택 이후의 재생 경로는 확인 중입니다.</p>
-{scene.ownerStatus==='UNOWNED_NATIVE_TIMELINE'?<p class="muted">연출 파일과 한국어 원문의 연결을 확인했습니다. 이 연출을 호출한 임무와 실제 재생 조건은 확인 중입니다.</p>:scene.ownerStatus!=='ONE_EXPLICIT_OWNER'&&<p class="muted">여러 임무 기록이 이 연출을 호출합니다. 각 연결을 아래에서 확인할 수 있습니다.</p>}
+<p class="muted" data-publication-ui="source-context">연출 파일 안의 시작 시각순으로 모은 원문입니다. 임무 전체의 장면 순서와 선택 이후의 재생 경로는 확인 중입니다.</p>
+{scene.owners.length===0?<p class="muted" data-publication-ui="source-context">연출 파일과 한국어 원문의 연결을 확인했습니다. 이 연출을 호출한 임무와 실제 재생 조건은 확인 중입니다.</p>:scene.owners.length>1&&<p class="muted" data-publication-ui="source-context">여러 임무 기록이 이 연출을 호출합니다. 각 연결을 아래에서 확인할 수 있습니다.</p>}
 {scene.owners.length>0&&<nav class="reading-next" aria-label="이 연출을 호출한 임무">{scene.owners.map(owner=><a href={href('문서/'+owner.canonicalMission+'.html#deep-timeline-originals')} data-reading-link><span>임무에서 함께 읽기</span><strong>{owner.title}</strong></a>)}</nav>}
 <section {...readerAttributes({variant:'scene',className:'source-section',id:'original'})} data-deep-timeline={scene.id}>
  {rows.map(row=><div {...{...rowAttributes(row.isChoice?'choice':'dialogue'),class:['rw-source-row','original-row',row.isChoice&&'choice'].filter(Boolean).join(' ')}} data-deep-talk={row.talk_id} data-speaker={row.speaker} data-passage={row.isChoice?'choice':'dialogue'} data-deep-role={row.deepReference.role}>
@@ -17,10 +18,12 @@ const label=(r:any)=>missionSourceNotice(r)?'원문에 수록된 제작 안내':
   <a href={href(row.url)} data-reading-link>대사표 원문 ↗</a>
  </div>)}
 </section>
-<details {...disclosureAttributes({className:'source-details',id:'verified-sources'})} data-pagefind-ignore>
+<details {...disclosureAttributes({className:'source-details',id:'verified-sources'})} data-pagefind-ignore data-caller-source-kind={scene.kind==='PUBLIC_JSON_TIMELINE'?'CALLER_SOURCE_PUBLIC_JSON_SNAPSHOT_NATIVE_EOF_BLOCKED':undefined}>
  <summary>연출과 한국어 원문의 연결 근거</summary>
  <dl><dt>연출 파일</dt><dd>{scene.source}</dd><dt>설치본의 장면 자료</dt><dd>{proof.receipt.blockFile}<br/>{proof.receipt.cabName} · {proof.receipt.bundleOffset}–{proof.receipt.bundleOffset+proof.receipt.bundleBytes}<br/>블록 SHA-256 · {proof.receipt.sourceBlockSha256}<br/>CAB SHA-256 · {proof.receipt.cabSha256}</dd><dt>연출의 직접 참조</dt><dd>{proof.container.key}<br/>루트 {proof.root.pathID} · SHA-256 {proof.root.sha256}</dd><dt>관찰 버전</dt><dd>설치본의 출시 버전은 미확인입니다. 한국어 본문은 별도의 공식 4.6 원문과 보존 대사표의 본문·화자·음성 정보를 대조했습니다.</dd></dl>
- {proof.references.map(ref=>{const source=deepTimeline.sourceProofs[ref.sourceIndex];return <div><h2>임무와 연출의 연결</h2><dl><dt>연출 설정</dt><dd>{source.logicalJsonPath}<br/>{ref.pointer} · 바이트 {ref.fieldSpan.start}–{ref.fieldSpan.end}<br/>SHA-256 · {source.entrySha256}</dd></dl><ol>{source.ownerChain.map(edge=><li>{edge.source&&<a href={missionStructureUrl(edge.source)}>{edge.source} ↗</a>}{edge.pointer&&<> · {edge.pointer}</>}{edge.target&&<><br/>{edge.target}</>}{edge.sourceSha256&&<><br/>SHA-256 · {edge.sourceSha256}</>}</li>)}</ol>{ref.context.conditions?.length>0&&<pre>{JSON.stringify(ref.context.conditions,null,2)}</pre>}</div>;})}
+ {proof.references.map(ref=>{const source=library.sourceProofs[ref.sourceIndex];return <div><h2>임무와 연출의 연결</h2><dl><dt>연출 설정</dt><dd>{source.logicalJsonPath}<br/>{ref.pointer} · {ref.fieldSpan?'바이트 '+ref.fieldSpan.start+'–'+ref.fieldSpan.end:'공개 설정 JSON의 명시 참조'}<br/>SHA-256 · {source.entrySha256||source.sourceSha256}</dd></dl><ol>{source.ownerChain.map(edge=><li>{edge.source&&<a href={missionStructureUrl(edge.source)}>{edge.source} ↗</a>}{edge.pointer&&<> · {edge.pointer}</>}{edge.target&&<><br/>{edge.target}</>}{edge.sourceSha256&&<><br/>SHA-256 · {edge.sourceSha256}</>}</li>)}</ol>{ref.context?.conditions?.length>0&&<pre>{JSON.stringify(ref.context.conditions,null,2)}</pre>}</div>;})}
+ {['FRESH_NATIVE_TIMELINE','PUBLIC_JSON_TIMELINE'].includes(scene.kind)&&<p>연출 자산은 현재 설치본에서 읽었습니다. 임무의 호출 관계는 해시로 고정한 설정 자료에서 확인했으며, 그 설정 자료와 설치본의 판본 일치는 미확인입니다.</p>}
+ {scene.kind==='PUBLIC_JSON_TIMELINE'&&<p>임무와 연출의 호출 관계는 공개 설정 JSON의 작업 유형과 필드에서 확인했습니다. 호출자 바이너리의 전체 해석은 미지원 상태입니다.</p>}
  <h2>공식 한국어 원문</h2><dl><dt>대사표</dt><dd>{official.talkTable.file}<br/>엔트리 {official.talkTable.key} · 팩 오프셋 {official.talkTable.offset}<br/>SHA-256 · {official.talkTable.sha256}</dd><dt>한국어 문자열</dt><dd>{official.koreanPack.file}<br/>엔트리 {official.entry.key} · 팩 오프셋 {official.entry.offset}<br/>SHA-256 · {official.koreanPack.sha256}</dd></dl>
  <ol>{rows.map(row=><li data-deep-clip-proof={row.deepReference.anchor}><p>대사 {row.talk_id} · {label(row)} · 연출 안의 시작 {row.deepReference.start}초 · 길이 {row.deepReference.duration}초</p><dl><dt>클립의 대사 ID 필드</dt><dd>{row.deepReference.idField.field} · {row.deepReference.idField.span.join('–')}<br/>클립 {row.deepReference.object.pathID} · SHA-256 {row.deepReference.object.sha256}</dd><dt>트랙과 장면의 참조</dt><dd>{row.deepReference.parentRoute.join(' → ')}<br/>배열 위치 {row.deepReference.trackClipIndex} · 트랙 SHA-256 {row.deepReference.track.sha256}</dd><dt>한국어 원문 위치</dt><dd>대사표 {row.deepKoreanProof.tableOffset}–{row.deepKoreanProof.tableEnd}<br/>본문 {row.deepKoreanProof.textOffset}–{row.deepKoreanProof.textEnd}<br/>본문 문자열 {row.hash} · 화자 문자열 {row.speaker_hash} · 음성 {row.voice}</dd><dt>게임 파일의 한국어 문자열</dt><dd><pre>{row.deepKoreanProof.raw}</pre></dd></dl>{row.isChoice&&<p>선택지 식별자의 참조입니다. 이 클립에서 말한 대사와 이후의 재생 경로는 별도 근거가 필요합니다.</p>}</li>)}</ol>
 </details>

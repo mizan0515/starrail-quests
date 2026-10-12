@@ -15,6 +15,12 @@ from html.parser import HTMLParser
 import json
 from pathlib import Path
 import re
+from publication_attributes import (CLASS_ALIASES,REVERSE_CLASSES,CLASS_ATTR,
+ class_attributes,css_aliases,restore_css,html_styles,search_attributes,
+ restore_search,SEARCH_RUNTIME)
+CLASS_CONSUMER=re.compile(r'\b(?:'+'|'.join(map(re.escape,CLASS_ALIASES))+r')\b')
+RESERVED_CLASS=re.compile(r'\.(?:'+'|'.join(map(re.escape,REVERSE_CLASSES))+r')(?![\w-])')
+ALIAS_NAMES=frozenset(REVERSE_CLASSES)
 
 LIMIT=1_000_000_000
 REPORT=Path('.codex-work/publication-build-report.json')
@@ -73,7 +79,7 @@ def encoded_array(rows):
 
 def pooled_runtime(rows):
  raw,encoded=encoded_array(rows)
- return PROOF_RUNTIME+POOL_RUNTIME+f'window.__starrailPublicationUI=JSON.parse(__starrailPublicationDecode("{encoded}",{len(raw)}));\n'+'''window.__sp=function(id){
+ return PROOF_RUNTIME+POOL_RUNTIME+SEARCH_RUNTIME+f'window.__starrailPublicationUI=JSON.parse(__starrailPublicationDecode("{encoded}",{len(raw)}));\n'+'''window.__sp=function(id){
  if(!Number.isSafeInteger(id)||id<0||id>=__starrailPublicationUI.length||typeof __starrailPublicationUI[id]!=="string")throw new Error("Unknown publication UI slot");
  document.write(__starrailPublicationUI[id]);
 };
@@ -101,6 +107,7 @@ RESTORATION_ONLY={
 SCOPE=re.compile(r'\bastro-[a-z0-9]{8}\b')
 TAG={k:re.compile(r'<'+k+r'\b([^>]*)>(.*?)</'+k+r'>',re.S) for k in ('style','script')}
 FRAGMENTS=[
+ re.compile(r'<p\b[^>]*\bdata-publication-ui="source-context"[^>]*>[\s\S]*?</p>'),
  re.compile(r'<template id="theme-icons">[\s\S]*?</template>'),
  re.compile(r'<header\b[\s\S]*?</header>'),
  re.compile(r'<nav class="sidebar\b[\s\S]*?</sl-sidebar-pane></nav>'),
@@ -111,6 +118,13 @@ FRAGMENTS=[
  re.compile(r'<footer\b[\s\S]*?</footer>'),
  re.compile(r'<dialog class="context-dialog"[\s\S]*?</dialog>'),
 ]
+
+def source_context_ui(fragment):
+ """Only explicitly declared reader context; original rows/anchors stay static."""
+ parser=OpeningTag();parser.feed(fragment.split('>',1)[0]+'>');attrs=parser.attrs
+ return (attrs.get('data-publication-ui')=='source-context' and 'muted' in attrs.get('class','').split()
+         and not READING_PROOF.search(fragment) and not PROTECTED_PROOF.search(fragment)
+         and not re.search(r'<(?:a|details|summary|pre|code|blockquote|script|style)\b',fragment,re.I))
 
 def digest(body):return hashlib.sha256(body).hexdigest()
 def require(condition,message):
@@ -206,11 +220,17 @@ def optimize(root,base,report_path):
  # Two bounded passes avoid retaining the complete 1.5 GB HTML in memory.
  def scan(file):
   raw=file.read_bytes();s=raw.decode('utf8');tags={k:[] for k in TAG}
+  for attribute in CLASS_ATTR.finditer(s):require(not(set(attribute[3].split())&ALIAS_NAMES),'Presentation class alias collision')
+  require(not any(f':is(.{name},.{alias})' in s for name,alias in CLASS_ALIASES.items()),'CSS presentation alias namespace collision')
+  if file.suffix=='.css':require(not RESERVED_CLASS.search(s),'Presentation CSS alias collision')
+  if file.suffix=='.js':require(not CLASS_CONSUMER.search(s),'Presentation class has a generated client-script consumer '+str(file))
   if file.suffix=='.html':
-   require(not re.search(r'<script>\s*__(?:sp|spr)\(|<script\b[^>]*\bdata-(?:pc|pr-shard)(?:=|-library|-runtime)',s),'Publication pool namespace already exists')
+   require(not re.search(r'<script>\s*__(?:sp|spr|ss|sl)\(|<script\b[^>]*\bdata-(?:pc|pr-shard|search-pool)(?:=|-library|-runtime)',s),'Publication pool namespace already exists')
    for kind,pattern in TAG.items():
     for m in pattern.finditer(s):
      if kind=='script' and ('src=' in m[1] or 'application/' in m[1]):continue
+     if kind=='script':require(not CLASS_CONSUMER.search(m[2]),'Presentation class has an inline client-script consumer '+str(file))
+     else:require(not RESERVED_CLASS.search(m[2]),'Presentation inline CSS alias collision')
      tags[kind].append((m[1],m[2]))
   return digest(raw),SCOPE.findall(s),re.findall(r'\b_q[A-Za-z0-9]+\b',s),[name for name in references if name in s],tags
  # Bound pending reads to64files; aggregation and all later writes remain serial.
@@ -228,7 +248,7 @@ def optimize(root,base,report_path):
  reverse_scopes={value:key for key,value in mapping.items()}
  alias_pattern=re.compile(r'\b(?:'+'|'.join(map(re.escape,reverse_scopes))+r')\b')
  shared=root/'_shared';shared.mkdir();assets={};replacements={};counts=Counter();proof_records={};proof_tags=None;proof_saved=0;codec_records={}
- ui_rows=[];ui_index={};proof_rows=[];proof_index={};page_proofs={};pool_pages=[]
+ ui_rows=[];ui_index={};proof_rows=[];proof_index={};page_proofs={};pool_pages=[];search_records={};page_search={}
  def pool_ui(body):
   if body not in ui_index:ui_index[body]=len(ui_rows);ui_rows.append(body)
   counts['uiPoolCalls']+=1
@@ -262,7 +282,9 @@ def optimize(root,base,report_path):
  for position,file in enumerate(files):
   s=file.read_bytes().decode('utf8')
   if mapping:s=SCOPE.sub(lambda m:mapping[m[0]],s)
+  if file.suffix=='.css':s=css_aliases(s)
   if file.suffix=='.html':
+   s=html_styles(s,css_aliases)
    require(not re.search(r'<script>\s*__(?:sp|spr)\(',s),'Publication pool namespace already exists')
    # Identical external modules execute once per URL. Keep any module that
    # originally has multiple occurrences on this page inline.
@@ -272,6 +294,7 @@ def optimize(root,base,report_path):
      attrs,body=m[1],m[2]
      if kind=='script' and ('src=' in attrs or 'application/' in attrs or len(body)<128 or 'import.meta' in body):return m[0]
      original_body=alias_pattern.sub(lambda m:reverse_scopes[m[0]],body) if reverse_scopes else body
+     if kind=='style':original_body=restore_css(original_body)
      if pools[kind][(attrs,original_body)]<2:return m[0]
      if kind=='script' and 'type="module"' in attrs:
       if module_counts[(attrs,body)]>1:return m[0]
@@ -284,6 +307,7 @@ def optimize(root,base,report_path):
    for pattern in FRAGMENTS:
     def extract_fragment(m):
      fragment=m[0]
+     if 'data-publication-ui=' in fragment and not source_context_ui(fragment):return fragment
      # A classic, parser-blocking script inserts the exact original subtree
      # in its original parser position. Its existing scripts retain order.
      replacement=pool_ui(fragment)
@@ -315,7 +339,10 @@ def optimize(root,base,report_path):
     if not url.startswith((f'{base}/_astro/',f'{base}/_shared/')):return match[0]
     counts['sharedStandaloneModules']+=1;return pool_ui(match[0])
    s=EXTERNAL_MODULE.sub(share_module,s)
-   if UI_POOL_TAG.search(s) or PROOF_POOL_TAG.search(s):pool_pages.append(file)
+   s=class_attributes(s,CLASS_ALIASES)
+   s,search_loader,search_count=search_attributes(s,search_records)
+   if search_loader:page_search[file.relative_to(root).as_posix()]=search_loader;counts['searchAttributes']+=search_count
+   if UI_POOL_TAG.search(s) or PROOF_POOL_TAG.search(s) or search_loader:pool_pages.append(file)
   file.write_text(s,'utf8',newline='')
   if position%5000==0:print(f'Publication shared UI {position+1}/{len(files)}',flush=True)
  shards=proof_shards(proof_rows);shard_for={};shard_records={}
@@ -332,7 +359,7 @@ def optimize(root,base,report_path):
    # Keep the existing encoding declaration at the beginning of the head.
    charset=re.match(r'\s*<meta\b[^>]*\bcharset\s*=[^>]*>',s[at:],re.I)
    if charset:at+=charset.end()
-   s=s[:at]+tags+imports+s[at:];file.write_text(s,'utf8',newline='')
+   s=s[:at]+tags+imports+page_search.get(file.relative_to(root).as_posix(),'')+s[at:];file.write_text(s,'utf8',newline='')
    if position%5000==0:print(f'Publication pools {position+1}/{len(pool_pages)}',flush=True)
  # Only known build-time mirrors can be omitted. Runtime JSON, linked raw
  # dialogue JSON, and every reading-data shard stay available.
@@ -343,11 +370,13 @@ def optimize(root,base,report_path):
    removed[name]={'bytes':file.stat().st_size,'sha256':digest(file.read_bytes())};file.unlink()
  after=total(root)
  report={'schema':'starrail-publication-dedup.v3','base':base,'beforeBytes':before,'afterBytes':after,'limitBytes':LIMIT,'scopes':mapping,'originalFiles':originals,'assets':assets,'replacements':replacements,'removedBuildMirrors':removed,'counts':dict(counts),'compressedProofs':proof_records,'proofCodecTags':proof_tags,'proofCodecFiles':codec_records,'proofCompressionSavedBytes':proof_saved,'uiPool':ui_rows,'proofPool':[{'sha256':digest(row.encode()),'rawBytes':len(row.encode()),'shard':shard_for[slot]}for slot,row in enumerate(proof_rows)],'proofShards':shard_records,'proofCodec':{'package':'pako','version':'1.0.11','license':'MIT AND Zlib','file':CODEC_FILE,'sha256':CODEC_SHA256,'mode':'gzip+base64, synchronous classic parser script; static outer details/summary/anchors and original dialogue'} }
+ report['presentationClasses']=CLASS_ALIASES;report['searchPagePools']=search_records
  write_json(report_path,report)
  print(json.dumps({'status':'PASS' if after<=LIMIT else 'OVER_LIMIT','beforeBytes':before,'afterBytes':after,'savedBytes':before-after,'removedMirrors':list(removed),'sharedAssets':len(assets),'counts':dict(counts)},ensure_ascii=False),flush=True)
  require(after<=LIMIT,'Published site exceeds 1 GB')
 
 def expansion_function(report):
+ require(report.get('presentationClasses',CLASS_ALIASES)==CLASS_ALIASES,'Presentation class receipt differs')
  replacements=report['replacements']
  # Longest match first: fragment expansion reveals external style/script
  # tags, which are then expanded in a second pass.
@@ -400,6 +429,8 @@ def expansion_function(report):
   shard=report.get('proofShards',{}).get(m[2]);require(shard is not None and shard['url']==m[1],'Proof shard import differs');return ''
  def expand(s,is_html=True):
   if is_html:
+   s=restore_search(s,report.get('searchPagePools',{}))
+   s=class_attributes(s,REVERSE_CLASSES)
    s=PROOF_POOL_TAG.sub(lambda m:proof(int(m[1])),s)
    s=expand_proofs(s,report.get('compressedProofs',{}))
    if report.get('proofCodecTags'):s=s.replace(report['proofCodecTags'],'')
@@ -410,6 +441,7 @@ def expansion_function(report):
     s=new
    else:raise ValueError('Cyclic or excessive shared fragment nesting')
    s=expand_inline(s)
+  s=html_styles(s,restore_css) if is_html else restore_css(s)
   if reverse:s=scope.sub(lambda m:reverse[m[0]],s)
   return s
  return expand

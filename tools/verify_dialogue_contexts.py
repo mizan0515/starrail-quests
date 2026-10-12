@@ -5,6 +5,12 @@ from pathlib import Path
 from verify_site import Page
 
 SITE=Path(__file__).resolve().parents[1]
+MULTIVOICE_SOURCE='ExcelOutput/TalkSentenceMultiVoice.json'
+MULTIVOICE_KIND='MULTIVOICE_CONFIG_TALK_SENTENCE_ID'
+MULTIVOICE_PROOF_SHA='89dc023034b910688aed3d7d24749975fa6ba965ed8c3dcf83fc6e0e33325e69'
+_multivoice_proof_bytes=(Path(__file__).with_name('multivoice_config_proof.json')).read_bytes()
+if hashlib.sha256(_multivoice_proof_bytes).hexdigest()!=MULTIVOICE_PROOF_SHA:raise AssertionError('Alternative-voice proof identity changed')
+MULTIVOICE_PROOF=json.loads(_multivoice_proof_bytes)
 def read(p):return json.loads(p.read_text('utf8'))
 def sha(b):return hashlib.sha256(b).hexdigest()
 def at(obj,pointer):
@@ -42,8 +48,8 @@ def verify_deep_reader_links(deep,rows,official):
  require(sha(scene_path.read_bytes())==deep['evidence']['deepTimelineSha256'],'deep scene input identity differs')
  scenes=read(scene_path);require(scenes['schema']=='starrail-deep-timeline-dialogue.v1','deep scene schema')
  source_cache={}
- def hydrate(tid):
-  join=scenes['joins'][str(tid)];source=join['preservedSource'];file=source['file']
+ def hydrate(tid,joins=None):
+  join=(joins or scenes['joins'])[str(tid)];source=join['preservedSource'];file=source['file']
   require(file.startswith('data/dialogues/') and file.endswith('.json') or file=='data/official-talk-library.json','deep Korean source domain')
   require('..' not in file.split('/') and '\\' not in file,'deep Korean source path')
   if file not in source_cache:
@@ -69,6 +75,43 @@ def verify_deep_reader_links(deep,rows,official):
     if row['object']['class']=='BPTalkClip':
      span=row['idField'].get('span');require(row['idField'].get('field')=='BPTalkClip.TalkSentenceID' and isinstance(span,list) and len(span)==2 and all(type(value) is int for value in span) and 0<=span[0]<span[1]<=row['object']['byteSize'] and span[1]-span[0]==4,'deep BP exact native field differs')
    targets[(url,row['talkId'])]={'talkId':row['talkId'],'role':row['role'],'source':scene['source'],'korean':hydrate(row['talkId']),'proof':row.get('proof') or scene.get('proof')}
+ fresh_path=SITE/'data/native-fresh-timeline-dialogue.json'
+ if fresh_path.is_file():
+  require(sha(fresh_path.read_bytes())==deep['evidence'].get('freshTimelineSha256'),'Fresh Timeline source identity differs')
+  fresh=read(fresh_path);require(fresh['schema']=='starrail-native-fresh-timeline-dialogue.v1','Fresh Timeline schema')
+  require(sha(scene_path.read_bytes())==fresh['evidence']['existingDeepTimelineSha256'],'Fresh retained scene identity differs')
+  expected={'PlaySimpleTalkClip':('SPOKEN','PlaySimpleTalkClip.Config.TalkSentenceID'),'ScreenTransferTextClip':('SCREEN_TEXT','ScreenTransferTextClip.SentenceID'),'SimpleTalkMarkerClip':('NON_SPOKEN_OPTION_REFERENCE','SimpleTalkMarkerClip.ReferenceOptionTalkID')}
+  for scene in fresh['scenes']:
+   for row in scene['rows']+scene['optionReferences']:
+    require(expected.get(row['object']['class'])==(row['role'],row['idField']['field']) and row['idField']['value']==row['talkId'],'Fresh literal field/role domain drift')
+    a,z=row['idField']['span'];require(0<=a<z<=row['object']['byteSize']and z-a==4,'Fresh literal field bounds')
+    require(row['parentRoute'][0]==row['track']['pathID']and row['parentRoute'][-1]==scene['proof']['root']['pathID'],'Fresh exact root route differs')
+    url='대화/연출-'+scene['id']+'.html#'+row['anchor'];require((url,row['talkId'])not in targets,'Duplicate fresh reader target')
+    targets[(url,row['talkId'])]={'talkId':row['talkId'],'role':row['role'],'source':scene['source'],'korean':hydrate(row['talkId'],fresh['joins']),'proof':scene['proof']}
+ snapshot_path=SITE/'data/public-snapshot-timeline-dialogue.json'
+ if snapshot_path.is_file():
+  require(sha(snapshot_path.read_bytes())==deep['evidence'].get('publicSnapshotTimelineSha256'),'Public JSON Timeline source identity differs')
+  snapshot=read(snapshot_path);require(snapshot['schema']=='starrail-public-snapshot-timeline-dialogue.v1','Public JSON Timeline schema')
+  for source in snapshot['sourceProofs'].values():require(source['nativeCallerWholeEOF']is False and source['nativeInstalledCallerClaim']is False and source['nativeCallerFieldSpan']is None and source['callerSourceKind']=='CALLER_SOURCE_PUBLIC_JSON_SNAPSHOT_NATIVE_EOF_BLOCKED','Public JSON source falsely claims native caller')
+  expected={'PlaySimpleTalkClip':('SPOKEN','PlaySimpleTalkClip.Config.TalkSentenceID'),'ScreenTransferTextClip':('SCREEN_TEXT','ScreenTransferTextClip.SentenceID'),'SimpleTalkMarkerClip':('NON_SPOKEN_OPTION_REFERENCE','SimpleTalkMarkerClip.ReferenceOptionTalkID')}
+  for scene in snapshot['scenes']:
+   for ref in scene['proof']['references']:require(ref['fieldSpan']is None and ref['nativeCallerWholeEOF']is False and ref['nativeInstalledCallerClaim']is False,'Public JSON reference invents native proof')
+   for row in scene['rows']+scene['optionReferences']:
+    require(expected.get(row['object']['class'])==(row['role'],row['idField']['field'])and row['idField']['value']==row['talkId'],'Public JSON native clip role/domain differs')
+    a,z=row['idField']['span'];require(0<=a<z<=row['object']['byteSize']and z-a==4,'Public JSON current native literal bounds')
+    url='대화/연출-'+scene['id']+'.html#'+row['anchor'];require((url,row['talkId'])not in targets,'Duplicate public JSON reader target')
+    targets[(url,row['talkId'])]={'talkId':row['talkId'],'role':row['role'],'source':scene['source'],'korean':hydrate(row['talkId'],snapshot['joins']),'proof':scene['proof']}
+ lua_path=SITE/'data/lua-timeline-dialogue.json'
+ if lua_path.is_file():
+  require(sha(lua_path.read_bytes())==deep['evidence'].get('luaTimelineSha256'),'Lua screen input identity differs')
+  lua=read(lua_path);require(lua['schema']=='starrail-lua-timeline-dialogue.v1','Lua screen schema')
+  from verify_lua_timeline_dialogue import public_checks as verify_lua
+  verify_lua(lua,deep,scenes,sha(lua_path.read_bytes()))
+  for scene in lua['scenes']:
+   for row in scene['rows']:
+    url='대화/연출-'+scene['id']+'.html#'+row['anchor']
+    require((url,row['talkId'])not in targets,'Duplicate Lua screen occurrence')
+    targets[(url,row['talkId'])]={'talkId':row['talkId'],'role':row['role'],'source':scene['source'],'korean':hydrate(row['talkId'],lua['joins']),'proof':row['nativeConsumer']}
  for tid in ids:
   links=deep['readerLinks'].get(str(tid));require(isinstance(links,list) and links,'deep reader links absent')
   require(tid in rows or tid in official,'deep reader Korean ID absent')
@@ -304,7 +347,8 @@ def direct_talk_references(obj,pointer='',typed=None,path=''):
      for index,value in enumerate(values):yield value,pointer+'/'+field+'/'+str(index),typed
   for key,value in obj.items():
    p=pointer+'/'+key
-   if key=='TalkSentenceID' and type(value) is int:yield value,p,typed
+   if key=='TalkSentenceID' and type(value) is int and path!=MULTIVOICE_SOURCE:yield value,p,typed
+   if path==MULTIVOICE_SOURCE and key=='TalkSentenceID' and pointer.startswith('/') and pointer[1:].isdigit() and set(obj)=={'TalkSentenceID','VoiceIDList'} and type(value) is int and 0<value<2**32 and type(obj['VoiceIDList'])is list and obj['VoiceIDList'] and all(type(v)is int and 0<v<2**32 for v in obj['VoiceIDList']):yield value,p,typed
    if path=='ExcelOutput/HeartDialTalk.json' and key=='ID' and type(value) is int and ('VoiceID' not in obj or obj['VoiceID']==value) and isinstance(obj.get('SDFText'),dict):yield value,p,typed
    if path=='ExcelOutput/VisitorBehaviorConfig.json' and key=='NpcBubbleTalkSentenceID' and type(value) is int:yield value,p,typed
    task=typed['type'] if typed else ''
@@ -355,6 +399,7 @@ def verify(archive=None,dist=None,official_root=None,skill=None):
   require(g['id']=='context-'+sha(g['source'].encode())[:16],'unstable URL')
   require(len({r['talkId'] for r in g['rows']})==len(g['rows']),'duplicate source row')
   used_sources[g['source']]=g['sourceSha256'];required[g['source']].add('reader')
+  if g['source']==MULTIVOICE_SOURCE:require(g['sourceSha256']==MULTIVOICE_PROOF['tableSha256'] and g.get('configurationProof')==MULTIVOICE_PROOF,'Alternative-voice whole table and native consumer proof differ')
   for ref in g['rows']:
    tid=ref['talkId'];memberships+=1
    if tid in target:reader_ids.add(tid)
@@ -405,7 +450,9 @@ def verify(archive=None,dist=None,official_root=None,skill=None):
     for ref in row['references']:
      require(at(objects[g['source']],ref['pointer'])==row['talkId'],'exact Talk pointer changed')
      if ref['typedContainer']:require(at(objects[g['source']],ref['typedContainer']['pointer'])['$type']==ref['typedContainer']['type'],'typed container changed')
-     configured=ref['kind']=='CAKE_CONFIG_TALK_SENTENCE_ID'
+     cake_configured=ref['kind']=='CAKE_CONFIG_TALK_SENTENCE_ID'
+     multivoice_configured=ref['kind']==MULTIVOICE_KIND
+     configured=cake_configured or multivoice_configured
      fixed_bubble=ref['kind']=='FIXED_NPC_BUBBLE_TALK_SENTENCE_ID'
      choice=not fixed_bubble and ('OptionList' in ref['pointer'].split('/') or ref['typedContainer'] and ref['typedContainer']['type'].endswith('.OptionTalkInfo'))
      require(ref['displayKind']==('설정 참조' if configured else '선택지' if choice else '대사'),'native choice or dialogue role changed')
@@ -420,7 +467,7 @@ def verify(archive=None,dist=None,official_root=None,skill=None):
      if ref.get('kind') in ('NpcBubbleTalkSentenceID','ControlTalkList') or g['source']=='ExcelOutput/HeartDialTalk.json':
       require(ref.get('recordContext') and at(objects[g['source']],ref['recordContext']['pointer'])==ref['recordContext']['fields'],'native table row changed')
       require(ref['recordContext'].get('serialized')==json.dumps(ref['recordContext']['fields'],ensure_ascii=False,indent=2),'native uint64 proof serialization differs')
-     if configured:
+     if cake_configured:
       require(g['source']=='ExcelOutput/CakeConfig.json' and g['sourceSha256']==CAKE_CONFIG_PROOF['tableSha256'],'Cake table/native snapshot differs')
       row_pointer,field,index=ref['pointer'].rsplit('/',2);native=at(objects[g['source']],row_pointer)
       require(field in ('CatCaughtLines','CatMissedLines') and type(native['ID']) is int and 0<native['ID']<2**32,'Cake row/field domain differs')
@@ -428,9 +475,17 @@ def verify(archive=None,dist=None,official_root=None,skill=None):
       require(ref.get('sourceRole')=='NON_SPOKEN_CONFIGURATION_REFERENCE','Cake source role differs')
       require(ref.get('recordContext')=={'pointer':row_pointer,'fields':normalized_cake_record(native),'serialized':json.dumps(native,ensure_ascii=False,indent=2)},'Cake original whole row/hash digits differ')
       require(ref.get('configurationReference')=={'tableRowId':native['ID'],'field':field,'index':int(index),'proof':{key:value for key,value in CAKE_CONFIG_PROOF.items() if key!='bridges'},'fieldBridge':CAKE_CONFIG_PROOF['bridges'][field]},'Cake exact native accessor bridge differs')
+     if multivoice_configured:
+      row_pointer,field=ref['pointer'].rsplit('/',1);native=at(objects[g['source']],row_pointer)
+      require(g['source']==MULTIVOICE_SOURCE and row_pointer[1:].isdigit() and field=='TalkSentenceID' and set(native)=={'TalkSentenceID','VoiceIDList'},'Alternative-voice table field/domain differs')
+      require(type(native[field])is int and 0<native[field]<2**32 and type(native['VoiceIDList'])is list and native['VoiceIDList'] and all(type(v)is int and 0<v<2**32 for v in native['VoiceIDList']),'Alternative-voice UInt32 domain differs')
+      require(ref.get('sourceRole')=='NON_SPOKEN_CONFIGURATION_REFERENCE','Alternative voice classified as speech')
+      require(ref.get('recordContext')=={'pointer':row_pointer,'fields':native,'serialized':json.dumps(native,ensure_ascii=False,indent=2)},'Alternative-voice original row/voice IDs differ')
+      require(ref.get('configurationReference')=={'field':'TalkSentenceID','voiceField':'VoiceIDList','proofSchema':MULTIVOICE_PROOF['schema'],'proofSha256':MULTIVOICE_PROOF_SHA},'Alternative-voice shared native consumer proof differs')
      expected_usage={'MobileSentenceID' :'모바일 안내','PcSentenceID':'PC 안내','PadSentenceID':'패드 안내','LastToBeginTalkSentenceID':'토론 설정 참조'}.get(ref['kind'],'')
      if fixed_bubble:expected_usage='말풍선'
-     if configured:expected_usage='콘텐츠 설정의 대사 참조'
+     if cake_configured:expected_usage='콘텐츠 설정의 대사 참조'
+     if multivoice_configured:expected_usage='대사의 대체 음성 설정'
      if g['source']=='ExcelOutput/HeartDialTalk.json':expected_usage='감정 조율의 표시 문구'
      if ref['kind']=='TalkSentenceID' and isinstance(at(objects[g['source']],ref['pointer'].rsplit('/',1)[0]),dict) and at(objects[g['source']],ref['pointer'].rsplit('/',1)[0]).get('IsMultiPlatform') is True:expected_usage='기본 안내'
      require(ref.get('usageLabel','')==expected_usage,'native platform or setting role differs')

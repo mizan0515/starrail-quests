@@ -6,7 +6,7 @@ import {readerAttributes,rowAttributes,disclosureAttributes} from '../lib/readin
 const {scene}=Astro.props;
 const rows=deepRows(scene),proof=scene.proof;
 ---
-<p class="muted">연출 설정의 선택지 목록입니다. 각 목록의 배열 순서를 보존했으며, 선택 이후의 재생 경로는 확인 중입니다.</p>
+<p class="muted" data-publication-ui="source-context">연출 설정의 선택지 목록입니다. 각 목록의 배열 순서를 보존했으며, 선택 이후의 재생 경로는 확인 중입니다.</p>
 <nav class="reading-next" aria-label="이 연출을 호출한 임무">{scene.owners.map(owner=><a href={href('문서/'+owner.canonicalMission+'.html#deep-timeline-originals')} data-reading-link><span>임무에서 함께 읽기</span><strong>{owner.title}</strong></a>)}</nav>
 <section {...readerAttributes({variant:'scene',className:'source-section',id:'original'})} data-deep-timeline={scene.id}>
  {rows.map(row=><div {...{...rowAttributes('choice'),class:'rw-source-row original-row choice'}} data-deep-talk={row.talk_id} data-speaker={row.speaker} data-passage="choice" data-deep-role="NATIVE_CHOICE"><span class="speaker rw-source-speaker">선택지</span><SourceParagraphs text={row.text} anchor={row.deepReference.anchor}/><a href={href(row.url)} data-reading-link>대사표 원문 ↗</a></div>)}

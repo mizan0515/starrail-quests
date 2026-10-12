@@ -9,7 +9,7 @@ import re
 import tempfile
 import xml.etree.ElementTree as ET
 from collections import Counter
-from html.parser import HTMLParser
+from publication_attributes import StaticHTMLParser as HTMLParser, static_html
 from pathlib import Path
 from urllib.parse import quote, unquote, urlparse
 
@@ -89,7 +89,7 @@ def inspect(root, repository=None, base=BASE):
     counts = Counter()
     for path in sorted(root.rglob('*.html')):
         relative = path.relative_to(root).as_posix()
-        text = path.read_text(encoding='utf-8')
+        text = static_html(path.read_text(encoding='utf-8'))
         # The single proof file downloaded for this site is an exact 53-byte artifact.
         if re.fullmatch(r'google.*\.html', relative):
             require(relative == VERIFICATION_FILENAME and path.read_bytes() == VERIFICATION_BYTES,

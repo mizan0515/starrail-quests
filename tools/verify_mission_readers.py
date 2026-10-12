@@ -8,7 +8,7 @@ import hashlib
 import json
 import re
 from collections import Counter
-from html.parser import HTMLParser
+from publication_attributes import StaticHTMLParser as HTMLParser
 from pathlib import Path
 from urllib.parse import unquote, urlsplit, parse_qs
 

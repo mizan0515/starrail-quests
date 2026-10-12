@@ -1,0 +1,111 @@
+{
+  "schema": "starrail-multivoice-configured-talk-domain.v1",
+  "role": "NON_SPOKEN_CONFIGURATION_REFERENCE",
+  "tableSource": "ExcelOutput/TalkSentenceMultiVoice.json",
+  "tableSha256": "af9b8836bf04014b5059e5af8d70c6e1e6794b0ae96791fb78e57c1281704e32",
+  "nativeSource": {
+    "literal": "ExcelOutput/TalkSentenceMultiVoice.json",
+    "nativePath": "BakedConfig/ExcelOutput/TalkSentenceMultiVoice.bytes",
+    "nameHash": "5659068620966346499",
+    "catalogSha256": "0b983e2c487a21dd0074c4bec24ac5fc46531eb650a97c22279cb2188f522027",
+    "pack": "1efaad7a4e7c92a8a12c66cffbe3b50a.bytes",
+    "packSha256": "ae6cc8e41213ccecc430a346909daf38ff4013d6b1441ddba384032d77b3ffd4",
+    "offset": 28141644,
+    "length": 17784,
+    "entrySha256": "3b4e2d12a43aaa4c5fefe405b54a1fa5da8d461f37cb3fecf7775b9a011450a6",
+    "schema": [
+      [
+        "TalkSentenceID",
+        "int"
+      ],
+      [
+        "VoiceIDList",
+        [
+          "int"
+        ]
+      ]
+    ],
+    "wholeEOF": 17784,
+    "tableRows": 1044
+  },
+  "binding": {
+    "configClass": "RPG.GameCore.PlayMultiVoiceTalk",
+    "configTypeDefinition": 21124,
+    "inputTalkIdOffset": 24,
+    "tableGetter": "RPG.GameCore.TalkSentenceMultiVoiceExcelTable.GetData",
+    "getDataVA": "0x19db58d60",
+    "getDataReturnTypeDefinition": 15224,
+    "rowClass": "RPG.GameCore.TalkSentenceMultiVoiceRow",
+    "rowTalkIdOffset": 24,
+    "rowTalkIdPresence": 0,
+    "rowVoiceListOffset": 16,
+    "rowVoiceListPresence": 1,
+    "rowVoiceListElementType": "UInt32",
+    "caller": "RPG.Client.TalkModule.PlayMultiVoiceTalk",
+    "callerVA": "0x18e1a2870",
+    "callerBytes": 509,
+    "eventTalkIdOffset": 24,
+    "eventVoiceIdOffset": 16,
+    "event": 708
+  },
+  "consumer": {
+    "method": "RPG.Client.TalkModule.PlayMultiVoiceTalk",
+    "methodVA": "0x18e1a2870",
+    "bytes": 509,
+    "sha256": "8ac7543a92177ac816387e6cc76c12031e848ddb8e2241c5e1ae5a2cf9ef3b8c",
+    "inputTalkIdLoad": {
+      "va": "0x18e1a28a2",
+      "bytes": "8b7e18",
+      "mnemonic": "mov",
+      "operands": "edi, dword ptr [rsi + 0x18]"
+    },
+    "getDataCall": {
+      "va": "0x18e1a28bb",
+      "bytes": "e8a0649b0f",
+      "mnemonic": "call",
+      "operands": "0x19db58d60",
+      "directTarget": "0x19db58d60"
+    },
+    "voiceListLoad": {
+      "va": "0x18e1a28cc",
+      "bytes": "488b4010",
+      "mnemonic": "mov",
+      "operands": "rax, qword ptr [rax + 0x10]"
+    },
+    "voiceSelectionLoad": {
+      "va": "0x18e1a290e",
+      "bytes": "8b5c8120",
+      "mnemonic": "mov",
+      "operands": "ebx, dword ptr [rcx + rax*4 + 0x20]"
+    },
+    "preservedTalkIdEventStore": {
+      "va": "0x18e1a2927",
+      "bytes": "897818",
+      "mnemonic": "mov",
+      "operands": "dword ptr [rax + 0x18], edi"
+    },
+    "separateVoiceIdEventStore": {
+      "va": "0x18e1a292a",
+      "bytes": "895810",
+      "mnemonic": "mov",
+      "operands": "dword ptr [rax + 0x10], ebx"
+    },
+    "rowReader": {
+      "va": "0x19db58660",
+      "sha256": "2effbb7bf7865ae420cc1fc33becf7bab7510f654f5a5d4ca993ea0a4dc4475b",
+      "bytes": 318
+    },
+    "conditionalHotfixBranch": "Native default path proven; hotfix behavior not executed"
+  },
+  "validation": {
+    "wholeNativeRows": 1044,
+    "wholeNativePublicAgreement": true,
+    "rowBoundaryTruncationsRejected": 2089,
+    "trailingBytesRejected": true
+  },
+  "limits": [
+    "Configured alternative VoiceID relation; no mission or actual execution circumstance claimed.",
+    "TalkSentenceID and VoiceID domains remain separate.",
+    "Current installation ABI and preserved official4.6 cache separately hash-bound; installation version UNVERIFIED."
+  ]
+}

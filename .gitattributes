@@ -2,5 +2,12 @@
 data/deep-timeline-dialogue.json -text
 data/deep-dialogue-attribution.json -text
 data/sdf-timeline-text.json -text
+data/lua-timeline-dialogue.json -text
 public/_publication/*.js -text
 public/_publication/*.txt -text whitespace=cr-at-eol
+data/native-fresh-timeline-dialogue.json -text
+data/native-sdf-owner-bridges.json -text
+data/public-snapshot-timeline-dialogue.json -text
+
+data/lua-snapshot-owner-bridges.json -text
+tools/multivoice_config_proof.json -text

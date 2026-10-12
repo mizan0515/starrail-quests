@@ -7,6 +7,20 @@ const reading='/starrail-quests/문서/quest-1010203.html';
 const make=(path,from)=>path+'?speaker='+encodeURIComponent('단항')+'&passage=dialogue&from='+encodeURIComponent(from)+'#quest-1010203-scene-1-row-3';
 const resolved=value=>new URL(value,origin);
 
+test('native, snapshot and Lua supplements retain the source sentence and filtered catalogue',()=>{
+ const catalogue=base+'/대화/연출-목록-87.html?timelineQuery='+encodeURIComponent('파멸')+'&timelineMission='+encodeURIComponent('깊은 곳에 이른 혼란')+'&timelineLimit=36#universe-source-fresh-timeline-336dc14f509933f8b7f7';
+ for(const [id,anchor] of [['fresh-timeline-336dc14f509933f8b7f7','talk-100020213-1'],['snapshot-timeline-31028fa3a55aee4f1abf','talk-103272902-1'],['lua-timeline-9192c8b22d0d8304','lua-screen-105009004-4']]){
+  const source=base+'/대화/연출-'+id+'.html?from='+encodeURIComponent(catalogue)+'#'+anchor;
+  const out=resolved(safe(source));
+  assert.equal(out.hash,'#'+anchor);
+  assert.equal(out.searchParams.get('from'),safe(catalogue));
+  assert.deepEqual([...resolved(out.searchParams.get('from')).searchParams],[...resolved(catalogue).searchParams]);
+  assert.equal(sourceReadingOrigin(base+'/대사/early-064.html',source,{origin,base}),safe(source));
+  assert.equal(isReadingCatalogue(source,{origin,base}),false);
+ }
+ for(const invalid of ['fresh-timeline-336dc14f509933f8','snapshot-timeline-31028fa3a55aee4f','lua-timeline-9192c8b22d0d83041234','unknown-timeline-336dc14f509933f8b7f7','fresh-timeline-336dc14f509933f8b7f7.html/../outside'])assert.equal(safe(base+'/대화/연출-'+invalid+'.html'),null);
+});
+
 test('typed Timeline scene preserves filtered directory and exact repeated occurrence',()=>{
  const directory=base+'/대화/연출-목록-4.html?timelineQuery='+encodeURIComponent('폼폼')+'&timelineLimit=36#universe-source-timeline-1234567890abcdef';
  const scene=base+'/대화/연출-timeline-1234567890abcdef.html?from='+encodeURIComponent(directory)+'#talk-103010309-2';
