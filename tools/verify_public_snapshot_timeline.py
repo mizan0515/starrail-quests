@@ -14,6 +14,7 @@ import math
 import struct
 import sys
 import tarfile
+from urllib.parse import unquote
 import verify_fresh_native_timeline as fv
 from verify_fresh_native_timeline import (require, sha, load, pointer, relative, public_safe, sequence_hash,
     scene_rows, readable, HASH, DOMAINS, TRACK_CLASSES, same_object, raw_object, decode_root, decode_track,
