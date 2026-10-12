@@ -147,7 +147,8 @@ def verify(args):
    if publication_expand:proof_html=publication_expand(raw)
    for r in s['rows']:require(page.original.get(r['anchor'])==r['text']and 'data-sdf-clip-proof="'+r['anchor']+'"'in proof_html,'Built SDF original/proof anchor drift')
    for owner in s['owners']:require('/starrail-quests/문서/'+owner['canonicalMission']+'.html#deep-timeline-originals'in page.links,'SDF exact owner return link missing')
-   for ref in s['proof']['references']:require('data-sdf-owner-proof="'+str(ref['sourceIndex'])+'"'in raw,'Built whole owner source proof missing')
+   # Owner proof belongs to technical metadata; originals and return links above stay static.
+   for ref in s['proof']['references']:require('data-sdf-owner-proof="'+str(ref['sourceIndex'])+'"'in proof_html,'Built whole owner source proof missing')
  print(json.dumps({'status':'PASS','scenes':len(data['scenes']),'rows':count,'nativeClipChecks':nativechecks,'malformedNativeClipRejections':badbytes,'publicMutationRejections':tests,'sourceVerified':bool(args.audit),'dist':bool(args.dist)},ensure_ascii=False))
 if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('--audit',type=Path);p.add_argument('--native-audit',type=Path);p.add_argument('--official-root',type=Path);p.add_argument('--skill',type=Path);p.add_argument('--game-root',type=Path);p.add_argument('--dist',type=Path);p.add_argument('--selftest','--self-test',dest='selftest',action='store_true');verify(p.parse_args())
