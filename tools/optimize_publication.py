@@ -101,6 +101,7 @@ RESTORATION_ONLY={
 SCOPE=re.compile(r'\bastro-[a-z0-9]{8}\b')
 TAG={k:re.compile(r'<'+k+r'\b([^>]*)>(.*?)</'+k+r'>',re.S) for k in ('style','script')}
 FRAGMENTS=[
+ re.compile(r'<p\b[^>]*\bdata-publication-ui="source-context"[^>]*>[\s\S]*?</p>'),
  re.compile(r'<template id="theme-icons">[\s\S]*?</template>'),
  re.compile(r'<header\b[\s\S]*?</header>'),
  re.compile(r'<nav class="sidebar\b[\s\S]*?</sl-sidebar-pane></nav>'),
@@ -111,6 +112,13 @@ FRAGMENTS=[
  re.compile(r'<footer\b[\s\S]*?</footer>'),
  re.compile(r'<dialog class="context-dialog"[\s\S]*?</dialog>'),
 ]
+
+def source_context_ui(fragment):
+ """Only explicitly declared reader context; original rows/anchors stay static."""
+ parser=OpeningTag();parser.feed(fragment.split('>',1)[0]+'>');attrs=parser.attrs
+ return (attrs.get('data-publication-ui')=='source-context' and 'muted' in attrs.get('class','').split()
+         and not READING_PROOF.search(fragment) and not PROTECTED_PROOF.search(fragment)
+         and not re.search(r'<(?:a|details|summary|pre|code|blockquote|script|style)\b',fragment,re.I))
 
 def digest(body):return hashlib.sha256(body).hexdigest()
 def require(condition,message):
@@ -284,6 +292,7 @@ def optimize(root,base,report_path):
    for pattern in FRAGMENTS:
     def extract_fragment(m):
      fragment=m[0]
+     if 'data-publication-ui=' in fragment and not source_context_ui(fragment):return fragment
      # A classic, parser-blocking script inserts the exact original subtree
      # in its original parser position. Its existing scripts retain order.
      replacement=pool_ui(fragment)

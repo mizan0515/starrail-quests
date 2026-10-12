@@ -4,6 +4,7 @@ from collections import Counter
 from pathlib import Path
 from verify_site import Page
 SITE=Path(__file__).resolve().parents[1]
+BRIDGE_SHA='93ef6aed303882cba131f871886d97c00743fbc2af5ed8b8b3381d45d9c43033'
 def digest(b):return hashlib.sha256(b).hexdigest()
 def read(p):return json.loads(Path(p).read_text('utf8'))
 def require(ok,msg):
@@ -25,6 +26,11 @@ def public_checks(data,deep):
  require(not re.search(r'(?:[A-Za-z]:[/\\]|\.codex-work|inventory\.json|outputDirectory|source_objects_folder)',encoded),'Private source path')
  scenes=set();sdfids=set();hashes=set();count=0;owned_scenes=owned_rows=0;needed_proofs={}
  require(data['evidence']['deepTimelineSha256']==digest((SITE/'data/deep-timeline-dialogue.json').read_bytes()),'Existing typed reader SHA drift')
+ bridge_path=SITE/'data/native-sdf-owner-bridges.json'
+ bridge=None
+ if data['evidence'].get('nativeAuxiliaryOwnerBridgeSha256'):
+  bridge_raw=bridge_path.read_bytes();require(digest(bridge_raw)==data['evidence']['nativeAuxiliaryOwnerBridgeSha256']==BRIDGE_SHA,'Native SDF bridge identity differs')
+  bridge=json.loads(bridge_raw);require(bridge['schema']=='starrail-native-sdf-owner-bridges.v1'and bridge['auditSha256']=='f3bc222999a58f44c7cfff0e7aaac2138e64fe923528ffc19c7508cb93aa82a0','SDF auxiliary source closure drift')
  deep_by_id={s['id']:s for s in deep['scenes']}
  for s in data['scenes']:
   require(s['id']not in scenes and re.fullmatch(r'timeline-[0-9a-f]{16}',s['id'])and s['kind']=='HASH_ONLY_SCREEN_TEXT','Scene identity/kind drift');scenes.add(s['id'])
@@ -33,6 +39,20 @@ def public_checks(data,deep):
    require(s['proof']['ownerBridge']=='EXACT_SAME_NATIVE_CONTAINER_ROOT_AND_CAB','Owner bridge kind drift')
    for ref in s['proof']['references']:
     key=str(ref['sourceIndex']);require(data['sourceProofs'][key]==deep['sourceProofs'][key],'Copied whole owner source proof differs');needed_proofs[key]=data['sourceProofs'][key]
+  elif s['proof'].get('nativeAuxiliarySceneId'):
+   require(bridge is not None and s['proof']['nativeAuxiliarySceneId']==s['id']and s['proof']['ownerBridge']=='EXACT_NATIVE_AUXILIARY_ROOT_AND_CALLER_SNAPSHOT','SDF auxiliary bridge domain')
+   b=bridge['scenes'][s['id']];require(s['source']==b['source']and s['proof']['root']==b['root']and s['proof']['container']==b['container']and s['proof']['receipt']==b['receipt'],'Auxiliary source/root/CAB identity drift')
+   require(s['owners']==b['owners']and s['proof']['references']==b['references']and s['ownerStatus']=='ONE_EXPLICIT_OWNER','Auxiliary owner/source reference drift')
+   for row,expected in zip(s['rows'],b['rows']):
+    p=row['proof'];require(p['object']==expected['object']and p['track']==expected['track']and p['assetFields']==expected['assetFields']and p['assetEOF']==expected['assetEOF'],'Auxiliary current native clip/track differs')
+    require(p['trackClipIndex']==expected['trackClipIndex']and p['timelineClip']==expected['timelineClip']and p['parentRoute']==expected['parentRoute'],'Auxiliary exact current route/timing differs')
+   require(len(s['rows'])==len(b['rows']),'Auxiliary original row count differs')
+   for owner in s['owners']:
+    doc=read(SITE/'data/documents'/(owner['canonicalMission']+'.json'));require(owner['mission']in doc.get('missionParts',[doc['id']])and owner['title']==doc['title'],'Auxiliary mission membership differs')
+   for ref in s['proof']['references']:
+    key=ref['sourceIndex'];source=bridge['sourceProofs'][key];require(data['sourceProofs'][key]==source,'Auxiliary whole caller source differs');needed_proofs[key]=source
+    require(ref['context']['typedContainer']['type']=='RPG.GameCore.PlayTimeline'and ref['pointer']==ref['context']['typedContainer']['pointer']+'/TimelineName','Auxiliary typed caller domain')
+    require(ref['timelineName'].casefold()==s['source'].casefold().removeprefix('assets/asbres/')and ref['fieldSpan']['pointer']==ref['pointer']and 0<=ref['fieldSpan']['start']<ref['fieldSpan']['end']<=source['consumedBytes'],'Auxiliary exact caller name/byte span differs')
   else:require(s['owners']==[]and s['ownerStatus']=='UNOWNED_NATIVE_TIMELINE'and s['proof']['references']==[],'Unsupported SDF owner')
   if s['owners']:owned_scenes+=1;owned_rows+=len(s['rows'])
   require(s['proof']['container']['key']==s['source']and str(s['proof']['container']['pathID'])==s['proof']['root']['pathID']and s['proof']['rootEOF']==s['proof']['root']['byteSize'],'Direct native root drift')

@@ -11,6 +11,7 @@ from pathlib import Path
 from build_mission_dialogue_supplements import refs, path_refs, objects, performance_matches
 from build_official_talk_library import reference_context
 from build_official_universe_texts import official_input
+from multivoice_configuration_refs import PROOF as MULTIVOICE_PROOF, SOURCE as MULTIVOICE_SOURCE, KIND as MULTIVOICE_KIND, references as multivoice_refs, source_record as multivoice_record
 
 SITE = Path(__file__).resolve().parents[1]
 SCHEMA = 'starrail-dialogue-contexts.v1'
@@ -27,7 +28,7 @@ KINDS = {'Mission':'임무에 함께 수록된 대화', 'MunicipalChatConfig':'�
  'Props':'사물 주변의 대화', 'SummonUnitGraph':'동행하는 존재의 대화', 'Raid':'도전과 전투',
  'GroupTemplateGraph':'현장의 대화와 상호작용', 'Tutorial':'진행 안내', 'Track':'현장의 대화와 상호작용'}
 def kind(path):
- if path=='ExcelOutput/CakeConfig.json':return '콘텐츠 설정의 대사 참조'
+ if path in ('ExcelOutput/CakeConfig.json',MULTIVOICE_SOURCE):return '콘텐츠 설정의 대사 참조'
  if path=='ExcelOutput/VisitorBehaviorConfig.json':return '방문객의 말풍선'
  if path=='ExcelOutput/HeartDialDialogue.json':return '마음의 시계 대화'
  if path=='ExcelOutput/HeartDialTalk.json':return '감정 조율의 표시 문구'
@@ -217,7 +218,7 @@ def cake_record_fields(value):
  return value
 
 def playable_reference(path):
- return path.startswith(('Config/', 'Story/')) or path in ('ExcelOutput/InclinationText.json', 'ExcelOutput/ChimeraDuelMaster.json', 'ExcelOutput/MazePuzzleOrigamiColony.json','ExcelOutput/VisitorBehaviorConfig.json','ExcelOutput/HeartDialDialogue.json','ExcelOutput/HeartDialTalk.json','ExcelOutput/CakeConfig.json')
+ return path.startswith(('Config/', 'Story/')) or path in ('ExcelOutput/InclinationText.json', 'ExcelOutput/ChimeraDuelMaster.json', 'ExcelOutput/MazePuzzleOrigamiColony.json','ExcelOutput/VisitorBehaviorConfig.json','ExcelOutput/HeartDialDialogue.json','ExcelOutput/HeartDialTalk.json','ExcelOutput/CakeConfig.json',MULTIVOICE_SOURCE)
 def fixed_npc_bubble_talk(obj):
  """Accept a literal fixed TalkSentence value only in its actual consumer task."""
  if not isinstance(obj,dict) or obj.get('$type')!='RPG.GameCore.PlayNPCSingleBubbleTalk':return None
@@ -231,11 +232,12 @@ def content_refs(obj,path,pointer='',typed=''):
  if isinstance(obj,dict):
   typed=obj.get('$type',typed)
   yield from cake_config_refs(obj,path,pointer)
+  yield from multivoice_refs(obj,path,pointer)
   literal=fixed_npc_bubble_talk(obj)
   if literal is not None:yield literal,pointer+'/TalkSentenceID/FixedValue/Value','FIXED_NPC_BUBBLE_TALK_SENTENCE_ID'
   for key,value in obj.items():
    p=pointer+'/'+key
-   direct=key=='TalkSentenceID' or (key=='NpcBubbleTalkSentenceID' and path=='ExcelOutput/VisitorBehaviorConfig.json')
+   direct=(key=='TalkSentenceID' and path!=MULTIVOICE_SOURCE) or (key=='NpcBubbleTalkSentenceID' and path=='ExcelOutput/VisitorBehaviorConfig.json')
    if path=='ExcelOutput/HeartDialTalk.json' and key=='ID' and type(value) is int and ('VoiceID' not in obj or obj['VoiceID']==value) and isinstance(obj.get('SDFText'),dict):direct=True
    device=key in ('MobileSentenceID','PcSentenceID','PadSentenceID') and typed=='RPG.GameCore.PlayMusicRhythmTalk' and 'SimpleTalkList' in pointer.split('/') and obj.get('IsMultiPlatform') is True
    sentence=key=='SentenceID' and typed=='RPG.GameCore.PlayPenaconyEndmostSimpleTalk' and 'SimpleTalkList' in pointer.split('/')
@@ -339,6 +341,7 @@ def build(archive, official_root, skill):
  baseline=set(local)-assigned;current={r['talk_id']:r for r in official['rows']};delta={tid:r for tid,r in current.items() if not r['missionLinks']};target=baseline|set(delta)
  metadata,hashes,performance,scanned=load(archive)
  assert hashes.get('ExcelOutput/CakeConfig.json')==CAKE_CONFIG_PROOF['tableSha256'],'Cake configuration snapshot differs from native proof'
+ assert hashes.get(MULTIVOICE_SOURCE)==MULTIVOICE_PROOF['tableSha256'],'Alternative-voice configuration differs from native proof'
  texts,text_evidence,project=official_input(official_root,skill)
  labels,regions=geography(metadata,hashes,performance,texts,project)
  groups=[];classification=defaultdict(set);ref_types=Counter();all_sources={}
@@ -369,15 +372,19 @@ def build(archive, official_root, skill):
    if k=='CAKE_CONFIG_TALK_SENTENCE_ID':
     row_pointer,field,index=ptr.rsplit('/',2);native=obj[int(row_pointer.strip('/'))]
     record={'sourceRole':'NON_SPOKEN_CONFIGURATION_REFERENCE','recordContext':{'pointer':row_pointer,'fields':cake_record_fields(native),'serialized':json.dumps(native,ensure_ascii=False,indent=2)},'configurationReference':{'tableRowId':native['ID'],'field':field,'index':int(index),'proof':{key:value for key,value in CAKE_CONFIG_PROOF.items() if key!='bridges'},'fieldBridge':CAKE_CONFIG_PROOF['bridges'][field]}}
+   if k==MULTIVOICE_KIND:
+    row_pointer=ptr.rsplit('/',1)[0];native=obj[int(row_pointer.strip('/'))]
+    record=multivoice_record(native,row_pointer)
    usage={'MobileSentenceID' :'모바일 안내','PcSentenceID':'PC 안내','PadSentenceID':'패드 안내','LastToBeginTalkSentenceID':'토론 설정 참조'}.get(k,'')
    if k=='FIXED_NPC_BUBBLE_TALK_SENTENCE_ID':usage='말풍선'
    if k=='CAKE_CONFIG_TALK_SENTENCE_ID':usage='콘텐츠 설정의 대사 참조'
+   if k==MULTIVOICE_KIND:usage='대사의 대체 음성 설정'
    if path=='ExcelOutput/HeartDialTalk.json':usage='감정 조율의 표시 문구'
    if k=='TalkSentenceID':
     parent=obj
     for part in ptr.strip('/').split('/')[:-1]:parent=parent[int(part)] if isinstance(parent,list) else parent[part]
     if isinstance(parent,dict) and parent.get('IsMultiPlatform') is True:usage='기본 안내'
-   found[tid].append({'pointer':ptr,'kind':k,'displayKind':'설정 참조' if k=='CAKE_CONFIG_TALK_SENTENCE_ID' else '선택지' if choice else '대사','usageLabel':usage,**context,**record})
+   found[tid].append({'pointer':ptr,'kind':k,'displayKind':'설정 참조' if k in ('CAKE_CONFIG_TALK_SENTENCE_ID',MULTIVOICE_KIND) else '선택지' if choice else '대사','usageLabel':usage,**context,**record})
   audited=set(found)&target
   if not audited:continue
   internal_source=internal(path)
@@ -392,10 +399,12 @@ def build(archive, official_root, skill):
   if path=='ExcelOutput/HeartDialDialogue.json':title='마음의 시계에 연결된 대화'
   if path=='ExcelOutput/HeartDialTalk.json':title='감정 조율에 표시되는 문구'
   if path=='ExcelOutput/CakeConfig.json':title='케이크 설정에 연결된 대사'
+  if path==MULTIVOICE_SOURCE:title='대체 음성 설정에 연결된 대사'
   if not title:title=kind(path)
   group={'id':source_id,'title':title,'kind':kind(path),'source':path,'sourceSha256':hashes[path],
    'rows':[{'talkId':tid,'edition':'official' if tid in current else 'preserved','references':records} for tid,records in found.items()],
    'auditedTalkIds':sorted(audited),'unavailableTalkIds':sorted(unavailable),'regions':regions.get(path,[])}
+  if path==MULTIVOICE_SOURCE:group['configurationProof']=MULTIVOICE_PROOF
   groups.append(group);all_sources[path]=hashes[path]
  classification['EVENT_ONLY']-=classification['EXACT_READABLE_SOURCE_REFERENCE']|classification['INTERNAL_REFERENCE']
  classification['INTERNAL_REFERENCE']-=classification['EXACT_READABLE_SOURCE_REFERENCE']

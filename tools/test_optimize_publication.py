@@ -150,4 +150,22 @@ class ProofCompressionTests(unittest.TestCase):
    self.assertEqual(data['counts']['sharedStandaloneModules'],2)
    self.assertTrue(built.startswith('<html><head><meta charset="utf-8">'))
 
+class SourceContextSharingTests(unittest.TestCase):
+ def test_only_editor_context_is_eligible(self):
+  value='<p class="muted" data-publication-ui="source-context">연출 순서는 실제 플레이 순서와 다를 수 있습니다.</p>'
+  self.assertTrue(P.source_context_ui(value))
+  for added in (' id="talk-1"',' data-passage="dialogue"',' data-reading-link',' class="original-row"'):
+   self.assertFalse(P.source_context_ui(value.replace(' data-publication-ui=',added+' data-publication-ui=')))
+  for node in ('<a href="/source">원문</a>','<blockquote>대사</blockquote>','<summary>근거</summary>'):
+   self.assertFalse(P.source_context_ui(value.replace('연출 순서는 실제 플레이 순서와 다를 수 있습니다.',node)))
+ def test_shared_editor_context_exact_inverse_and_static_original(self):
+  with tempfile.TemporaryDirectory()as directory:
+   root=Path(directory)/'dist';root.mkdir();report=Path(directory)/'report.json'
+   intro='<p class="muted" data-publication-ui="source-context">'+('원문 읽기 순서 안내 '*20)+'</p>'
+   original='<html><head></head><body>'+intro+'<p class="original-row" id="talk-1">한국어 원문</p></body></html>'
+   for name in ('a.html','b.html'):(root/name).write_text(original,'utf8')
+   P.optimize(root,'/starrail-quests',report);P.verify(root,report)
+   built=(root/'a.html').read_text('utf8');self.assertNotIn(intro,built);self.assertIn('id="talk-1">한국어 원문',built)
+   self.assertEqual(P.expansion_function(json.loads(report.read_text('utf8')))(built),original)
+
 if __name__=='__main__':unittest.main()
