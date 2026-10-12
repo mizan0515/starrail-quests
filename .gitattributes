@@ -1,0 +1,6 @@
+# These generated artifacts bind exact UTF-8 bytes in their source receipts.
+data/deep-timeline-dialogue.json -text
+data/deep-dialogue-attribution.json -text
+data/sdf-timeline-text.json -text
+public/_publication/*.js -text
+public/_publication/*.txt -text whitespace=cr-at-eol

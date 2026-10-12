@@ -1,0 +1,36 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import UniverseRecordIndex from '../../components/UniverseRecordIndex.astro';
+import DeepTimelineReader from '../../components/DeepTimelineReader.astro';
+import DeepNativeChoiceReader from '../../components/DeepNativeChoiceReader.astro';
+import SDFTimelineReader from '../../components/SDFTimelineReader.astro';
+import CatalogReturn from '../../components/CatalogReturn.astro';
+import {deepScenes,deepRows} from '../../lib/deep-timeline';
+import {href} from '../../lib/data';
+import {sourceDescription} from '../../lib/seo.mjs';
+export function getStaticPaths(){const pages=Math.ceil(deepScenes.length/120);return [...Array.from({length:pages},(_,part)=>({params:{id:'목록-'+part},props:{scenes:deepScenes.slice(part*120,(part+1)*120),part,pages}})),...deepScenes.map(scene=>({params:{id:scene.id},props:{scene}}))];}
+const {scene,scenes,part,pages}=Astro.props;
+const rows=scene?deepRows(scene):[];
+const records=scenes?.map(s=>({id:s.id,title:s.title,kind:[...new Set(s.owners.map(o=>o.title))].join(' · ')||'임무 연결 확인 중',scenes:[{rows:deepRows(s)}],searchText:s.owners.map(o=>o.title).join(' '),url:href('대화/연출-'+s.id+'.html')}));
+---
+<StarlightPage frontmatter={{title:scene?scene.title:'연출의 대사와 문구',description:scene?sourceDescription(['연출의 대사와 화면 문구',`${rows.length}개 한국어 원문`],rows[0].text):'연출 파일의 대사·화면 문구·선택지 참조를 임무와 원문 구절로 찾아 읽습니다.',editUrl:false,tableOfContents:false}}>
+ <CatalogReturn/>
+ <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('대사.html')}>대사 원문 자료실</a><span>/</span><a href={href('대화.html')}>장면으로 읽는 대화</a>{scene&&<><span>/</span><a href={href('대화/연출-목록-0.html')}>연출의 대사와 문구</a></>}</nav>
+ {scene?<><p class="document-meta"><span class="kind-badge">연출의 원문</span><span>{rows.length.toLocaleString('ko-KR')}개 문구</span></p>{scene.kind==='HASH_ONLY_SCREEN_TEXT'?<SDFTimelineReader scene={scene}/>:scene.kind==='NATIVE_CHOICES'?<DeepNativeChoiceReader scene={scene}/>:<DeepTimelineReader scene={scene}/>}</>:<>
+  <p class="page-deck">{deepScenes.length.toLocaleString('ko-KR')}개 연출 장면 중 {part*120+1}–{Math.min(deepScenes.length,(part+1)*120)}번째. 화자·구절·임무 이름으로 좁혀 읽을 수 있습니다.</p>
+  <UniverseRecordIndex records={records} modeName="연출의 대사와 문구" queryKey="timelineQuery" limitKey="timelineLimit" kindKey="timelineMission" searchLabel="현재 목록의 화자·원문 구절·임무" searchPlaceholder="문구, 인물 이름 또는 임무 제목"/>
+  {pages>1&&<nav class="reading-next" aria-label="연출 장면 목록 이동">{part>0&&<a href={href('대화/연출-목록-'+(part-1)+'.html')} data-reading-link><span>앞선 목록</span><strong>{part} / {pages}</strong></a>}{part+1<pages&&<a href={href('대화/연출-목록-'+(part+1)+'.html')} data-reading-link><span>다음 목록</span><strong>{part+2} / {pages}</strong></a>}</nav>}
+ </>}
+</StarlightPage>
+<script>
+ const directory=document.querySelector<HTMLElement>('[data-universe-records][data-query-key="timelineQuery"]');
+ if(directory){
+  const restore=()=>requestAnimationFrame(()=>{
+   let id:string;try{id=decodeURIComponent(location.hash.slice(1));}catch{return;}
+   const link=document.getElementById(id);
+   if(!(link instanceof HTMLAnchorElement)||!link.hasAttribute('data-reading-link')||link.closest('[hidden]'))return;
+   link.scrollIntoView({block:'center'});link.focus({preventScroll:true});
+  });
+  restore();window.addEventListener('pageshow',restore);window.addEventListener('hashchange',restore);
+ }
+</script>

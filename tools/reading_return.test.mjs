@@ -7,6 +7,17 @@ const reading='/starrail-quests/문서/quest-1010203.html';
 const make=(path,from)=>path+'?speaker='+encodeURIComponent('단항')+'&passage=dialogue&from='+encodeURIComponent(from)+'#quest-1010203-scene-1-row-3';
 const resolved=value=>new URL(value,origin);
 
+test('typed Timeline scene preserves filtered directory and exact repeated occurrence',()=>{
+ const directory=base+'/대화/연출-목록-4.html?timelineQuery='+encodeURIComponent('폼폼')+'&timelineLimit=36#universe-source-timeline-1234567890abcdef';
+ const scene=base+'/대화/연출-timeline-1234567890abcdef.html?from='+encodeURIComponent(directory)+'#talk-103010309-2';
+ const out=resolved(safe(scene));
+ assert.equal(out.hash,'#talk-103010309-2');
+ assert.equal(out.searchParams.get('from'),resolved(directory).pathname+resolved(directory).search+resolved(directory).hash);
+ assert.equal(isReadingCatalogue(directory,{origin,base}),true);
+ assert.equal(sourceReadingOrigin(base+'/대사/early-083.html',scene,{origin,base}),safe(scene));
+ for(const invalid of ['대화/연출-arbitrary.html','대화/연출-timeline-123.html','대화/연출-목록-a.html','대화/연출-timeline-1234567890abcdef.html/../outside.html'])assert.equal(safe(base+'/'+invalid),null);
+});
+
 test('dialogue use scene retains paginated source catalogue query and exact Talk anchor',()=>{
  const catalogue=base+'/대화/목록-0-2.html?contextQuery='+encodeURIComponent('단항')+'&contextWorld='+encodeURIComponent('선주')+'&contextLimit=24#universe-source-context-8ca624144ab93fcc';
  const source=base+'/대화/context-8ca624144ab93fcc.html?from='+encodeURIComponent(catalogue)+'#talk-156020600';

@@ -1,0 +1,14 @@
+---
+import SourceParagraphs from './SourceParagraphs.astro';
+import {deepRows} from '../lib/deep-timeline';
+import {href,missionStructureUrl} from '../lib/data';
+import {readerAttributes,rowAttributes,disclosureAttributes} from '../lib/reading-kit/reader.mjs';
+const {scene}=Astro.props;
+const rows=deepRows(scene),proof=scene.proof;
+---
+<p class="muted">연출 설정의 선택지 목록입니다. 각 목록의 배열 순서를 보존했으며, 선택 이후의 재생 경로는 확인 중입니다.</p>
+<nav class="reading-next" aria-label="이 연출을 호출한 임무">{scene.owners.map(owner=><a href={href('문서/'+owner.canonicalMission+'.html#deep-timeline-originals')} data-reading-link><span>임무에서 함께 읽기</span><strong>{owner.title}</strong></a>)}</nav>
+<section {...readerAttributes({variant:'scene',className:'source-section',id:'original'})} data-deep-timeline={scene.id}>
+ {rows.map(row=><div {...{...rowAttributes('choice'),class:'rw-source-row original-row choice'}} data-deep-talk={row.talk_id} data-speaker={row.speaker} data-passage="choice" data-deep-role="NATIVE_CHOICE"><span class="speaker rw-source-speaker">선택지</span><SourceParagraphs text={row.text} anchor={row.deepReference.anchor}/><a href={href(row.url)} data-reading-link>대사표 원문 ↗</a></div>)}
+</section>
+<details {...disclosureAttributes({className:'source-details',id:'verified-sources'})} data-pagefind-ignore><summary>연출 설정과 선택지의 연결 근거</summary><dl><dt>연출 설정</dt><dd>{scene.source}<br/>SHA-256 · {proof.entrySha256}</dd><dt>게임 데이터의 위치</dt><dd>{proof.descriptor.catalogMatches[0].file}<br/>팩 내부 {proof.descriptor.catalogMatches[0].offset}–{proof.descriptor.catalogMatches[0].offset+proof.wholeFieldEOF}<br/>팩 SHA-256 · {proof.pack.sha256}</dd><dt>한국어 본문</dt><dd>보존된 로컬 한국어 대사표에서 같은 대사 식별자의 원문을 확인했습니다.</dd></dl>{scene.owners.map(owner=><ol>{owner.ownerChain.map(edge=><li>{edge.source&&<a href={missionStructureUrl(edge.source)}>{edge.source} ↗</a>} · {edge.pointer}{edge.target&&<><br/>{edge.target}</>}{edge.sourceSha256&&<><br/>SHA-256 · {edge.sourceSha256}</>}</li>)}</ol>)}<ol>{rows.map(row=><li data-deep-clip-proof={row.deepReference.anchor}><p>대사 {row.talk_id} · 선택지 배열 위치 {row.deepReference.optionIndex}</p><dl><dt>선택지의 직접 참조</dt><dd>{row.deepReference.proof.pointer}<br/>{row.deepReference.proof.fieldSpans.filter(f=>f.pointer===row.deepReference.proof.pointer).map(f=>f.start+'–'+f.end)}</dd><dt>한국어 문자열과 화자</dt><dd>{row.hash} · {row.speaker_hash} · 음성 {row.voice}</dd><dt>보존 원문</dt><dd>{row.deepKoreanProof.preservedSource.file}<br/>{row.deepKoreanProof.preservedSource.pointer}<br/>SHA-256 · {row.deepKoreanProof.preservedSource.sha256}</dd></dl><pre>{JSON.stringify(row.deepReference.option,null,2)}</pre></li>)}</ol></details>

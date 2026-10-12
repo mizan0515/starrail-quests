@@ -1,0 +1,8 @@
+---
+import {deepMissionScenes} from '../lib/deep-timeline';
+import {href} from '../lib/data';
+import {disclosureAttributes} from '../lib/reading-kit/reader.mjs';
+const {mission}=Astro.props;
+const scenes=deepMissionScenes.get(mission)||[];
+---
+{scenes.length>0&&<section id="deep-timeline-originals" class="deep-mission-sources"><h2>연출 파일의 추가 원문</h2><p>이 임무 기록이 직접 호출하는 연출의 대사·화면 문구·선택지 참조입니다. 장면별 원문과 호출 조건을 함께 읽을 수 있습니다.</p><details {...disclosureAttributes({className:'source-details'})}><summary>연출 장면 찾아 읽기 · {scenes.length.toLocaleString('ko-KR')}개</summary><ul>{scenes.map((scene,i)=><li><a href={href('대화/연출-'+scene.id+'.html')} data-reading-link>{i+1}. {scene.title}</a> · {scene.rows.length.toLocaleString('ko-KR')}개 문구{scene.ownerStatus!=='ONE_EXPLICIT_OWNER'&&' · 여러 임무가 함께 호출'}</li>)}</ul></details></section>}

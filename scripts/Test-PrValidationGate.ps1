@@ -5,6 +5,10 @@ Push-Location $Root
 try {
   & python -B -X utf8 tools/verify_dialogue_contexts.py
   if($LASTEXITCODE -ne 0){throw 'Whole dialogue attribution and preserved corpus QA failed'}
+  & python -B -X utf8 tools/verify_deep_timeline_dialogue.py
+  if($LASTEXITCODE -ne 0){throw 'Deep Timeline original source and inverse links QA failed'}
+  & python -B -X utf8 tools/verify_sdf_timeline_text.py --self-test
+  if($LASTEXITCODE -ne 0){throw 'SDF independent identity and Korean original QA failed'}
   $taskPublicationOld=$env:STARRAIL_VALIDATE_UNOPTIMIZED
   try {
     $env:STARRAIL_VALIDATE_UNOPTIMIZED='1'
@@ -16,6 +20,10 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Reading build failed'}
   & python -B -X utf8 tools/verify_dialogue_contexts.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Whole dialogue context original HTML and return links QA failed'}
+  & python -B -X utf8 tools/verify_deep_timeline_dialogue.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Deep Timeline static original HTML and return links QA failed'}
+  & python -B -X utf8 tools/verify_sdf_timeline_text.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'SDF static original HTML and identity QA failed'}
   & python -B -X utf8 tools/verify_handbook_originals.py --artifact-only --verify-only --self-test
   if($LASTEXITCODE -ne 0){throw 'Handbook original preservation and binding QA failed'}
   & python -B -X utf8 tools/verify_handbook_site.py --root dist
@@ -82,10 +90,16 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Primary reader source and classification QA failed'}
   & node --test tools/reading_return.test.mjs
   if($LASTEXITCODE -ne 0){throw 'Reading return context QA failed'}
+  & python -B -X utf8 -m unittest tools/test_optimize_publication.py
+  if($LASTEXITCODE -ne 0){throw 'Publication proof compression boundary and exact inverse QA failed'}
   & python -B -X utf8 tools/optimize_publication.py
   if($LASTEXITCODE -ne 0){throw 'Publication size or exact shared UI reconstruction failed'}
   & python -B -X utf8 tools/verify_dialogue_contexts.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Optimized whole context static original HTML QA failed'}
+  & python -B -X utf8 tools/verify_deep_timeline_dialogue.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Optimized deep Timeline static original QA failed'}
+  & python -B -X utf8 tools/verify_sdf_timeline_text.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Optimized SDF static original QA failed'}
   & python -B -X utf8 tools/verify_site.py --root dist --base /starrail-quests
   if($LASTEXITCODE -ne 0){throw 'Optimized whole preserved static original HTML and links QA failed'}
   Write-Output 'RESULT: PASS'
