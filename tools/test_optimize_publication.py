@@ -1,0 +1,153 @@
+"""Focused boundary, exact inverse and real JS codec tests for publication."""
+import base64
+import gzip
+import importlib.util
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import tempfile
+import unittest
+spec=importlib.util.spec_from_file_location('publication_optimizer',Path(__file__).with_name('optimize_publication.py'))
+P=importlib.util.module_from_spec(spec);spec.loader.exec_module(P)
+
+class ProofCompressionTests(unittest.TestCase):
+ def block(self,body,attrs='class="source-details" id="verified-sources"'):
+  return '<details '+attrs+'><summary>원문 근거 · 閱讀</summary>'+body+'</details>'
+ def test_utf8_quotes_script_end_and_exact_bytes(self):
+  body='<pre>'+('한국어 😀 &quot; \\ \r\n </script> &lt;details&gt; '+chr(0xa0))*100+'</pre>'
+  original=self.block(body);records={};packed,count,saved=P.compress_proofs(original,records)
+  self.assertEqual(count,1);self.assertGreater(saved,0)
+  self.assertTrue(packed.startswith('<details class="source-details" id="verified-sources"><summary>'))
+  self.assertEqual(packed.count('</script>'),1)
+  self.assertEqual(P.expand_proofs(packed,records).encode(),original.encode())
+ def test_open_boolean_is_not_closed_even_when_false(self):
+  for value in ('open','open="false"','open=""',"open='false'"):
+   original=self.block('<pre>'+'hash'*500+'</pre>',attrs='class="source-details" '+value)
+   packed,count,_=P.compress_proofs(original,{})
+   self.assertEqual((packed,count),(original,0))
+ def test_original_rows_anchors_and_return_links_stay_static(self):
+  for content in ('<p class="original-body">본문</p>','<div class="rw-source-row">행</div>','<section class="reading-scene">장면</section>','<p id="talk-123">원문</p>','<a href="#talk-1" data-reading-link>복귀</a>','<div data-passage="dialogue">대사</div>'):
+   original=self.block(content+'<pre>'+'proof '*300+'</pre>')
+   records={};packed,count,_=P.compress_proofs(original,records)
+   self.assertEqual(count,1,content);self.assertIn(content,packed)
+   self.assertEqual(P.expand_proofs(packed,records),original)
+ def test_protected_reading_subtree_and_plain_links_stay_static(self):
+  body='<div class="original-body" id="talk-1"><pre>'+'원문 '*500+'</pre></div><a href="#talk-1">복귀</a><pre id="proof-code"><code>'+'metadata '*500+'</code></pre>'
+  original=self.block(body);records={};packed,count,_=P.compress_proofs(original,records)
+  self.assertEqual(count,1)
+  self.assertIn('<div class="original-body" id="talk-1"><pre>'+'원문 '*500+'</pre></div>',packed)
+  self.assertIn('<a href="#talk-1">복귀</a>',packed);self.assertIn('<pre id="proof-code">',packed)
+  self.assertEqual(P.expand_proofs(packed,records),original)
+ def test_quotation_and_reading_pre_are_not_metadata(self):
+  for wrapper in ('<blockquote>','<p class="original-paragraph">','<div data-reading-template="reader">'):
+   close=wrapper.split()[0].replace('<','</').replace('>','')+'>'
+   original=self.block(wrapper+'<pre>'+'원문 '*500+'</pre>'+close)
+   self.assertEqual(P.compress_proofs(original,{})[:2],(original,0))
+ def test_external_structured_source_pointers_are_metadata_and_return_links_static(self):
+  pointer='<a href="https://github.com/example/archive/blob/pinned/Config/Mission.json">구조 원본</a>'
+  original=self.block(pointer+'<pre>'+'typed field hash '*500+'</pre>');records={}
+  packed,count,_=P.compress_proofs(original,records)
+  self.assertEqual(count,1);self.assertNotIn(pointer,packed);self.assertEqual(P.expand_proofs(packed,records),original)
+  for link in ('<a href="#talk-1">원문 복귀</a>','<a href="/문서/quest.html#talk-1" data-reading-link>원문 복귀</a>'):
+   original=self.block(link+'<pre>'+'typed field '*500+'</pre>');records={}
+   packed,count,_=P.compress_proofs(original,records);self.assertEqual(count,1);self.assertIn(link,packed)
+   self.assertEqual(P.expand_proofs(packed,records),original)
+ def test_nested_technical_anchor_keeps_both_disclosures_static(self):
+  inner=self.block('<pre>'+'hash '*300+'</pre>',attrs='class="source-details" id="nested-proof"')
+  original=self.block(inner);records={};packed,count,_=P.compress_proofs(original,records)
+  self.assertEqual(count,1)
+  self.assertIn('id="verified-sources"',packed);self.assertIn('id="nested-proof"',packed)
+  self.assertEqual(P.expand_proofs(packed,records),original)
+ def test_metadata_only_nested_summary_without_id_restores_whole_interior(self):
+  nested='<dl><dt>파일 SHA-256</dt><dd>'+'hash '*500+'</dd></dl><details><summary>표시 정리 전 한국어 원문</summary><pre>보존 운명의 길</pre></details>'
+  original=self.block(nested);records={};packed,count,_=P.compress_proofs(original,records)
+  self.assertEqual(count,1);self.assertIn('<summary>원문 근거 · 閱讀</summary>',packed)
+  self.assertEqual(P.expand_proofs(packed,records),original)
+  original=self.block(nested.replace('<details>','<details id="nested">'));records={};packed,_,_=P.compress_proofs(original,records)
+  self.assertIn('<details id="nested"><summary>표시 정리 전 한국어 원문</summary>',packed)
+  self.assertEqual(P.expand_proofs(packed,records),original)
+ def test_script_comment_and_style_literals_are_skipped(self):
+  fake=self.block('<pre>'+'hash '*300+'</pre>')
+  for original in ('<script>const fake='+json.dumps(fake)+';</script>','<!--'+fake+'-->','<style>/* '+fake+' */</style>'):
+   self.assertEqual(P.compress_proofs(original,{})[:2],(original,0))
+ def test_native_metadata_id_attribute_is_not_a_dom_anchor(self):
+  original=self.block('<pre data-native-talk-id="123">'+'source '*300+'</pre>');records={}
+  packed,count,_=P.compress_proofs(original,records)
+  self.assertEqual(count,1);self.assertEqual(P.expand_proofs(packed,records),original)
+ def test_active_scripts_and_unbalanced_details_are_rejected(self):
+  original=self.block('<script>alert(1)</script>'+'hash '*500)
+  self.assertEqual(P.compress_proofs(original,{})[:2],(original,0))
+  with self.assertRaises(ValueError):P.proof_interiors('<details class="source-details">missing close')
+ def test_tampering_and_unknown_digest_fail_exact_inverse(self):
+  original=self.block('<pre>'+'sha '*300+'</pre>');records={};packed,_,_=P.compress_proofs(original,records)
+  with self.assertRaises(ValueError):P.expand_proofs(packed,{})
+  match=P.PROOF_TAG.search(packed)
+  bad=packed[:match.start(3)]+str(int(match[3])+1)+packed[match.end(3):]
+  with self.assertRaises(ValueError):P.expand_proofs(bad,records)
+ def test_real_pinned_js_decoder_utf8_crc_length_and_invalid_utf8(self):
+  node=shutil.which('node.exe')or shutil.which('node');self.assertIsNotNone(node)
+  codec=Path(P.__file__).resolve().parents[1]/'public/_publication'/P.CODEC_FILE
+  self.assertEqual(P.digest(codec.read_bytes()),P.CODEC_SHA256)
+  text='한글 😀 " 따옴표 \\ </script>\r\n'+chr(0xa0)
+  payload=base64.b64encode(gzip.compress(text.encode(),mtime=0)).decode()
+  invalid=base64.b64encode(gzip.compress(b'\xff',mtime=0)).decode()
+  corrupt=bytearray(gzip.compress(text.encode(),mtime=0));corrupt[-5]^=1
+  program='''const fs=require('fs'),vm=require('vm');const input=JSON.parse(fs.readFileSync(0,'utf8'));let writes=[];
+  const ctx={document:{write:t=>writes.push(t)},TextDecoder,Uint8Array,atob:s=>Buffer.from(s,'base64').toString('latin1')};ctx.window=ctx;vm.createContext(ctx);
+  vm.runInContext(fs.readFileSync(input.codec,'utf8'),ctx);vm.runInContext(input.runtime,ctx);
+  ctx.__starrailPublicationWrite(input.payload,input.bytes);
+  let rejected=0;for(const [p,n]of [[input.payload,input.bytes+1],[input.invalid,1],[input.corrupt,input.bytes]]){try{ctx.__starrailPublicationWrite(p,n)}catch(e){rejected++}}
+  process.stdout.write(JSON.stringify({writes,rejected}));'''
+  run=subprocess.run([node,'-e',program],input=json.dumps({'codec':str(codec),'runtime':P.PROOF_RUNTIME,'payload':payload,'bytes':len(text.encode()),'invalid':invalid,'corrupt':base64.b64encode(corrupt).decode()}),text=True,encoding='utf8',capture_output=True)
+  self.assertEqual(run.returncode,0,run.stderr);result=json.loads(run.stdout)
+  self.assertEqual(result,{'writes':[text],'rejected':3})
+ def test_shared_ui_and_proof_shard_js_guards_and_exact_inverse(self):
+  node=shutil.which('node.exe')or shutil.which('node');codec=Path(P.__file__).resolve().parents[1]/'public/_publication'/P.CODEC_FILE
+  rows=['<pre>한글 😀 &lt;/script&gt; " \\</pre>','<dl><dt>근거</dt><dd>hash 18446744073709551615</dd></dl>']
+  shard=P.proof_shards(rows)[0]
+  program='''const fs=require('fs'),vm=require('vm');const input=JSON.parse(fs.readFileSync(0,'utf8'));let writes=[];
+  const ctx={document:{write:t=>writes.push(t)},TextDecoder,TextEncoder,Uint8Array,atob:s=>Buffer.from(s,'base64').toString('latin1')};ctx.window=ctx;vm.createContext(ctx);
+  vm.runInContext(fs.readFileSync(input.codec,'utf8'),ctx);vm.runInContext(input.runtime,ctx);vm.runInContext(input.shard,ctx);
+  ctx.__sp(0);ctx.__spr(0);ctx.__spr(1);
+  let rejected=0;for(const call of [()=>ctx.__sp(-1),()=>ctx.__sp(999),()=>ctx.__sp(0.5),()=>ctx.__spr(999),()=>ctx.__spr('0'),()=>vm.runInContext(input.shard,ctx),()=>ctx.__starrailPublicationLoadProofs(3,input.payload,input.bytes+1,input.sizes),()=>ctx.__starrailPublicationLoadProofs(3,input.payload,input.bytes,[1,2])]){try{call()}catch(e){rejected++}}
+  process.stdout.write(JSON.stringify({writes,rejected}));'''
+  run=subprocess.run([node,'-e',program],input=json.dumps({'codec':str(codec),'runtime':P.pooled_runtime(['<nav>목록</nav>']),'shard':shard['body'],'payload':shard['payload'],'bytes':shard['rawBytes'],'sizes':shard['sizes']}),text=True,encoding='utf8',capture_output=True)
+  self.assertEqual(run.returncode,0,run.stderr);self.assertEqual(json.loads(run.stdout),{'writes':['<nav>목록</nav>']+rows,'rejected':8})
+  report={'replacements':{},'scopes':{},'uiPool':['<nav>목록</nav>'],'proofPool':[{'sha256':P.digest(row.encode()),'rawBytes':len(row.encode()),'shard':0}for row in rows],'proofShards':{'0':dict(shard,url='/shard.js')}}
+  source='<script>__sp(0);</script><script src="/shard.js" data-pr-shard="0"></script><script>__spr(0);</script><script>__spr(1);</script>'
+  self.assertEqual(P.expansion_function(report)(source),'<nav>목록</nav>'+''.join(rows))
+  bad=json.loads(json.dumps(report));bad['proofPool'][1]['sha256']='0'*64
+  with self.assertRaises(ValueError):P.expansion_function(bad)(source)
+  with self.assertRaises(ValueError):P.expansion_function(report)('<script>__spr(2);</script>')
+ def test_proof_shards_are_deterministic_bounded_and_at_most_128_rows(self):
+  rows=[f'<pre>{i} '+'hash 한글 '*100+'</pre>'for i in range(300)]
+  a=P.proof_shards(rows);b=P.proof_shards(rows);self.assertEqual(a,b)
+  self.assertEqual([r['count']for r in a],[128,128,44])
+  self.assertTrue(all(len(r['body'].encode())<=P.MAX_PROOF_SHARD_BYTES for r in a))
+  self.assertEqual(a[0]['payload'][0:8],base64.b64encode(gzip.compress(b'x',mtime=0)).decode()[0:8])
+ def test_pool_namespace_collision_is_rejected_before_body_mutation(self):
+  with tempfile.TemporaryDirectory()as directory:
+   root=Path(directory);original='<html><head></head><body><script>__sp(0);</script></body></html>'
+   (root/'one.html').write_text(original,'utf8')
+   with self.assertRaises(ValueError):P.optimize(root,'/starrail-quests',root.parent/'unused.json')
+   self.assertEqual((root/'one.html').read_text('utf8'),original)
+ def test_full_optimizer_exact_html_css_js_inverse_and_static_body(self):
+  with tempfile.TemporaryDirectory()as directory:
+   root=Path(directory)/'dist';root.mkdir();report=Path(directory)/'report.json'
+   original='<html><head><meta charset="utf-8"><style>.astro-a1234567{color:red}</style></head><body><header>자료집 제목</header><p class="original-body astro-a1234567" id="talk-9">원문과 앵커</p>'+self.block('<pre>'+'sha source '*400+'</pre>')+'<script type="module" src="/starrail-quests/_astro/reader.js"></script><footer>게임 콘텐츠 출처</footer></body></html>'
+   for name in ('one.html','two.html'):(root/name).write_text(original,encoding='utf8')
+   (root/'test.css').write_text('.astro-a1234567{color:red}',encoding='utf8')
+   (root/'test.js').write_text('const scope="astro-a1234567";',encoding='utf8')
+   P.optimize(root,'/starrail-quests',report);P.verify(root,report)
+   built=(root/'one.html').read_text('utf8');self.assertIn('id="talk-9">원문과 앵커',built)
+   self.assertIn('id="verified-sources"',built);self.assertIn('<summary>원문 근거 · 閱讀</summary>',built)
+   data=json.loads(report.read_text('utf8'));expand=P.expansion_function(data)
+   self.assertEqual(expand(built),original);self.assertEqual(data['counts']['compressedProof'],2)
+   self.assertIn('data-pc-library',built);self.assertLess(built.index('data-pc-library'),built.index('</head>'))
+   self.assertNotIn(' async',data['proofCodecTags']);self.assertNotIn(' defer',data['proofCodecTags'])
+   self.assertEqual(data['counts']['sharedStandaloneModules'],2)
+   self.assertTrue(built.startswith('<html><head><meta charset="utf-8">'))
+
+if __name__=='__main__':unittest.main()

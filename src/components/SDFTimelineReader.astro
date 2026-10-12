@@ -1,0 +1,25 @@
+---
+import SourceParagraphs from './SourceParagraphs.astro';
+import {href,missionStructureUrl} from '../lib/data';
+import sdfTimeline from '../../data/sdf-timeline-text.json';
+import {readerAttributes,rowAttributes,disclosureAttributes} from '../lib/reading-kit/reader.mjs';
+const {scene}=Astro.props;
+const official=sdfTimeline.evidence.officialKorean,domain=sdfTimeline.evidence.nativeDomain;
+---
+<p class="muted">연출 파일 안의 시작 시각순으로 모은 화면 문구입니다. 임무 전체의 장면 순서와 실제 재생 조건은 확인 중입니다.</p>
+{scene.ownerStatus==='UNOWNED_NATIVE_TIMELINE'?<p class="muted">연출 파일과 한국어 원문의 연결을 확인했습니다. 이 연출을 호출한 임무는 확인 중입니다.</p>:scene.ownerStatus!=='ONE_EXPLICIT_OWNER'&&<p class="muted">여러 임무 기록이 이 연출을 호출합니다. 각 연결을 아래에서 확인할 수 있습니다.</p>}
+{scene.owners.length>0&&<nav class="reading-next" aria-label="이 연출을 호출한 임무">{scene.owners.map(owner=><a href={href('문서/'+owner.canonicalMission+'.html#deep-timeline-originals')} data-reading-link><span>임무에서 함께 읽기</span><strong>{owner.title}</strong></a>)}</nav>}
+<section {...readerAttributes({variant:'scene',className:'source-section',id:'original'})} data-sdf-timeline={scene.id}>
+ {scene.rows.map(row=><div {...{...rowAttributes('original'),class:'rw-source-row original-row'}} data-passage="original" data-sdf-role="SCREEN_TEXT" data-sdf-text={row.sdfTextId}>
+  <span class="speaker rw-source-speaker">화면 문구</span>
+  <SourceParagraphs text={row.text} anchor={row.anchor}/>
+ </div>)}
+</section>
+<details {...disclosureAttributes({className:'source-details',id:'verified-sources'})} data-pagefind-ignore>
+ <summary>연출과 한국어 원문의 연결 근거</summary>
+ <dl><dt>연출 파일</dt><dd>{scene.source}</dd><dt>장면 자료</dt><dd>{scene.proof.receipt.blockFile}<br/>{scene.proof.receipt.cabName} · 블록 오프셋 {scene.proof.receipt.bundleOffset}<br/>블록 SHA-256 · {scene.proof.receipt.sourceBlockSha256}<br/>CAB SHA-256 · {scene.proof.receipt.cabSha256}</dd><dt>연출의 직접 참조</dt><dd>{scene.proof.container.key}<br/>루트 {scene.proof.root.pathID} · SHA-256 {scene.proof.root.sha256}</dd><dt>화면 문구 자료</dt><dd>{domain.nativePath}<br/>HeartDialSDFRow.ID → SDFText의 한국어 문자열 해시<br/>엔트리 {domain.nameHash} · {domain.packFile} · {domain.offset}–{domain.offset+domain.length}<br/>엔트리 SHA-256 · {domain.entrySha256}</dd><dt>관찰 버전</dt><dd>설치본의 출시 버전은 미확인입니다. 한국어 본문은 공식 4.6 문자열과 자료표의 해시를 대조했습니다.</dd></dl>
+ {scene.proof.references.map(ref=>{const source=sdfTimeline.sourceProofs[ref.sourceIndex];return <div data-sdf-owner-proof={ref.sourceIndex}><h2>임무와 연출의 연결</h2><dl><dt>연출 설정</dt><dd>{source.logicalJsonPath}<br/>{ref.pointer} · 바이트 {ref.fieldSpan.start}–{ref.fieldSpan.end}<br/>SHA-256 · {source.entrySha256}</dd><dt>같은 연출 루트의 원문 자료</dt><dd>{scene.proof.deepSourceSceneId}<br/>자산 키·루트 ID·루트 원시 해시·CAB 해시 일치</dd></dl><ol>{source.ownerChain.map(edge=><li>{edge.source&&<a href={missionStructureUrl(edge.source)}>{edge.source} ↗</a>}{edge.pointer&&<> · {edge.pointer}</>}{edge.target&&<><br/>{edge.target}</>}{edge.sourceSha256&&<><br/>SHA-256 · {edge.sourceSha256}</>}</li>)}</ol>{ref.context.conditions?.length>0&&<pre>{JSON.stringify(ref.context.conditions,null,2)}</pre>}</div>;})}
+ <h2>공식 한국어 원문</h2>
+ <dl><dt>한국어 문자열 자료</dt><dd>{official.koreanPack.file}<br/>엔트리 {official.entry.key} · 팩 오프셋 {official.entry.offset}<br/>SHA-256 · {official.koreanPack.sha256}</dd></dl>
+ <ol>{scene.rows.map(row=><li data-sdf-clip-proof={row.anchor}><p>화면 문구 {row.sdfTextId} · 시작 {row.start}초 · 길이 {row.duration}초</p><dl><dt>화면 문구 ID의 직접 참조</dt><dd>{row.proof.idField.field} · 바이트 {row.proof.idField.span.join('–')}<br/>클립 {row.proof.object.pathID} · SHA-256 {row.proof.object.sha256}</dd><dt>트랙과 장면의 참조</dt><dd>{row.proof.parentRoute.join(' → ')}<br/>배열 위치 {row.proof.trackClipIndex} · 트랙 SHA-256 {row.proof.track.sha256}</dd><dt>자료표와 한국어 원문 위치</dt><dd>HeartDialTalk 행 {row.proof.tableRow} · {row.proof.tableRecord._offset}–{row.proof.tableRecord._end}<br/>본문 {row.proof.textRecord.offset}–{row.proof.textRecord.end}<br/>한국어 문자열 {row.textHash} · 음성 {row.voice}</dd><dt>게임 파일의 한국어 문자열</dt><dd><pre>{row.raw}</pre></dd></dl></li>)}</ol>
+</details>

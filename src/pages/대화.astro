@@ -2,6 +2,7 @@
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import {contexts,contextRegions} from '../lib/dialogue-contexts';
 import {href} from '../lib/data';
+import {deepCounts} from '../lib/deep-timeline';
 const kinds=[...new Set(contexts.groups.map(g=>g.kind))];
 // A top-level route follows the site's existing .html publication contract.
 ---
@@ -10,5 +11,6 @@ const kinds=[...new Set(contexts.groups.map(g=>g.kind))];
  <p class="page-deck">거리의 짧은 대화부터 사물에 남은 기록, 전투와 사건의 목소리까지. 대사표에 따로 보존되어 있던 원문을 그 문구가 사용된 장면으로 묶어 읽습니다.</p>
  <p class="muted">{contexts.counts.readableAttributedIds.toLocaleString('ko-KR')}개 대사 · {contexts.groups.length.toLocaleString('ko-KR')}개 사용 장면. 같은 대사는 여러 장소나 조건에서 사용될 수 있습니다.</p>
  <div class="entity-grid">{kinds.map((kind,i)=>{const groups=contexts.groups.filter(g=>g.kind===kind),names=[...new Set(groups.flatMap(g=>contextRegions(g).map(r=>r.world)))];return <a class="entity-card" href={href('대화/목록-'+i+'.html')} data-reading-link><span class="eyebrow">{groups.length.toLocaleString('ko-KR')}개 장면</span><h3>{kind}</h3><p>{names.slice(0,4).join(' · ')||'원문에서 확인한 대화와 상호작용'}</p><span class="entity-action">원문 읽기 →</span></a>;})}</div>
+ <div class="entity-grid"><a class="entity-card" href={href('대화/연출-목록-0.html')} data-reading-link><span class="eyebrow">{deepCounts.scenes.toLocaleString('ko-KR')}개 연출 장면 · {deepCounts.rows.toLocaleString('ko-KR')}개 원문</span><h3>연출의 대사와 문구</h3><p>연출 안의 대사, 화면 문구와 선택지 참조를 한국어 원문으로 읽습니다. 각 연출에서 확인된 임무 연결과 출처를 함께 제공합니다.</p><span class="entity-action">원문 읽기 →</span></a></div>
  <details class="source-details" data-pagefind-ignore><summary>수록 범위와 연결의 근거</summary><p>대사 식별자의 직접 참조로 장면을 연결했습니다. 지역은 해당 지형이 직접 불러오는 구조의 경로와 지역 표를 대조한 범위입니다. 장면의 임무 소속과 실제 플레이 순서는 각각의 근거가 필요합니다. 이벤트 이름만 남은 참조와 제작 테스트 자료는 일반 장면에 포함하지 않았습니다.</p><p>한국어 본문은 보존 로컬 수록본과 별도의 공식 4.6 수록본을 구분하며, 각 행에서 원래 대사표로 돌아갈 수 있습니다.</p></details>
 </StarlightPage>

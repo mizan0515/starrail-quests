@@ -27,6 +27,7 @@ KINDS = {'Mission':'임무에 함께 수록된 대화', 'MunicipalChatConfig':'�
  'Props':'사물 주변의 대화', 'SummonUnitGraph':'동행하는 존재의 대화', 'Raid':'도전과 전투',
  'GroupTemplateGraph':'현장의 대화와 상호작용', 'Tutorial':'진행 안내', 'Track':'현장의 대화와 상호작용'}
 def kind(path):
+ if path=='ExcelOutput/CakeConfig.json':return '콘텐츠 설정의 대사 참조'
  if path=='ExcelOutput/VisitorBehaviorConfig.json':return '방문객의 말풍선'
  if path=='ExcelOutput/HeartDialDialogue.json':return '마음의 시계 대화'
  if path=='ExcelOutput/HeartDialTalk.json':return '감정 조율의 표시 문구'
@@ -36,11 +37,202 @@ def kind(path):
  if path.startswith('Config/ConfigAbility/'): return '전투와 능력의 대화'
  if path.startswith('Config/ConfigAnimEvents/'): return '동행하는 존재의 대화'
  return '콘텐츠의 대화'
+CAKE_CONFIG_PROOF = {'schema': 'starrail-cake-configured-talk-domain.v1',
+ 'role': 'NON_SPOKEN_CONFIGURATION_REFERENCE',
+ 'tableSha256': '16f6e2c4aef193c77b488aeb76719c7b18245dec16a65d2b967a045b4bda7a51',
+ 'nativeSource': {'literal': 'ExcelOutput/CakeConfig.json',
+                  'nativePath': 'BakedConfig/ExcelOutput/CakeConfig.bytes',
+                  'nameHash': '10210098847508089820',
+                  'catalogSha256': '0b983e2c487a21dd0074c4bec24ac5fc46531eb650a97c22279cb2188f522027',
+                  'pack': '1efaad7a4e7c92a8a12c66cffbe3b50a.bytes',
+                  'packSha256': 'ae6cc8e41213ccecc430a346909daf38ff4013d6b1441ddba384032d77b3ffd4',
+                  'offset': 755732,
+                  'length': 11677,
+                  'entrySha256': 'efd312eddd9711633fcb8a9270abe46bdeabaf29df0869aa2545b4c6e47868be',
+                  'fullFieldEOF': 11677,
+                  'tableRows': 27,
+                  'schema': [['ID', 'int'],
+                             ['NPCID', 'int'],
+                             ['RuanMadeCakeName', 'hash'],
+                             ['CatCakeHeadIcon', 'str'],
+                             ['CatCakeMiniIcon', 'str'],
+                             ['CatCakeTailPath', 'str'],
+                             ['CatCaughtLines', ['int']],
+                             ['CatMissedLines', ['int']],
+                             ['CatTailColour', 'int'],
+                             ['RuanMadeCakeStory', 'hash'],
+                             ['CatMatPath', 'str'],
+                             ['CakeDarkMatPath', 'str']]},
+ 'metadataSha256': '66502e9b7b44686829a53715e05c50d72d354fe3007e4c65dc7430f8f73d7a22',
+ 'assemblySha256': '9b75ecd0b1eb44b238a040e556c09ba26d293a524953f85bffd9f78d799a5f41',
+ 'bridges': {'CatCaughtLines': {'field': 'CatCaughtLines',
+                                'typedProperty': 'CaughtTalkSentenceIDs',
+                                'metadata': {'fieldIndex': 59628,
+                                             'name': 'CatCaughtLines',
+                                             'typeIndex': 465134,
+                                             'metadataFileOffset': 795808,
+                                             'metadataRaw': 'aa7d507b351d4089',
+                                             'typeRecordFileOffset': 87594736,
+                                             'typeRecordRaw': '7e00000006001d00',
+                                             'candidateTypeData': 126,
+                                             'candidateTypeCode': 29,
+                                             'candidateTypeTarget': None,
+                                             'candidateFieldAttrs': 6,
+                                             'candidateNonSerialized': False,
+                                             'candidatePublic': True,
+                                             'candidateStatic': False,
+                                             'candidateInitOnly': False,
+                                             'candidateLiteral': False,
+                                             'candidateBitFlags': 0,
+                                             'runtimeFieldOffset': 32,
+                                             'runtimeFieldOffsetFile': 83730384,
+                                             'runtimeFieldOffsetRaw': '20000000',
+                                             'primitiveIntegerDefault': None,
+                                             'fieldRecordSource': 'global-metadata.dat',
+                                             'runtimeFieldOffsetSource': 'global-metadata.dat',
+                                             'typeRecordSource': 'GameAssembly.dll'},
+                                'getter': {'va': '0x18c8dfec0',
+                                           'sha256': '8bbc497fa1dcc1c6e555287f52929e4dc37b1e68d82729ae4c0a70124e814731',
+                                           'getDataCall': {'va': '0x18c8dfeef',
+                                                           'bytes': 'e82c628710',
+                                                           'mnemonic': 'call',
+                                                           'operands': '0x19d156120',
+                                                           'directTarget': '0x19d156120'},
+                                           'fieldLoad': {'va': '0x18c8dfef9',
+                                                         'bytes': '488b4020',
+                                                         'mnemonic': 'mov',
+                                                         'operands': 'rax, qword ptr [rax + 0x20]'}},
+                                'getDataReturn': {'class': 'MENPOEFIHBO',
+                                                  'method': {'methodIndex': 88036,
+                                                             'name': 'LMBKNCAIDLC',
+                                                             'declaringTypeIndex': 12929,
+                                                             'parameterCount': 1,
+                                                             'returnTypeIndex': 56436,
+                                                             'metadataFileOffset': 64997564,
+                                                             'metadataRaw': 'bc749f6d9991a675bdc27ddadc9d715cbdf2605f2e0d3f887dc3',
+                                                             'pointerTableFileOffset': 77449024,
+                                                             'nativePointerVA': 6930391328,
+                                                             'nativeRVA': 487940384,
+                                                             'nativeFileOffset': 477963040,
+                                                             'nativeFirst64': '564883ec6089ce803d10846bec000f84fb000000488b0d4d4424ec80b9b7000000000f840c010000803d01e81fec007519488b0d304424ec80b9b7000000000f',
+                                                             'nativeFirst64Sha256': '95befebf4a746d25a7cefed51f5c603da814396ad9d6a0528c9bbf4d5d2e166b',
+                                                             'metadataSource': 'global-metadata.dat'},
+                                                  'returnType': {'typeIndex': 56436,
+                                                                 'offset': 84325152,
+                                                                 'raw': '8032000000001200',
+                                                                 'data': 12928,
+                                                                 'code': 18,
+                                                                 'class': 'RPG.GameCore.CakeConfigRow',
+                                                                 'source': 'GameAssembly.dll'}},
+                                'nativeRowPresenceSlot': 6,
+                                'nativeRowPresenceInstruction': {'va': '0x19d546667',
+                                                                 'bytes': 'f6c340',
+                                                                 'mnemonic': 'test',
+                                                                 'operands': 'bl, 0x40'},
+                                'nativeRowDestinationInstruction': {'va': '0x19d54667f',
+                                                                    'bytes': '4883c720',
+                                                                    'mnemonic': 'add',
+                                                                    'operands': 'rdi, 0x20'}},
+             'CatMissedLines': {'field': 'CatMissedLines',
+                                'typedProperty': 'FinishedTalkSentenceIDs',
+                                'metadata': {'fieldIndex': 59630,
+                                             'name': 'CatMissedLines',
+                                             'typeIndex': 465134,
+                                             'metadataFileOffset': 795824,
+                                             'metadataRaw': 'b8130cd435b3fbe1',
+                                             'typeRecordFileOffset': 87594736,
+                                             'typeRecordRaw': '7e00000006001d00',
+                                             'candidateTypeData': 126,
+                                             'candidateTypeCode': 29,
+                                             'candidateTypeTarget': None,
+                                             'candidateFieldAttrs': 6,
+                                             'candidateNonSerialized': False,
+                                             'candidatePublic': True,
+                                             'candidateStatic': False,
+                                             'candidateInitOnly': False,
+                                             'candidateLiteral': False,
+                                             'candidateBitFlags': 0,
+                                             'runtimeFieldOffset': 48,
+                                             'runtimeFieldOffsetFile': 83730392,
+                                             'runtimeFieldOffsetRaw': '30000000',
+                                             'primitiveIntegerDefault': None,
+                                             'fieldRecordSource': 'global-metadata.dat',
+                                             'runtimeFieldOffsetSource': 'global-metadata.dat',
+                                             'typeRecordSource': 'GameAssembly.dll'},
+                                'getter': {'va': '0x18c8dff70',
+                                           'sha256': 'b45ba8be474bd22df93154901565c2fbd769019d3bd68421fb78f4a1e23a8212',
+                                           'getDataCall': {'va': '0x18c8dff9f',
+                                                           'bytes': 'e87c618710',
+                                                           'mnemonic': 'call',
+                                                           'operands': '0x19d156120',
+                                                           'directTarget': '0x19d156120'},
+                                           'fieldLoad': {'va': '0x18c8dffa9',
+                                                         'bytes': '488b4030',
+                                                         'mnemonic': 'mov',
+                                                         'operands': 'rax, qword ptr [rax + 0x30]'}},
+                                'getDataReturn': {'class': 'MENPOEFIHBO',
+                                                  'method': {'methodIndex': 88036,
+                                                             'name': 'LMBKNCAIDLC',
+                                                             'declaringTypeIndex': 12929,
+                                                             'parameterCount': 1,
+                                                             'returnTypeIndex': 56436,
+                                                             'metadataFileOffset': 64997564,
+                                                             'metadataRaw': 'bc749f6d9991a675bdc27ddadc9d715cbdf2605f2e0d3f887dc3',
+                                                             'pointerTableFileOffset': 77449024,
+                                                             'nativePointerVA': 6930391328,
+                                                             'nativeRVA': 487940384,
+                                                             'nativeFileOffset': 477963040,
+                                                             'nativeFirst64': '564883ec6089ce803d10846bec000f84fb000000488b0d4d4424ec80b9b7000000000f840c010000803d01e81fec007519488b0d304424ec80b9b7000000000f',
+                                                             'nativeFirst64Sha256': '95befebf4a746d25a7cefed51f5c603da814396ad9d6a0528c9bbf4d5d2e166b',
+                                                             'metadataSource': 'global-metadata.dat'},
+                                                  'returnType': {'typeIndex': 56436,
+                                                                 'offset': 84325152,
+                                                                 'raw': '8032000000001200',
+                                                                 'data': 12928,
+                                                                 'code': 18,
+                                                                 'class': 'RPG.GameCore.CakeConfigRow',
+                                                                 'source': 'GameAssembly.dll'}},
+                                'nativeRowPresenceSlot': 7,
+                                'nativeRowPresenceInstruction': {'va': '0x19d5466a8',
+                                                                 'bytes': 'f6c380',
+                                                                 'mnemonic': 'test',
+                                                                 'operands': 'bl, 0x80'},
+                                'nativeRowDestinationInstruction': {'va': '0x19d5466c0',
+                                                                    'bytes': '4883c730',
+                                                                    'mnemonic': 'add',
+                                                                    'operands': 'rdi, 0x30'}}}}
+
+def cake_config_refs(obj,path,pointer):
+ # Only top-level table rows and complete positive UInt32 arrays are admitted.
+ if path!='ExcelOutput/CakeConfig.json' or not re.fullmatch(r'/\d+',pointer):return
+ if type(obj.get('ID')) is not int or not 0<obj['ID']<2**32:return
+ for field in ('CatCaughtLines','CatMissedLines'):
+  values=obj.get(field)
+  if isinstance(values,list) and all(type(v) is int and 0<v<2**32 for v in values):
+   for index,value in enumerate(values):yield value,pointer+'/'+field+'/'+str(index),'CAKE_CONFIG_TALK_SENTENCE_ID'
+
+def cake_record_fields(value):
+ if isinstance(value,dict):return {key:str(item) if key=='Hash' and type(item) is int else cake_record_fields(item) for key,item in value.items()}
+ if isinstance(value,list):return [cake_record_fields(item) for item in value]
+ return value
+
 def playable_reference(path):
- return path.startswith(('Config/', 'Story/')) or path in ('ExcelOutput/InclinationText.json', 'ExcelOutput/ChimeraDuelMaster.json', 'ExcelOutput/MazePuzzleOrigamiColony.json','ExcelOutput/VisitorBehaviorConfig.json','ExcelOutput/HeartDialDialogue.json','ExcelOutput/HeartDialTalk.json')
+ return path.startswith(('Config/', 'Story/')) or path in ('ExcelOutput/InclinationText.json', 'ExcelOutput/ChimeraDuelMaster.json', 'ExcelOutput/MazePuzzleOrigamiColony.json','ExcelOutput/VisitorBehaviorConfig.json','ExcelOutput/HeartDialDialogue.json','ExcelOutput/HeartDialTalk.json','ExcelOutput/CakeConfig.json')
+def fixed_npc_bubble_talk(obj):
+ """Accept a literal fixed TalkSentence value only in its actual consumer task."""
+ if not isinstance(obj,dict) or obj.get('$type')!='RPG.GameCore.PlayNPCSingleBubbleTalk':return None
+ wrapper=obj.get('TalkSentenceID')
+ if not isinstance(wrapper,dict) or set(wrapper)!={'IsDynamic','FixedValue'} or wrapper['IsDynamic'] is not False:return None
+ fixed=wrapper['FixedValue']
+ if not isinstance(fixed,dict) or set(fixed)!={'Value'}:return None
+ value=fixed['Value']
+ return value if type(value) is int and 0<value<2**32 else None
 def content_refs(obj,path,pointer='',typed=''):
  if isinstance(obj,dict):
   typed=obj.get('$type',typed)
+  yield from cake_config_refs(obj,path,pointer)
+  literal=fixed_npc_bubble_talk(obj)
+  if literal is not None:yield literal,pointer+'/TalkSentenceID/FixedValue/Value','FIXED_NPC_BUBBLE_TALK_SENTENCE_ID'
   for key,value in obj.items():
    p=pointer+'/'+key
    direct=key=='TalkSentenceID' or (key=='NpcBubbleTalkSentenceID' and path=='ExcelOutput/VisitorBehaviorConfig.json')
@@ -146,6 +338,7 @@ def build(archive, official_root, skill):
    if s['ownership'][0]['kind']=='EXPLICIT_MAIN_MISSION_ID':strict.update(ids)
  baseline=set(local)-assigned;current={r['talk_id']:r for r in official['rows']};delta={tid:r for tid,r in current.items() if not r['missionLinks']};target=baseline|set(delta)
  metadata,hashes,performance,scanned=load(archive)
+ assert hashes.get('ExcelOutput/CakeConfig.json')==CAKE_CONFIG_PROOF['tableSha256'],'Cake configuration snapshot differs from native proof'
  texts,text_evidence,project=official_input(official_root,skill)
  labels,regions=geography(metadata,hashes,performance,texts,project)
  groups=[];classification=defaultdict(set);ref_types=Counter();all_sources={}
@@ -164,18 +357,27 @@ def build(archive, official_root, skill):
    if not context['typedContainer'] and not path.startswith('ExcelOutput/'):continue
    if tid not in local and tid not in current:unavailable.add(tid);continue
    ancestors=ptr.split('/')
-   choice='OptionList' in ancestors or context['typedContainer'] and context['typedContainer']['type'].endswith('.OptionTalkInfo')
+   choice=k!='FIXED_NPC_BUBBLE_TALK_SENTENCE_ID' and ('OptionList' in ancestors or context['typedContainer'] and context['typedContainer']['type'].endswith('.OptionTalkInfo'))
    record={}
+   if k=='FIXED_NPC_BUBBLE_TALK_SENTENCE_ID':
+    wrapper_pointer=ptr.rsplit('/FixedValue/Value',1)[0];wrapper=obj
+    for part in wrapper_pointer.strip('/').split('/'):wrapper=wrapper[int(part)] if isinstance(wrapper,list) else wrapper[part]
+    record={'sourceRole':'SPOKEN_BUBBLE_LITERAL','recordContext':{'pointer':wrapper_pointer,'fields':wrapper,'serialized':json.dumps(wrapper,ensure_ascii=False,indent=2)}}
    if k in ('NpcBubbleTalkSentenceID','ControlTalkList') or path=='ExcelOutput/HeartDialTalk.json':
     parent_pointer=ptr.rsplit('/',2)[0] if k=='ControlTalkList' else ptr.rsplit('/',1)[0];native=obj[int(parent_pointer.strip('/'))]
     record={'recordContext':{'pointer':parent_pointer,'fields':native,'serialized':json.dumps(native,ensure_ascii=False,indent=2)}}
-   usage={'MobileSentenceID':'모바일 안내','PcSentenceID':'PC 안내','PadSentenceID':'패드 안내','LastToBeginTalkSentenceID':'토론 설정 참조'}.get(k,'')
+   if k=='CAKE_CONFIG_TALK_SENTENCE_ID':
+    row_pointer,field,index=ptr.rsplit('/',2);native=obj[int(row_pointer.strip('/'))]
+    record={'sourceRole':'NON_SPOKEN_CONFIGURATION_REFERENCE','recordContext':{'pointer':row_pointer,'fields':cake_record_fields(native),'serialized':json.dumps(native,ensure_ascii=False,indent=2)},'configurationReference':{'tableRowId':native['ID'],'field':field,'index':int(index),'proof':{key:value for key,value in CAKE_CONFIG_PROOF.items() if key!='bridges'},'fieldBridge':CAKE_CONFIG_PROOF['bridges'][field]}}
+   usage={'MobileSentenceID' :'모바일 안내','PcSentenceID':'PC 안내','PadSentenceID':'패드 안내','LastToBeginTalkSentenceID':'토론 설정 참조'}.get(k,'')
+   if k=='FIXED_NPC_BUBBLE_TALK_SENTENCE_ID':usage='말풍선'
+   if k=='CAKE_CONFIG_TALK_SENTENCE_ID':usage='콘텐츠 설정의 대사 참조'
    if path=='ExcelOutput/HeartDialTalk.json':usage='감정 조율의 표시 문구'
    if k=='TalkSentenceID':
     parent=obj
     for part in ptr.strip('/').split('/')[:-1]:parent=parent[int(part)] if isinstance(parent,list) else parent[part]
     if isinstance(parent,dict) and parent.get('IsMultiPlatform') is True:usage='기본 안내'
-   found[tid].append({'pointer':ptr,'kind':k,'displayKind':'선택지' if choice else '대사','usageLabel':usage,**context,**record})
+   found[tid].append({'pointer':ptr,'kind':k,'displayKind':'설정 참조' if k=='CAKE_CONFIG_TALK_SENTENCE_ID' else '선택지' if choice else '대사','usageLabel':usage,**context,**record})
   audited=set(found)&target
   if not audited:continue
   internal_source=internal(path)
@@ -189,6 +391,7 @@ def build(archive, official_root, skill):
   if path=='ExcelOutput/VisitorBehaviorConfig.json':title='열차 방문객의 말풍선'
   if path=='ExcelOutput/HeartDialDialogue.json':title='마음의 시계에 연결된 대화'
   if path=='ExcelOutput/HeartDialTalk.json':title='감정 조율에 표시되는 문구'
+  if path=='ExcelOutput/CakeConfig.json':title='케이크 설정에 연결된 대사'
   if not title:title=kind(path)
   group={'id':source_id,'title':title,'kind':kind(path),'source':path,'sourceSha256':hashes[path],
    'rows':[{'talkId':tid,'edition':'official' if tid in current else 'preserved','references':records} for tid,records in found.items()],
@@ -196,6 +399,14 @@ def build(archive, official_root, skill):
   groups.append(group);all_sources[path]=hashes[path]
  classification['EVENT_ONLY']-=classification['EXACT_READABLE_SOURCE_REFERENCE']|classification['INTERNAL_REFERENCE']
  classification['INTERNAL_REFERENCE']-=classification['EXACT_READABLE_SOURCE_REFERENCE']
+ deep_path=SITE/'data/deep-dialogue-attribution.json';deep=None
+ if deep_path.exists():
+  deep_raw=deep_path.read_bytes();deep=json.loads(deep_raw);assert deep['schema']=='starrail-deep-dialogue-attribution.v1'
+  timeline_ids=deep['timelineReaderIds'];assert all(type(tid) is int and 0<tid<2**32 for tid in timeline_ids) and len(set(timeline_ids))==len(timeline_ids)
+  assert all(str(tid) in deep['readerLinks'] and deep['readerLinks'][str(tid)] for tid in timeline_ids)
+  classification['EXACT_TIMELINE_READER_REFERENCE']=(set(timeline_ids)&target)-classification['EXACT_READABLE_SOURCE_REFERENCE']
+  classification['EVENT_ONLY']-=classification['EXACT_TIMELINE_READER_REFERENCE']
+  classification['INTERNAL_REFERENCE']-=classification['EXACT_TIMELINE_READER_REFERENCE']
  classification['NO_EXACT_USAGE_REFERENCE']=target-set().union(*classification.values())
  assert set().union(*classification.values())==target
  assert sum(len(v) for v in classification.values())==len(target)
@@ -205,10 +416,16 @@ def build(archive, official_root, skill):
   'geographicSourceGroups':sum(bool(g['regions']) for g in groups),'geographicTalkIds':len({tid for g in groups if g['regions'] for tid in g['auditedTalkIds']}),
   'classification':{k:len(v) for k,v in sorted(classification.items())},'baselineClassification':{k:len(v&baseline) for k,v in sorted(classification.items())},
   'officialClassification':{k:len(v&set(delta)) for k,v in sorted(classification.items())}}
+ if deep is not None:
+  counts['timelineReaderAttributedIds']=len(classification['EXACT_TIMELINE_READER_REFERENCE'])
+  counts['timelineReaderLinks']=sum(len(deep['readerLinks'][str(tid)]) for tid in classification['EXACT_TIMELINE_READER_REFERENCE'])
  result={'schema':SCHEMA,'evidence':{'archiveSha256':sha(archive.read_bytes()),'commit':supp['evidence']['commit'],'repository':supp['evidence']['repository'],
   'baselineFiles':local_hashes,'missionDocumentFiles':documents,'supplementsSha256':sha((SITE/'data/mission-dialogue-supplements.json').read_bytes()),
   'officialTalkLibrarySha256':sha((SITE/'data/official-talk-library.json').read_bytes()),'regionKoreanSource':text_evidence},
   'counts':counts,'audit':{k:sorted(v) for k,v in sorted(classification.items())},'regions':{str(k):v for k,v in labels.items()},'groups':groups}
+ if deep is not None:
+  assert deep_path.read_bytes()==deep_raw,'deep attribution changed during source regeneration'
+  result['evidence']['deepAttributionSha256']=sha(deep_raw)
  body=json.dumps(result,ensure_ascii=False,separators=(',',':')).encode()
  (SITE/'data/dialogue-contexts.json').write_bytes(body);(SITE/'public/dialogue-contexts.json').write_bytes(body)
  write(SITE/'editorial/dialogue-contexts-manifest.json',{'schema':SCHEMA,'path':'public/dialogue-contexts.json','target':'data/dialogue-contexts.json','size':len(body),'sha256':sha(body)})

@@ -22,8 +22,8 @@ const url=source=>`https://github.com/${contexts.evidence.repository}/blob/${con
   <p class="muted">{group.source.startsWith('ExcelOutput/')?'이 콘텐츠 설정표에 기록된 한국어 문구입니다. 문구별 대상과 조건은 연결 근거에서 확인할 수 있습니다. 아래 배열은 표의 참조 순서입니다.':'같은 사용 장면에서 참조하는 원문입니다. 선택과 조건에 따라 읽는 문구가 달라질 수 있으며, 아래 배열은 구조의 참조 순서입니다.'}</p>
   {group.unavailableTalkIds.length>0&&<p class="muted">이 장면에서 참조하는 문구 중 {group.unavailableTalkIds.length}개의 한국어 본문 연결은 확인 중입니다.</p>}
   <section {...readerAttributes({variant:'scene',className:'source-section',id:'original'})} data-dialogue-context={group.id}>
-   {rows.map(row=><div {...rowAttributes(row.isChoice?'choice':'dialogue')} class:list={['rw-source-row','original-row',row.isChoice&&'choice']} data-context-talk={row.talk_id} data-passage={row.isChoice?'choice':'dialogue'} data-speaker={row.speaker}>
-    <span class="speaker rw-source-speaker">{missionSourceNotice(row)?'원문에 수록된 제작 안내':row.isChoice?(row.isDialogue?'선택지·대사 · '+row.speaker:'선택지'):row.speaker==='화자 미지정'?'원문':row.speaker}</span>
+   {rows.map(row=><div {...{...rowAttributes(row.isChoice?'choice':'dialogue'),class:['rw-source-row','original-row',row.isChoice&&'choice'].filter(Boolean).join(' ')}} data-context-talk={row.talk_id} data-passage={row.isChoice?'choice':'dialogue'} data-speaker={row.speaker}>
+    <span class="speaker rw-source-speaker">{missionSourceNotice(row)?'원문에 수록된 제작 안내':row.isConfigurationReference?(row.speaker==='화자 미지정'?'설정 참조':'설정 참조 · '+row.speaker):row.isChoice?(row.isDialogue?'선택지·대사 · '+row.speaker:'선택지'):row.speaker==='화자 미지정'?'원문':row.speaker}</span>
     {row.usageLabels.length>0&&<span class="kind-badge" data-context-usage={row.usageLabels.join(' · ')}>{row.usageLabels.join(' · ')}</span>}
     {row.targetRegions.length>0&&<p class="branch-note" data-context-target-regions={row.targetRegions.map(r=>r.floorId).join(',')}>설정표의 대상 지역: {row.targetRegions.map(r=>r.world+' · '+r.name).join(' / ')}</p>}
     <SourceParagraphs text={row.text} anchor={'talk-'+row.talk_id}/>

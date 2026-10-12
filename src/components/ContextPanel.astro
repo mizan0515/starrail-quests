@@ -48,7 +48,8 @@ import {href} from '../lib/data';
   const explore=dialog.querySelector<HTMLAnchorElement>('.context-explore')!;explore.href=withReturn(target.href,origin);
   dialog.querySelector('#context-title')!.textContent=target.textContent;
   dialog.querySelector('.context-question')!.textContent='배경을 불러오는 중…';dialog.querySelector('.context-definition')!.textContent='';dialog.querySelector('.context-proof')!.replaceChildren();
-  dialog.querySelector('.context-current blockquote')!.textContent=target.dataset.contextExcerpt||(row?.textContent||'').trim().slice(0,220);
+  // The source paragraph already contains the exact quote, including whitespace.
+  dialog.querySelector('.context-current blockquote')!.textContent=(row?.textContent||target.dataset.contextExcerpt||'').slice(0,220);
   (dialog.querySelector('.context-error') as HTMLElement).hidden=true;
   dialog.showModal();(dialog.querySelector('.context-close') as HTMLButtonElement).focus();
   try{

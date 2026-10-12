@@ -3,6 +3,7 @@ import argparse,json,re
 from pathlib import Path
 from html.parser import HTMLParser
 from urllib.parse import urlsplit,unquote
+from functools import lru_cache
 
 class Page(HTMLParser):
     def __init__(self):super().__init__();self.ids=set();self.links=[];self.labels=[];self.capture=False;self.duplicates=[];self.original={};self.original_id=None
@@ -31,18 +32,21 @@ def main():
         if page.duplicates:errors.append((file.relative_to(root).as_posix(),'duplicate anchors',page.duplicates))
         if any(re.search(r'\b(?:DS|Story)\d{6,}',x) for x in page.labels):errors.append((str(file),'technical scene heading'))
         if any('정리본문.csv' in x or '정리%EB%B3%B8' in x for x in page.links):errors.append((str(file),'work CSV link'))
+    @lru_cache(maxsize=None)
+    def target_for(parent,path):
+        target=(root/path.lstrip('/')).resolve() if path.startswith('/') else (parent/path).resolve()
+        if target.is_dir():target/= 'index.html'
+        if not target.exists() and not target.suffix and target.with_suffix('.html').exists():target=target.with_suffix('.html')
+        return target,target.is_relative_to(root) and target.exists()
     for file,page in pages.items():
         for link in page.links:
             u=urlsplit(link)
             if u.scheme or u.netloc:continue
             path=unquote(u.path)
-            if path.startswith('/'):
-                if a.base and path.startswith(a.base):path=path[len(a.base):]
-                target=(root/path.lstrip('/')).resolve()
-            else:target=(file.parent/path).resolve() if path else file
-            if target.is_dir():target/= 'index.html'
-            if not target.exists() and not target.suffix and target.with_suffix('.html').exists():target=target.with_suffix('.html')
-            if not target.is_relative_to(root) or not target.exists():errors.append((str(file.relative_to(root)),link,'missing target'));continue
+            absolute=path.startswith('/')
+            if absolute and a.base and path.startswith(a.base):path=path[len(a.base):]
+            target,exists=target_for(root,'/'+path.lstrip('/')) if absolute else target_for(file.parent,path) if path else (file,True)
+            if not exists:errors.append((str(file.relative_to(root)),link,'missing target'));continue
             if u.fragment and target in pages and unquote(u.fragment) not in pages[target].ids:errors.append((str(file.relative_to(root)),link,'missing anchor'))
             links+=1
     data=root.parent/'data';catalog=json.loads((data/'catalog.json').read_text('utf8'));topics=json.loads((data/'topics.json').read_text('utf8'));evidence=0
@@ -102,11 +106,19 @@ def main():
                 dialogue_rows+=1
         if dialogue_rows!=idx['evidence']['displayed']:errors.append(('complete dialogue coverage mismatch',dialogue_rows))
         ex=json.loads((data/'explorer.json').read_text('utf8'))
+        # Only the technical source-row disclosure can be pooled; reading rows and anchors above remain raw HTML.
+        publication_expand=None
+        if (root/'_shared').is_dir():
+            from optimize_publication import expansion_function
+            publication_expand=expansion_function(json.loads((root.parent/'.codex-work/publication-build-report.json').read_text('utf8')))
         for e in ex['entries']:
             if e['axis']=='concept':continue
             file=(root/'대상'/(e['id']+'.html')).resolve()
             if file not in pages or 'local-source' not in pages[file].ids:errors.append((e['id'],'missing entity or local bottom evidence'));continue
-            if e.get('sourceRow') and str(e['sourceRow']['WorldName']['Hash']) not in file.read_text('utf8'):errors.append((e['id'],'world name hash lost integer precision'))
+            if e.get('sourceRow'):
+                proof_html=file.read_text('utf8')
+                if publication_expand:proof_html=publication_expand(proof_html)
+                if str(e['sourceRow']['WorldName']['Hash']) not in proof_html:errors.append((e['id'],'world name hash lost integer precision'))
             for story in e['stories']:
                 if pages[file].original.get('story-text-'+str(story['story_id'])+'-row-1')!=story['text']:errors.append((e['id'],story['story_id'],'character story differs'))
                 character_rows+=1

@@ -10,5 +10,5 @@ export function sourceParagraphs(text:string,anchor:string,strikeRanges:number[]
   if(index)paragraphs.push([]);
   const value=run.text+run.separator;paragraphs[paragraphs.length-1].push({...part,text:value,termIndex,sourceOffset:cursor});cursor+=Array.from(value).length;
  }));
- return `<p class="original-body rw-source-body" id="${E(anchor)}" data-pagefind-weight="1">${paragraphs.map(parts=>`<span class="original-paragraph">${parts.map(part=>part.id?`<a class="context-term" id="${E(anchor)}-term-${part.termIndex}" href="${E(atlasUrl(part.id))}" data-context-key="${E(part.id)}" data-context-excerpt="${E(text.slice(0,220))}" aria-label="${E(part.text)} · 배경과 연결 보기">${escapeSourceRun(part.text,part.sourceOffset,strikeRanges)}</a>`:escapeSourceRun(part.text,part.sourceOffset,strikeRanges)).join('')}</span>`).join('')}</p>`;
+ return `<p class="original-body rw-source-body" id="${E(anchor)}" data-pagefind-weight="1">${paragraphs.map(parts=>`<span class="original-paragraph">${parts.map(part=>part.id?`<a class="context-term" id="${E(anchor)}-term-${part.termIndex}" href="${E(atlasUrl(part.id))}" data-context-key="${E(part.id)}" aria-label="${E(part.text)} · 배경과 연결 보기">${escapeSourceRun(part.text,part.sourceOffset,strikeRanges)}</a>`:escapeSourceRun(part.text,part.sourceOffset,strikeRanges)).join('')}</span>`).join('')}</p>`;
 }
