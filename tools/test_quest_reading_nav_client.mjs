@@ -7,12 +7,12 @@ import {safeReadingReturn,sourceReadingOrigin} from '../src/lib/reading-return.m
 const astro=fs.readFileSync(new URL('../src/components/QuestReadingNav.astro',import.meta.url),'utf8');
 const script=stripTypeScriptTypes(astro.split('<script>')[1].split('</script>')[0].replace(/^\s*import .*;$/gm,'').replace('import.meta.env.BASE_URL',"'/starrail-quests/'"));
 
-function reader({search='',source=true,saved=null,hash='',padding=0,margin=0,mobileMenu=false,menuOpen=true,navPresent=true,originalClosed=false,nativeLifecycle=false}={}){
+function reader({search='',source=true,saved=null,pointSaved=null,originalTop=0,pageScroll=0,sourceLinkTop=0,hash='',padding=0,margin=0,mobileMenu=false,menuOpen=true,navPresent=true,originalClosed=false,nativeLifecycle=false}={}){
  const events={},windowEvents={},links=[],buttons=[],scrolls=[],menuActions=[],nativeReady=[];
  class Element{closest(){return null;}}
  class HTMLElement extends Element{
   constructor(id,title=''){super();this.id=id;this.textContent=title;this.dataset={};this.attrs={};this.top=0;this.isConnected=true;}
-  matches(selector){return selector==='h2,h3'&&this.heading;}
+  matches(selector){return selector==='h2,h3'&&this.heading||selector==='.original-body'&&this.originalBody;}
   querySelector(){return this.label||null;}
   closest(selector){for(let node=this;node;node=node.parentElement){if(selector==='.reader-guide-body'&&node===guideBody)return node;if(selector==='details.reader-guide'&&node===guide)return node;if(selector.includes('[hidden]')&&node.hidden)return node;if(selector.includes('details:not([open])')&&node instanceof HTMLDetailsElement&&!node.open)return node;}return null;}
   getClientRects(){return this.hidden||this.closest('[hidden],details:not([open])')?[]:[{}];}
@@ -33,10 +33,12 @@ function reader({search='',source=true,saved=null,hash='',padding=0,margin=0,mob
  const guide=new HTMLDetailsElement('reader-guide');guide.open=menuOpen;
  const guideBody=new HTMLElement('guide-body');guideBody.scrollTop=0;guideBody.parentElement=guide;guideBody.getBoundingClientRect=()=>({top:0,bottom:100});
  const original=new HTMLElement('original'),extra=new HTMLElement('deep-timeline-originals');
+ original.originalBody=true;original.top=originalTop;
  extra.label=new HTMLElement('', '이 임무에 연결된 추가 원문');extra.top=600;
  const parent=new HTMLDetailsElement('reference-scenes');parent.open=!originalClosed;original.parentElement=parent;
  const duplicate=new HTMLElement('original','중복 목차');duplicate.heading=true;
  const sourceLink=new HTMLAnchorElement();sourceLink.id='quest-nav-quest-1-timeline-abc';sourceLink.href='https://example.test/starrail-quests/대화/연출-timeline-0123456789abcdef.html';
+ sourceLink.top=sourceLinkTop;
  const owners=['quest-1','quest-2'].map(id=>{const d=new HTMLDetailsElement('');d.dataset.readingMission=id;return d;});
  const title=new HTMLElement('', '현재 원문');
  const fallback={remove(){this.removed=true;}};
@@ -51,15 +53,16 @@ function reader({search='',source=true,saved=null,hash='',padding=0,margin=0,mob
  const document={documentElement:{attrs:{},setAttribute(name,value){this.attrs[name]=value;},removeAttribute(name){delete this.attrs[name];},hasAttribute(name){return name in this.attrs;},toggleAttribute(name){const enabled=!(name in this.attrs);if(enabled)this.attrs[name]='';else delete this.attrs[name];original.top+=enabled?-35:35;return enabled;}},body:{append:button=>buttons.push(button)},querySelector:s=>s==='[data-quest-reading-nav]'?(navPresent?nav:null):pageHeading,querySelectorAll:selector=>selector.includes('main .original-body')?[original]:[original,duplicate,extra],
   createElement:()=>new HTMLAnchorElement(),getElementById:id=>elements.get(id)||null,addEventListener:(name,cb)=>events[name]=cb};
  const storage=new Map(saved?[['quest-reading-nav.v1:quest-2',JSON.stringify(saved)]]:[]);
- const context={Element,HTMLElement,HTMLAnchorElement,HTMLDetailsElement,MouseEvent,document,innerHeight:800,sessionStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value)},location:{origin:'https://example.test',pathname:'/starrail-quests/대화/연출-timeline-0123456789abcdef.html',search,hash:''},
-  getComputedStyle:()=>({scrollPaddingTop:padding+'px',scrollMarginTop:margin+'px'}),window:{addEventListener:(name,cb)=>windowEvents[name]=cb,scrollBy:(x,y)=>{scrolls.push([x,y]);original.top-=y;extra.top-=y;}},matchMedia:()=>({matches:!mobileMenu}),requestAnimationFrame:cb=>cb(),URL,URLSearchParams,safeReadingReturn,sourceReadingOrigin};
+ if(pointSaved)storage.set('quest-reading-nav-point.v1:/starrail-quests/대화/연출-timeline-0123456789abcdef.html'+search,JSON.stringify(pointSaved));
+ const context={Element,HTMLElement,HTMLAnchorElement,HTMLDetailsElement,MouseEvent,document,innerHeight:800,scrollY:pageScroll,sessionStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)},location:{origin:'https://example.test',pathname:'/starrail-quests/대화/연출-timeline-0123456789abcdef.html',search,hash:''},
+  getComputedStyle:()=>({scrollPaddingTop:padding+'px',scrollMarginTop:margin+'px'}),window:{addEventListener:(name,cb)=>windowEvents[name]=cb,scrollBy:(x,y)=>{scrolls.push([x,y]);context.scrollY+=y;original.top-=y;extra.top-=y;},scrollTo:(x,y)=>{const delta=y-context.scrollY;context.scrollY=y;scrolls.push([x,delta]);original.top-=delta;extra.top-=delta;}},matchMedia:()=>({matches:!mobileMenu}),requestAnimationFrame:cb=>cb(),URL,URLSearchParams,safeReadingReturn,sourceReadingOrigin};
  if(nativeLifecycle)context.customElements={whenDefined(name){assert.equal(name,'sl-sidebar-pane');return {then:callback=>nativeReady.push(callback)};}};
  context.location.hash=hash;
  vm.runInNewContext(script,context);
  const sidebar=fs.readFileSync(new URL('../src/components/PageSidebar.astro',import.meta.url),'utf8');
  const focusScript=stripTypeScriptTypes(sidebar.slice(sidebar.indexOf(" const focus=document.createElement('button');"),sidebar.indexOf('</script>')));
  if(navPresent){context.guide=guide;vm.runInNewContext(focusScript,context);}
- return {events,windowEvents,guide,guideBody,links,original,extra,parent,owners,menu,title,fallback,sourceLink,MouseEvent,disclosure,storage,location:context.location,buttons,scrolls,document,toc,menuActions,nativeReady};
+ return {events,windowEvents,guide,guideBody,links,original,extra,parent,owners,menu,title,fallback,sourceLink,MouseEvent,disclosure,storage,location:context.location,buttons,scrolls,document,toc,menuActions,nativeReady,context};
 }
 test('actual headings produce unique local anchors, including an unlabeled original body and additional sources',()=>{
  const r=reader();assert.deepEqual(r.links.map(a=>a.href),['#original','#deep-timeline-originals']);
@@ -129,13 +132,36 @@ test('mobile source return opens the guide and focuses the visible link without 
  const r=reader({mobileMenu:true,menuOpen:false,hash:'#quest-nav-quest-1-timeline-abc',search:'?from='+encodeURIComponent('/starrail-quests/문서/quest-2.html#original'),saved:{open:{'quest-2:연출 원문':false},scroll:420}});
  assert.equal(r.guide.open,true);assert.equal(r.menu.open,false);assert.equal(r.disclosure.open,true);assert.equal(r.owners[1].open,true);
  assert.equal(r.sourceLink.getClientRects().length,1);assert.equal(r.sourceLink.focused,true);
- assert.deepEqual(r.menuActions,['scroll:quest-nav-quest-1-timeline-abc','focus:quest-nav-quest-1-timeline-abc']);
+ assert.deepEqual(r.menuActions,['focus:quest-nav-quest-1-timeline-abc']);
 });
 
 test('desktop source return keeps the menu without popover and restores its visible link',()=>{
  const r=reader({mobileMenu:false,menuOpen:false,hash:'#quest-nav-quest-1-timeline-abc'});
  assert.equal(r.menu.open,false);assert.equal(r.sourceLink.focused,true);assert.equal(r.sourceLink.getClientRects().length,1);
  assert.ok(!r.menuActions.includes('show'));
+});
+
+test('source navigation captures the visible paragraph and restores its offset after a fragment jump',()=>{
+ const before=reader({originalTop:345.9375,pageScroll:752});
+ before.events['nav:click'](new before.MouseEvent(before.sourceLink));
+ const key='quest-reading-nav-point.v1:'+before.location.pathname+before.location.search;
+ const saved=JSON.parse(before.storage.get(key));
+ assert.deepEqual(saved,{link:before.sourceLink.id,id:'original',top:345.9375,scroll:752});
+ const after=reader({pointSaved:saved,originalTop:-704.0625,pageScroll:1802,hash:'#'+before.sourceLink.id});
+ assert.equal(after.original.top,345.9375);assert.equal(after.context.scrollY,752);
+ assert.equal(after.storage.has(key),false);assert.equal(after.sourceLink.scrolled,undefined);
+ assert.equal(after.sourceLink.focused,true);
+});
+
+test('revealing a return link scrolls only its guide without recentering the body',()=>{
+ const restored=reader({hash:'#quest-nav-quest-1-timeline-abc',sourceLinkTop:160,originalTop:200,pageScroll:600});
+ assert.equal(restored.sourceLink.scrolled,undefined);assert.equal(restored.context.scrollY,600);
+ assert.equal(restored.guideBody.scrollTop,80);assert.equal(restored.original.top,200);assert.deepEqual(restored.scrolls,[]);
+});
+
+test('a saved body point is ignored for a different return link',()=>{
+ const r=reader({pointSaved:{link:'other-link',id:'original',top:345,scroll:752},originalTop:90,pageScroll:1200,hash:'#quest-nav-quest-1-timeline-abc'});
+ assert.equal(r.original.top,90);assert.equal(r.context.scrollY,1200);assert.deepEqual(r.scrolls,[]);
 });
 
 test('source return has no dependency on native Starlight constructor or global popover state',()=>{
