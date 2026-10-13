@@ -20,3 +20,5 @@ tools/verify_fresh_native_timeline.py -text whitespace=cr-at-eol
 tools/verify_snapshot_native_corroboration.py -text
 tools/verify_versioned_timeline_text.py -text
 tools/verify_mission_talk_ranges.py -text
+data/lua-native-caller-corroboration.json -text
+tools/verify_lua_native_corroboration.py -text

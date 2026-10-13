@@ -19,6 +19,8 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Native choice source and domain QA failed'}
   & python -B -X utf8 tools/verify_lua_timeline_dialogue.py --self-test
   if($LASTEXITCODE -ne 0){throw 'Native source consumer and independent negative QA failed'}
+  & python -B -X utf8 tools/verify_lua_native_corroboration.py --self-test
+  if($LASTEXITCODE -ne 0){throw 'Lua caption cached caller source boundary QA failed'}
   & python -B -X utf8 tools/verify_fresh_native_timeline.py --self-test
   if($LASTEXITCODE -ne 0){throw 'Fresh native Timeline exact source QA failed'}
   & python -B -X utf8 tools/verify_public_snapshot_timeline.py --self-test
@@ -46,6 +48,8 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Native choice originals and exact source metadata QA failed'}
   & python -B -X utf8 tools/verify_lua_timeline_dialogue.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Native consumer evidence and preserved static original QA failed'}
+  & python -B -X utf8 tools/verify_lua_native_corroboration.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Lua caption cached caller rendered proof QA failed'}
   & python -B -X utf8 tools/verify_fresh_native_timeline.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Fresh native Timeline static original QA failed'}
   & python -B -X utf8 tools/verify_public_snapshot_timeline.py --dist dist
@@ -136,6 +140,8 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Native choice originals and exact source metadata QA failed'}
   & python -B -X utf8 tools/verify_lua_timeline_dialogue.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Optimized Lua screen original and source consumer QA failed'}
+  & python -B -X utf8 tools/verify_lua_native_corroboration.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Optimized Lua caption cached caller proof QA failed'}
   & python -B -X utf8 tools/verify_fresh_native_timeline.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Fresh native Timeline static original QA failed'}
   & python -B -X utf8 tools/verify_public_snapshot_timeline.py --dist dist
