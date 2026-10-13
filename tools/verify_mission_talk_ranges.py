@@ -4,10 +4,13 @@ Default: closed public proof, original Korean rows and typed interval boundaries
 --archive: whole JSON census and exact source bytes/pointers.
 --game-root: current metadata, method pointers and seven whole .pdata extents.
 --dist: rendered originals, reference roles, anchors, source notes and return link.
+--publication-report: optional actual shared-metadata receipt for packed readers.
 No producer modules or third-party packages are imported.
 """
 import argparse
+import base64
 import copy
+import gzip
 import hashlib
 from html.parser import HTMLParser
 import json
@@ -275,13 +278,61 @@ class Rendered(HTMLParser):
   elif kind in ('note','native'): obj.append(text)
   else: obj[1].append(text)
 
-def dist_check(dist,data,scenes):
+def ui_wire_rows(text):
+ # Decode the actual shared runtime independently of the publication producer.
+ indexed_matches=list(re.finditer(r'__starrailPublicationLoadUI\(JSON\.parse\(__starrailPublicationDecode\("([A-Za-z0-9+/=]+)",([0-9]+)\)\),([0-9]+)\);',text))
+ dense_matches=list(re.finditer(r'window\.__starrailPublicationUI=JSON\.parse\(__starrailPublicationDecode\("([A-Za-z0-9+/=]+)",([0-9]+)\)\);',text))
+ require(len(indexed_matches)+len(dense_matches)==1,'unique supported UI wire declaration')
+ indexed=indexed_matches[0] if indexed_matches else None; dense=dense_matches[0] if dense_matches else None
+ match=indexed or dense; raw=gzip.decompress(base64.b64decode(match[1],validate=True))
+ require(len(raw)==int(match[2]),'UI wire decoded byte length')
+ values=json.loads(raw.decode('utf8',errors='strict')); require(isinstance(values,list),'UI wire array')
+ if dense:
+  require(all(isinstance(row,str) for row in values),'dense UI wire text slots'); return values
+ count=int(match[3]); require(len(values)==count,'indexed UI wire slot count')
+ rows={}
+ for pair in values:
+  require(isinstance(pair,list) and len(pair)==2 and type(pair[0]) is int and 0<=pair[0]<count and isinstance(pair[1],str) and pair[0] not in rows,'indexed UI wire slot type/range/uniqueness')
+  rows[pair[0]]=pair[1]
+ return [rows[i] for i in range(count)]
+
+def publication_metadata_expander(dist,report_path):
+ from verify_versioned_timeline_text import expand_proof_slots,relative
+ report=load(report_path); require(report['schema']=='starrail-publication-dedup.v3','publication metadata receipt schema')
+ runtimes=[]
+ for name,record in report['assets'].items():
+  require(re.fullmatch(r'[0-9a-f]{20}\.(?:js|css)',name),'shared metadata asset path')
+  raw=(Path(dist)/'_shared'/name).read_bytes(); require(sha(raw)==record['sha256'],'actual shared metadata asset SHA')
+  if record['kind']=='proof-runtime': runtimes.append(raw.decode('utf8',errors='strict'))
+ require(len(runtimes)==1,'one actual publication UI runtime')
+ rows=ui_wire_rows(runtimes[0]); require(rows==report['uiPool'],'actual UI wire differs from receipt slots')
+ for shard in report['proofShards'].values():
+  url=unquote(shard['url']); require(url.startswith('/starrail-quests/'),'actual metadata shard base')
+  raw=(Path(dist)/relative(url[len('/starrail-quests/'):])).read_bytes()
+  require(sha(raw)==shard['assetSha256'],'actual metadata shard SHA')
+ for name,record in report['proofCodecFiles'].items():
+  raw=(Path(dist)/'_publication'/relative(name)).read_bytes()
+  require(len(raw)==record['bytes'] and sha(raw)==record['sha256'],'actual publication codec SHA/size')
+ pattern=re.compile(r'<script>__sp\(([0-9]+)\);</script>')
+ def slot(match):
+  index=int(match[1]); require(0<=index<len(rows),'publication UI slot bounds'); return rows[index]
+ def expand(text):
+  for _ in range(16):
+   updated=pattern.sub(slot,text)
+   if updated==text:
+    require(not pattern.search(text),'cyclic publication UI metadata'); break
+   text=updated
+  else: raise ValueError('cyclic or excessive publication UI metadata nesting')
+  return expand_proof_slots(text,report)
+ return expand
+
+def dist_check(dist,data,scenes,report_path=None):
  count=0; checked_ids=set(); pages=0
+ expand=None
  for record in data['records']:
-  path=Path(dist)/record['url']; require(path.is_file(), 'rendered range page absent: '+record['url']); page=Rendered(); page.feed(path.read_text(encoding='utf8'))
+  path=Path(dist)/record['url']; require(path.is_file(), 'rendered range page absent: '+record['url']); static=path.read_text(encoding='utf8'); page=Rendered(); page.feed(static); page.close()
   require(len(page.ids)==len(set(page.ids)), 'duplicate page anchors')
-  require(page.has_return and page.native and NOTE in page.notes, 'range return/native proof/unknown edition note')
-  require(page.native_table is not None and json.loads(page.native_table)==native_summary(data['nativeProfile']), 'rendered native function/field proof table')
+  require(page.native and NOTE in page.notes,'static range native disclosure/unknown edition note')
   subset=[s for s in scenes if s['recordId']==record['id']]; expected=[r for s in subset for r in s['rows']]
   require(len(page.rows)==len(expected), 'rendered reference census')
   for observed,row in zip(page.rows,expected):
@@ -289,10 +340,19 @@ def dist_check(dist,data,scenes):
    require(observed['text']==row['text'] and observed['speaker']=='설정 참조 · '+row['speaker'], 'rendered exact original/speaker')
    require(any(unquote(urlsplit(link).path).endswith('/'+row['url'].split('#')[0]) and unquote(urlsplit(link).fragment)==row['url'].split('#')[1] for link in observed['links']), 'original return link')
    checked_ids.add(row['talk_id']); count+=1
-  for scene in subset: require(json.loads(page.proofs[scene['id']])==scene['node'], 'rendered exact whole source node')
+  expanded=static
+  if re.search(r'__sp\(|__spr\(|__starrailPublicationWrite\(',static):
+   if expand is None: expand=publication_metadata_expander(dist,report_path or Path(dist).resolve().parent/'.codex-work/publication-build-report.json')
+   expanded=expand(static)
+  proof=Rendered(); proof.feed(expanded); proof.close()
+  require(proof.rows==page.rows,'publication metadata expansion changed static originals')
+  require(len(proof.ids)==len(set(proof.ids)),'expanded range duplicate anchors')
+  require(proof.has_return and proof.native and NOTE in proof.notes,'range return/native proof/unknown edition note')
+  require(proof.native_table is not None and json.loads(proof.native_table)==native_summary(data['nativeProfile']),'rendered native function/field proof table')
+  for scene in subset: require(json.loads(proof.proofs[scene['id']])==scene['node'], 'rendered exact whole source node')
   pages+=1
  require(checked_ids==set(data['ids']) and count==104, 'rendered all75 originals')
- return {'pages':pages,'references':count,'distinctTalkIds':len(checked_ids),'sourceNodes':43}
+ return {'pages':pages,'references':count,'distinctTalkIds':len(checked_ids),'sourceNodes':43,'staticOriginalsCheckedBeforeMetadataExpansion':True,'actualUIWireVerified':expand is not None}
 
 def selftest(repo,data):
  tid=data['ids'][0]; sample={'$type':'RPG.GameCore.PlayMissionTalk','StartSentenceID':{'IsDynamic':False,'FixedValue':{'Value':tid}},'EndSentenceID':{'IsDynamic':False,'FixedValue':{'Value':tid}}}
@@ -310,12 +370,12 @@ def selftest(repo,data):
  return passed
 
 def main():
- ap=argparse.ArgumentParser(description=__doc__); ap.add_argument('--repo',type=Path,default=Path(__file__).resolve().parents[1]); ap.add_argument('--data',type=Path); ap.add_argument('--archive',type=Path); ap.add_argument('--game-root',type=Path); ap.add_argument('--dist',type=Path); ap.add_argument('--selftest',action='store_true'); ap.add_argument('--report',type=Path); args=ap.parse_args()
+ ap=argparse.ArgumentParser(description=__doc__); ap.add_argument('--repo',type=Path,default=Path(__file__).resolve().parents[1]); ap.add_argument('--data',type=Path); ap.add_argument('--archive',type=Path); ap.add_argument('--game-root',type=Path); ap.add_argument('--dist',type=Path); ap.add_argument('--publication-report',type=Path); ap.add_argument('--selftest',action='store_true'); ap.add_argument('--report',type=Path); args=ap.parse_args()
  path=args.data or args.repo/'data/mission-talk-range-dialogue.json'; raw=path.read_bytes(); require(b'\r' not in raw and sha(raw)==DATA_SHA,'public file exact LF SHA'); data=json.loads(raw); scenes,joins,counts=source_check(args.repo,data)
  report={'schema':'starrail-mission-talk-range-replay.v1','status':'PASS','publicDataSha256':sha(raw),'counts':counts,'sourceCheck':'PASS_CLOSED_PUBLIC_PROOF_AND_PRESERVED_KOREAN','archive':'NOT_REQUESTED','currentNative':'NOT_REQUESTED','rendered':'NOT_REQUESTED','role':ROLE,'edition':'UNKNOWN','runtimeVerified':False,'nativeSourceWholeEOF':False}
  if args.archive: report['archive']=archive_check(args.archive,data)
  if args.game_root: report['currentNative']=game_check(args.game_root,data['nativeProfile'])
- if args.dist: report['rendered']=dist_check(args.dist,data,scenes)
+ if args.dist: report['rendered']=dist_check(args.dist,data,scenes,args.publication_report)
  if args.selftest: report['semanticNegativeCases']=selftest(args.repo,data)
  if args.report: args.report.write_bytes((json.dumps(report,ensure_ascii=False,indent=2)+'\n').encode('utf8'))
  print(json.dumps(report,ensure_ascii=False))
