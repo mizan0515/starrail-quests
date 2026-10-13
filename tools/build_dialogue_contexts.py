@@ -12,6 +12,7 @@ from build_mission_dialogue_supplements import refs, path_refs, objects, perform
 from build_official_talk_library import reference_context
 from build_official_universe_texts import official_input
 from multivoice_configuration_refs import PROOF as MULTIVOICE_PROOF, SOURCE as MULTIVOICE_SOURCE, KIND as MULTIVOICE_KIND, references as multivoice_refs, source_record as multivoice_record
+from music_rhythm_text_refs import KIND as MUSIC_KIND, SOURCES as MUSIC_SOURCES, references as music_refs, source_record as music_record, public_proof as music_proof
 
 SITE = Path(__file__).resolve().parents[1]
 SCHEMA = 'starrail-dialogue-contexts.v1'
@@ -233,6 +234,7 @@ def content_refs(obj,path,pointer='',typed=''):
   typed=obj.get('$type',typed)
   yield from cake_config_refs(obj,path,pointer)
   yield from multivoice_refs(obj,path,pointer)
+  yield from music_refs(obj,path,pointer)
   literal=fixed_npc_bubble_talk(obj)
   if literal is not None:yield literal,pointer+'/TalkSentenceID/FixedValue/Value','FIXED_NPC_BUBBLE_TALK_SENTENCE_ID'
   for key,value in obj.items():
@@ -326,6 +328,8 @@ def geography(metadata, hashes, performance, texts, project):
  return labels,reverse
 
 def build(archive, official_root, skill):
+ previous_context=read(SITE/'public/dialogue-contexts.json')
+ previous_order={g['id']:i for i,g in enumerate(previous_context['groups'])}
  local,local_hashes=corpus();official=read(SITE/'data/official-talk-library.json');supp=read(SITE/'data/mission-dialogue-supplements.json')
  assigned=set();strict=set();documents={}
  for p in sorted((SITE/'data/documents').glob('quest-*.json')):
@@ -357,7 +361,7 @@ def build(archive, official_root, skill):
     if tid in target:classification['EVENT_ONLY'].add(tid)
     continue
    context=reference_context(obj,ptr,k)
-   if not context['typedContainer'] and not path.startswith('ExcelOutput/'):continue
+   if not context['typedContainer'] and not path.startswith('ExcelOutput/') and k!=MUSIC_KIND:continue
    if tid not in local and tid not in current:unavailable.add(tid);continue
    ancestors=ptr.split('/')
    choice=k!='FIXED_NPC_BUBBLE_TALK_SENTENCE_ID' and ('OptionList' in ancestors or context['typedContainer'] and context['typedContainer']['type'].endswith('.OptionTalkInfo'))
@@ -375,16 +379,18 @@ def build(archive, official_root, skill):
    if k==MULTIVOICE_KIND:
     row_pointer=ptr.rsplit('/',1)[0];native=obj[int(row_pointer.strip('/'))]
     record=multivoice_record(native,row_pointer)
+   if k==MUSIC_KIND:record=music_record(obj,ptr)
    usage={'MobileSentenceID' :'모바일 안내','PcSentenceID':'PC 안내','PadSentenceID':'패드 안내','LastToBeginTalkSentenceID':'토론 설정 참조'}.get(k,'')
    if k=='FIXED_NPC_BUBBLE_TALK_SENTENCE_ID':usage='말풍선'
    if k=='CAKE_CONFIG_TALK_SENTENCE_ID':usage='콘텐츠 설정의 대사 참조'
    if k==MULTIVOICE_KIND:usage='대사의 대체 음성 설정'
+   if k==MUSIC_KIND:usage=record.pop('usageLabel')
    if path=='ExcelOutput/HeartDialTalk.json':usage='감정 조율의 표시 문구'
    if k=='TalkSentenceID':
     parent=obj
     for part in ptr.strip('/').split('/')[:-1]:parent=parent[int(part)] if isinstance(parent,list) else parent[part]
     if isinstance(parent,dict) and parent.get('IsMultiPlatform') is True:usage='기본 안내'
-   found[tid].append({'pointer':ptr,'kind':k,'displayKind':'설정 참조' if k in ('CAKE_CONFIG_TALK_SENTENCE_ID',MULTIVOICE_KIND) else '선택지' if choice else '대사','usageLabel':usage,**context,**record})
+   found[tid].append({'pointer':ptr,'kind':k,'displayKind':'화면 문구' if k==MUSIC_KIND else '설정 참조' if k in ('CAKE_CONFIG_TALK_SENTENCE_ID',MULTIVOICE_KIND) else '선택지' if choice else '대사','usageLabel':usage,**context,**record})
   audited=set(found)&target
   if not audited:continue
   internal_source=internal(path)
@@ -400,12 +406,17 @@ def build(archive, official_root, skill):
   if path=='ExcelOutput/HeartDialTalk.json':title='감정 조율에 표시되는 문구'
   if path=='ExcelOutput/CakeConfig.json':title='케이크 설정에 연결된 대사'
   if path==MULTIVOICE_SOURCE:title='대체 음성 설정에 연결된 대사'
+  if path in MUSIC_SOURCES:title='리듬 게임의 화면 문구 · '+first[:28]+('…'if len(first)>28 else '')
   if not title:title=kind(path)
   group={'id':source_id,'title':title,'kind':kind(path),'source':path,'sourceSha256':hashes[path],
    'rows':[{'talkId':tid,'edition':'official' if tid in current else 'preserved','references':records} for tid,records in found.items()],
    'auditedTalkIds':sorted(audited),'unavailableTalkIds':sorted(unavailable),'regions':regions.get(path,[])}
   if path==MULTIVOICE_SOURCE:group['configurationProof']=MULTIVOICE_PROOF
+  if path in MUSIC_SOURCES:
+   assert hashes[path]==MUSIC_SOURCES[path],'Music configuration snapshot differs from native consumer profile'
+   group['screenReferenceProof']=music_proof()
   groups.append(group);all_sources[path]=hashes[path]
+ groups.sort(key=lambda g:(0,previous_order[g['id']])if g['id']in previous_order else(1,g['source']))
  classification['EVENT_ONLY']-=classification['EXACT_READABLE_SOURCE_REFERENCE']|classification['INTERNAL_REFERENCE']
  classification['INTERNAL_REFERENCE']-=classification['EXACT_READABLE_SOURCE_REFERENCE']
  deep_path=SITE/'data/deep-dialogue-attribution.json';deep=None

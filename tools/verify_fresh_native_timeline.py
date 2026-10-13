@@ -345,6 +345,133 @@ def guard_tests():
 PROJECTION_SHA = 'cfb05b93a7fbba8057af256dea9da7d49c213b9401eb05b1002d9e6d33d06c9b'
 SCENE_SET_SHA = 'e5f910dffb10864b9b8b6cd6cdcb52797da25c93ac3dfdfcb2f58dd22548ce55'
 ID_SET_SHA = '77c6cbaac20be8dac0efdf088bd609a9b7290e9a7da7e7a2dd0118f816ebf5c8'
+BASELINE_PAYLOAD_SHA = 'a25f18d853c26769aa0b03eba75a6776477657fc750218b663c0b69bfb256a99'
+BASELINE_EVIDENCE_SHA = '3fc3e64cabb6d35c4b7b72cf3d931f46fd630dd629cf7f9e48e2f81515845d82'
+BASELINE_COUNTS_SHA = '46d50c32ccc2c8defd59c9e6a76ca190eaa536b62979cd4e89024db70a15a0dc'
+DELTA_PROJECTION_SHA = 'b6b13a03039877f14709d3dececefd7b67f4e93e53a5358b1aa0f08af2cb2175'
+DELTA_PAYLOAD_SHA = '4888d82a62bcb18a46d3de1f7f98068ded9cb90a7f932c5245a9ca7c631dd04f'
+DELTA_EVIDENCE_SHA = 'cbd5d5b12f67a1df67fbbfaa6706ae2f0f51277413de139a748f29bfd8c4de85'
+DELTA_COUNTS_SHA = '7f8dbae6075ad871dbe6026243e6e10998ff5142416115526c802fe622e9b3de'
+DELTA_COHORT_SHA = '2b24e7f822e49ecd0dcd130961d59c11290ecb5ffeb15fd82fe1fd651dbd68db'
+COMBINED_SCENE_SET_SHA = '2b0e3ffa4b0ad04dd38f8a314da7b9a41a1ec2404911cb21efb0614ef773e0e9'
+COMBINED_ID_SET_SHA = '44744dc187b086cfc8510f17995d7da5dae81a6c3af2328833b7e8e3631786f2'
+DELTA_SCENE_SET_SHA = '3e4553e11eb36a36beba81dc0f41a81244ebe2a692d70aff4e403cf2caf38da1'
+DELTA_ID_SET_SHA = '665ce240cd7c473b941e25526ceebbbfb41de8b18b49709a8985bc4e645bbfb0'
+COMBINED_PROJECTION_SHA = 'b31990792d890bb38c3ecfb674f1cd7faa5f4200d9da9dc1aabc5e312d2094be'
+BASELINE_DEEP_SHA = '40c288fd82546a119b1add2cc673b38fbde685cb620949585e52c0c9de104875'
+BASELINE_DEEP_PAYLOAD_SHA = '74bbcc5fab1bfb00301e907213cdf8e7658df6f0e81ed7600730e953f28f005f'
+COMBINED_DEEP_SHA = '47dbf26058ee92271e770b5d34aa3a76334be5e25b95eb5ca46d5ab908fdc8b4'
+DELTA_SCENE_IDS = frozenset({
+    'fresh-timeline-dc38c415c44ada3d82d5', 'fresh-timeline-b10ce5ee1648fcc362cb',
+    'fresh-timeline-f03c133352cbc2841b82', 'fresh-timeline-e337a87e209574d111b2',
+    'fresh-timeline-bb331645cdbd801f06de', 'fresh-timeline-1dd0ae32579d688b0ea9',
+    'fresh-timeline-04dc363ef528a611b95b', 'fresh-timeline-6caf079c4729db813cf0',
+    'fresh-timeline-41a611c0e86e157f0385', 'fresh-timeline-637a1e83fc1b6c268407',
+    'fresh-timeline-d75e7a8368f01b36cfc7', 'fresh-timeline-ae18ade1731d233d6457',
+    'fresh-timeline-e2accbec3300b9d46121', 'fresh-timeline-5362f7e1802e59a15ee8',
+    'fresh-timeline-6c495f0b4ce9af3fe86b', 'fresh-timeline-527080cdf7b29202d172',
+    'fresh-timeline-af2379f1f0fb45650f07', 'fresh-timeline-82c682167f3ff13275c2',
+})
+DEEP_DELTA_SCENE_IDS = frozenset({'timeline-3297d588b63693a2', 'timeline-8b4c2ac5caa314fd',
+                                'timeline-5f63419fe65df04b', 'timeline-2fd9d9f5dca3c9cf',
+                                'timeline-6d1dd1be8ea1c611', 'timeline-5d3ec60172fd754d',
+                                'timeline-971e9da54f3ed9f1'})
+BASELINE_RAW_SCOPE = {'records': 3272, 'supportedRoots': 3272, 'nonTimelineTargets': 3059}
+DELTA_RAW_SCOPE = {'records': 20, 'supportedRoots': 20, 'nonTimelineTargets': 22}
+PHASE4_PROJECTION_SHA = '6bd93d266370ba78ae1a77df1094d7fad5ce7f7c12045d22c568c93ec1692798'
+PHASE4_PAYLOAD_SHA = '1d1c731d97812f3efa58ed3c546c58dacb07c14a297d94e9978c39f8a7bd7b7e'
+PHASE4_EVIDENCE_SHA = 'c7067813186d0b217de6a41105bc5218d03e368727d2cde9f606eef7f6528467'
+PHASE4_COUNTS_SHA = '1ed74695582e14b746f002e0031efc8792c3042da41599eb7033b33b6aa9baeb'
+PHASE4_SCENE_SET_SHA = '2950f8e424851a7fd13838b877fadce938ce629316defe4eaa9c1101213d5013'
+PHASE4_ID_SET_SHA = '8907578a3236a5e033931702116431f2b7551d8e1ea3f5e12f17a82307dfe20e'
+PHASE4_RAW_SCOPE = {'records': 20, 'supportedRoots': 20, 'nonTimelineTargets': 20}
+
+
+def canonical_sha(value):
+    return sha(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':')).encode('utf8'))
+
+
+def payload_slice(data, scenes):
+    ids = {str(row['talkId']) for scene in scenes for row in scene_rows(scene)}
+    sources = {ref['sourceIndex'] for scene in scenes for ref in scene['proof']['references']}
+    return {'scenes': scenes, 'joins': {key: data['joins'][key] for key in ids},
+            'sourceProofs': {key: data['sourceProofs'][key] for key in sources}}
+
+
+def preserved_slices(data):
+    """Reconstruct the original and two closed deltas, preserving each payload."""
+    deltas = data['evidence'].get('newFreshDeltas')
+    if deltas is None:
+        return None
+    require(isinstance(deltas, list) and len(deltas) == 2, 'Exact closed fresh delta count differs')
+    baseline_evidence = {key: value for key, value in data['evidence'].items() if key != 'newFreshDeltas'}
+    require(canonical_sha(baseline_evidence) == BASELINE_EVIDENCE_SHA, 'Previous fresh evidence changed')
+    require(canonical_sha(data['counts']) == BASELINE_COUNTS_SHA, 'Previous audit counters changed')
+    require(len(data['scenes']) == 3204 + 18 + 18,
+            'Mandatory previous-first/new-appended fresh scene partition differs')
+    previous = payload_slice(data, data['scenes'][:3204])
+    require(canonical_sha(previous) == BASELINE_PAYLOAD_SHA, 'Previous fresh scenes/joins/source proofs changed')
+    added, all_ids, all_sources = [], set(previous['joins']), set(previous['sourceProofs'])
+    specs = ((DELTA_PROJECTION_SHA, DELTA_PAYLOAD_SHA, DELTA_EVIDENCE_SHA, DELTA_COUNTS_SHA),
+             (PHASE4_PROJECTION_SHA, PHASE4_PAYLOAD_SHA, PHASE4_EVIDENCE_SHA, PHASE4_COUNTS_SHA))
+    for index, (delta, (projection_sha, payload_sha, evidence_sha, counts_sha)) in enumerate(zip(deltas, specs)):
+        require(delta['projectionSha256'] == projection_sha and delta['frozenCohortSha256'] == DELTA_COHORT_SHA,
+                'Closed delta/cohort SHA differs')
+        require(canonical_sha(delta['evidence']) == evidence_sha and canonical_sha(delta['counts']) == counts_sha
+                and canonical_sha(delta['baselineCounts']) == BASELINE_COUNTS_SHA, 'Closed delta/baseline counts or evidence changed')
+        require(delta['evidence']['officialKorean'] == baseline_evidence['officialKorean'], 'Fresh Korean edition changed between slices')
+        start = 3204 + 18 * index
+        part = payload_slice(data, data['scenes'][start:start + 18])
+        require(canonical_sha(part) == payload_sha, 'Closed new fresh scenes/joins/source proofs changed')
+        require(all_ids.isdisjoint(part['joins']) and all_sources.isdisjoint(part['sourceProofs']),
+                'Mandatory fresh source slices overlap')
+        all_ids.update(part['joins']); all_sources.update(part['sourceProofs'])
+        part.update(schema=data['schema'], evidence=delta['evidence'], counts=delta['counts'])
+        added.append(part)
+    require(set(data['joins']) == all_ids and set(data['sourceProofs']) == all_sources,
+            'Mandatory old/new fresh payload partition differs')
+    previous.update(schema=data['schema'], evidence=baseline_evidence, counts=deltas[0]['baselineCounts'])
+    return previous, added
+
+
+def combined_counts(data):
+    roles, ids = {}, set()
+    for scene in data['scenes']:
+        for row in scene_rows(scene):
+            tid, role = row['talkId'], row['role']
+            ids.add(tid)
+            summary = roles.setdefault(role, {'occurrences': 0, 'ids': set()})
+            summary['occurrences'] += 1; summary['ids'].add(tid)
+    return {'scenes': len(data['scenes']), 'occurrences': sum(r['occurrences'] for r in roles.values()),
+            'distinctTalkIds': len(ids), 'sourceProofs': len(data['sourceProofs']),
+            'roles': {key: {'occurrences': value['occurrences'], 'distinctTalkIds': len(value['ids'])}
+                      for key, value in sorted(roles.items())}}
+
+
+def deep_preservation(repo, data):
+    require(data['evidence']['existingDeepTimelineSha256'] == BASELINE_DEEP_SHA,
+            'Previous deep source freeze SHA differs')
+    path = repo / 'data/deep-timeline-dialogue.json'
+    actual_sha = file_sha(path)
+    if actual_sha == BASELINE_DEEP_SHA:
+        require(not data['evidence'].get('newFreshDeltas'), 'Combined fresh source requires the appended native choice corpus')
+        return {'previousWholeSourceSHA': BASELINE_DEEP_SHA, 'appendedScenes': 0}
+    require(actual_sha == COMBINED_DEEP_SHA, 'Closed appended deep source SHA differs')
+    deep = load(path)
+    require(len(deep['scenes']) == 10473 + 7
+            and {scene['id'] for scene in deep['scenes'][10473:]} == DEEP_DELTA_SCENE_IDS,
+            'Exact newly appended deep choice scene cohort differs')
+    scenes = deep['scenes'][:10473]
+    ids = {str(row['talkId']) for scene in scenes for row in scene['rows'] + scene.get('optionReferences', [])}
+    sources = {str(key) for scene in scenes for row in scene['rows'] + scene.get('optionReferences', [])
+               for key in row.get('sourceIndices', [])}
+    previous = {'scenes': scenes, 'joins': {key: deep['joins'][key] for key in ids},
+                'sourceProofs': {key: deep['sourceProofs'][key] for key in sources}}
+    require(canonical_sha(previous) == BASELINE_DEEP_PAYLOAD_SHA,
+            'Previous deep scenes/joins/source proof corpus changed')
+    return {'previousWholeSourceSHA': BASELINE_DEEP_SHA, 'previousPayloadSHA': BASELINE_DEEP_PAYLOAD_SHA,
+            'preservedScenes': 10473, 'preservedJoins': len(ids), 'preservedSourceProofs': len(sources),
+            'appendedScenes': 7, 'combinedSourceSha256': actual_sha}
 
 
 def sequence_hash(value):
@@ -363,8 +490,13 @@ def readable(raw):
     text = re.sub(r'<br\s*/?>', '\n', text, flags=re.I)
     return re.sub(r'</?(?:color|size|b|i|u|align|voffset|indent|line-height|unbreak)(?:=[^>]*)?>', '', text, flags=re.I)
 
-def source_validate(repo, data, inverse=None):
+def source_validate(repo, data, inverse=None, delta=False):
     public_safe(data)
+    combined = preserved_slices(data)
+    if delta:
+        require(delta in (True, 'phase4') and combined is None
+                and canonical_sha({key: data[key] for key in ('scenes', 'joins', 'sourceProofs')}) == (PHASE4_PAYLOAD_SHA if delta == 'phase4' else DELTA_PAYLOAD_SHA),
+                'Closed delta source payload differs')
     require(data['schema'] == 'starrail-native-fresh-timeline-dialogue.v1', 'Fresh public Timeline schema')
     require(data['evidence']['officialKorean']['kind'] == 'OFFICIAL_GAME_KOREAN_TEXTMAP', 'Fresh Korean edition domain')
     files, memberships = {}, {}
@@ -497,10 +629,23 @@ def source_validate(repo, data, inverse=None):
             ids.add(tid)
     require(set(data['joins']) == {str(tid) for tid in ids} and set(data['sourceProofs']) == used_sources,
             'Fresh adopted join/source proof partition differs')
-    require(data['counts']['sceneCount'] == len(scene_ids) and data['counts']['includedUniqueIDs'] == len(ids)
-            and all(data['counts']['occurrences']['included_' + role] == count for role, count in roles.items()),
+    expected_counts = data['counts']
+    if combined:
+        for added in combined[1]:
+            added_counts = added['counts']
+            expected_counts = dict(expected_counts,
+                    sceneCount=expected_counts['sceneCount'] + added_counts['sceneCount'],
+                    includedUniqueIDs=expected_counts['includedUniqueIDs'] + added_counts['includedUniqueIDs'],
+                    occurrences={key: expected_counts['occurrences'].get(key, 0) + added_counts['occurrences'].get(key, 0)
+                                 for key in set(expected_counts['occurrences']) | set(added_counts['occurrences'])})
+        require(data.get('combinedCounts') == combined_counts(data), 'Public combined source summary differs from actual scenes')
+    require(expected_counts['sceneCount'] == len(scene_ids) and expected_counts['includedUniqueIDs'] == len(ids)
+            and all(expected_counts['occurrences']['included_' + role] == count for role, count in roles.items()),
             'Fresh declared adopted counts differ')
-    require(sequence_hash(sorted(scene_ids)) == SCENE_SET_SHA and sequence_hash(sorted(ids)) == ID_SET_SHA,
+    expected_scene_sha, expected_id_sha = ((PHASE4_SCENE_SET_SHA, PHASE4_ID_SET_SHA) if delta == 'phase4' else
+                                         (DELTA_SCENE_SET_SHA, DELTA_ID_SET_SHA) if delta else
+                                         (COMBINED_SCENE_SET_SHA, COMBINED_ID_SET_SHA) if combined else (SCENE_SET_SHA, ID_SET_SHA))
+    require(sequence_hash(sorted(scene_ids)) == expected_scene_sha and sequence_hash(sorted(ids)) == expected_id_sha,
             'Frozen fresh scene/ID cohort differs')
     return {'adoptedScenes': len(scene_ids), 'adoptedOriginals': sum(roles.values()), 'adoptedTalkIds': len(ids),
             'roles': dict(roles), 'preservedKoreanFiles': len(files), 'exactCallerSources': len(used_sources)}
@@ -549,8 +694,9 @@ def same_object(left, right):
             'Exact native object MonoScript identity differs')
 
 
-def caller_replay(data, directory):
-    path = directory / 'fresh-native-source-replay.json'
+def caller_replay(data, directory, prefix=''):
+    require(prefix in ('', 'phase2-', 'phase4-'), 'Unsupported closed native caller receipt prefix')
+    path = directory / (prefix + 'fresh-native-source-replay.json')
     raw = path.read_bytes()
     require(sha(raw) == data['evidence']['sourceReplaySha256'], 'Closed whole-source replay SHA differs')
     replay = json.loads(raw)
@@ -647,7 +793,8 @@ def native_guard_replay(data, directory):
             'independentActualTrackTruncationRejections': negative, 'minimumWidth': MINIMUM_CLIP_BYTES}
 
 
-def native_replay(data, directory):
+def native_replay(data, directory, delta=False):
+    require(delta in (False, True, 'phase4'), 'Unsupported closed native raw audit scope')
     # Read a closed scope's JSONL once, index only exact native root identities.
     paths = []
     for receipt in data['evidence']['rawAudits']:
@@ -665,6 +812,7 @@ def native_replay(data, directory):
         wanted[key] = scene
     inventories, inventory_names, found, decoded_counts, native_rows = {}, set(), set(), Counter(), 0
     raw_record_counts = Counter()
+    auxiliary_occurrences = 0
     for record in audit_records(paths):
         raw_record_counts['records'] += 1
         receipt = record['sourceReceipt']
@@ -673,6 +821,7 @@ def native_replay(data, directory):
                 raw_record_counts['nonTimelineTargets'] += 1
                 continue
             raw_record_counts['supportedRoots'] += 1
+            auxiliary_occurrences += len(target.get('auxiliary', []))
             key = target_key(receipt, target['rootContainer'], target['rootObject'])
             if key not in wanted:
                 continue
@@ -763,11 +912,14 @@ def native_replay(data, directory):
                 require(set(row['sourceIndices']) == {r['sourceIndex'] for r in scene['proof']['references']}, 'Native row caller usage partition differs')
                 native_rows += 1
     require(found == set(wanted), 'Adopted exact native root absent in closed route census')
-    require(raw_record_counts == {'records': 3272, 'supportedRoots': 3272, 'nonTimelineTargets': 3059}, 'Whole closed native input scope differs')
+    require(raw_record_counts == (PHASE4_RAW_SCOPE if delta == 'phase4' else DELTA_RAW_SCOPE if delta else BASELINE_RAW_SCOPE),
+            'Whole closed native input scope differs')
+    require(auxiliary_occurrences == data['counts']['auxiliaryOccurrences'], 'Whole closed native auxiliary UI scope differs')
     return {'rawScope': dict(raw_record_counts), 'actualAdoptedNativeRoots': len(found), 'actualNativeOriginalOccurrences': native_rows,
             'actualFullEOFObjects': dict(decoded_counts), 'inventoryFiles': len(inventory_names),
             'scriptClassBoundary': 'MonoScript 115 class/namespace is inventory-SHA/block-SHA/CAB-SHA bound; only MonoBehaviour 114 has raw export bytes',
-            'installedVersion': 'UNVERIFIED', 'unadoptedRoots': 68}
+            'installedVersion': 'UNVERIFIED', 'unadoptedRoots': 2 if delta else 68,
+            'rawAuxiliaryUIOccurrences': auxiliary_occurrences}
 
 
 def file_sha(path):
@@ -1147,11 +1299,46 @@ def self_tests(repo, data, inverse):
     return tests
 
 
+def preservation_tests(repo, data, inverse):
+    if not data['evidence'].get('newFreshDeltas'):
+        return []
+    tests = []
+    def reject(name, edit):
+        bad = dict(data, scenes=list(data['scenes']), evidence=copy.deepcopy(data['evidence']),
+                   counts=copy.deepcopy(data['counts']), joins=dict(data['joins']), sourceProofs=dict(data['sourceProofs']),
+                   combinedCounts=copy.deepcopy(data['combinedCounts']))
+        edit(bad)
+        try:
+            source_validate(repo, bad, inverse)
+        except (ValueError, KeyError, IndexError, UnicodeError, struct.error):
+            tests.append(name)
+            return
+        raise ValueError('Mandatory source preservation mutation accepted: ' + name)
+    reject('previous scene deletion', lambda d: d['scenes'].pop(0))
+    reject('new scene deletion', lambda d: d['scenes'].pop())
+    reject('previous source ordering', lambda d: d['scenes'].reverse())
+    old_join = str(data['scenes'][0]['rows'][0]['talkId'])
+    new_join = str(data['scenes'][3204]['rows'][0]['talkId'])
+    reject('previous raw join changed', lambda d: d['joins'].__setitem__(old_join, dict(d['joins'][old_join], raw='changed')))
+    reject('new raw join changed', lambda d: d['joins'].__setitem__(new_join, dict(d['joins'][new_join], raw='changed')))
+    reject('previous counters overwritten', lambda d: d['counts'].__setitem__('sceneCount', 3222))
+    reject('new auxiliary UI counter drift', lambda d: d['evidence']['newFreshDeltas'][0]['counts'].__setitem__('auxiliaryOccurrences', 1))
+    reject('closed delta source SHA drift', lambda d: d['evidence']['newFreshDeltas'][0].__setitem__('projectionSha256', '0' * 64))
+    reject('closed delta cohort SHA drift', lambda d: d['evidence']['newFreshDeltas'][0].__setitem__('frozenCohortSha256', '0' * 64))
+    reject('current installed caller claim', lambda d: d['evidence'].__setitem__('callerEditionStatus', 'CURRENT_INSTALLED_EDITION_PASS'))
+    reject('first preserved delta deletion', lambda d: d['scenes'].pop(3204))
+    reject('second closed delta deletion', lambda d: d['evidence']['newFreshDeltas'].pop())
+    reject('public combined occurrence summary drift', lambda d: d['combinedCounts'].__setitem__('occurrences', 1))
+    reject('public combined role distinct summary drift', lambda d: d['combinedCounts']['roles']['SPOKEN'].__setitem__('distinctTalkIds', 1))
+    return tests
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--repo', type=Path, default=Path(__file__).resolve().parents[1])
     parser.add_argument('--projection', type=Path, help='Explicit closed input override for independent audit before integration')
     parser.add_argument('--audit', type=Path, help='Closed raw CAB/whole-source receipt directory; no producer execution')
+    parser.add_argument('--delta-audit', type=Path, help='Closed new Timeline receipts, including phase2-prefixed caller replay')
     parser.add_argument('--official-root', type=Path, help='Explicit approved current official DesignV/pack cache')
     parser.add_argument('--archive', type=Path)
     parser.add_argument('--dist', type=Path)
@@ -1162,22 +1349,45 @@ def main():
     repo = args.repo.resolve()
     source = args.projection or repo / 'data/native-fresh-timeline-dialogue.json'
     raw = source.read_bytes()
-    require(sha(raw) == PROJECTION_SHA, 'Immutable closed fresh projection SHA differs')
     data = json.loads(raw)
+    slices = preserved_slices(data)
+    require(slices is not None or args.projection is not None, 'Default fresh dataset must include its mandatory closed delta')
+    require(sha(raw) == (COMBINED_PROJECTION_SHA if slices else PROJECTION_SHA), 'Immutable closed fresh projection SHA differs')
     inverse = load(repo / 'data/deep-dialogue-attribution.json')
     require(inverse['evidence']['freshTimelineSha256'] == sha(raw), 'Exact inverse fresh source SHA differs')
-    require(file_sha(repo / 'data/deep-timeline-dialogue.json') == data['evidence']['existingDeepTimelineSha256'],
-            'Preserved existing Timeline source SHA differs')
+    preserved_deep = deep_preservation(repo, data)
     require(data['evidence']['installedVersion'] == 'UNVERIFIED'
             and data['evidence']['callerEditionStatus'] == 'CACHED_SNAPSHOT_CURRENT_INSTALLED_EDITION_UNVERIFIED',
             'Unverified installed/caller edition boundary altered')
     require(data['evidence']['officialKorean']['entry']['fullEofVerified'] is True
             and data['evidence']['officialKorean']['talkTable']['fullEofVerified'] is True, 'Declared official EOF boolean altered')
     checks = {'source': source_validate(repo, data, inverse)}
+    if slices:
+        previous, added = slices
+        checks['sourcePreservation'] = {'previousProjectionSha256': PROJECTION_SHA,
+                'previousPayloadSha256': BASELINE_PAYLOAD_SHA, 'deltaProjectionSha256': DELTA_PROJECTION_SHA,
+                'deltaPayloadSha256': DELTA_PAYLOAD_SHA, 'mandatoryPreviousScenes': 3204, 'mandatoryNewScenes': 36,
+                'secondDeltaProjectionSha256': PHASE4_PROJECTION_SHA, 'secondDeltaPayloadSha256': PHASE4_PAYLOAD_SHA,
+                'preservedDeep': preserved_deep,
+                'countsScope': 'Top-level counters retain the exact previous scope; delta counters are separately validated and combined originals counted from actual scenes'}
+        checks['deltaSource'] = source_validate(repo, added[0], inverse, delta=True)
+        checks['secondDeltaSource'] = source_validate(repo, added[1], inverse, delta='phase4')
+        checks['combinedCounts'] = combined_counts(data)
+    else:
+        previous, added = data, None
+        checks['sourcePreservation'] = {'previousProjectionSha256': PROJECTION_SHA, 'preservedDeep': preserved_deep}
     if args.audit:
-        checks['caller'] = caller_replay(data, args.audit.resolve())
-        checks['nativeGuard'] = native_guard_replay(data, args.audit.resolve())
-        checks['native'] = native_replay(data, args.audit.resolve())
+        require(not slices or args.delta_audit is not None, 'Combined raw audit requires the explicit closed delta receipt directory')
+        checks['caller'] = caller_replay(previous, args.audit.resolve())
+        checks['nativeGuard'] = native_guard_replay(previous, args.audit.resolve())
+        checks['native'] = native_replay(previous, args.audit.resolve())
+        if slices:
+            checks['deltaCaller'] = caller_replay(added[0], args.delta_audit.resolve(), prefix='phase2-')
+            checks['deltaNative'] = native_replay(added[0], args.delta_audit.resolve(), delta=True)
+            checks['secondDeltaCaller'] = caller_replay(added[1], args.delta_audit.resolve(), prefix='phase4-')
+            checks['secondDeltaNative'] = native_replay(added[1], args.delta_audit.resolve(), delta='phase4')
+    require(args.delta_audit is None or args.audit is not None and slices is not None,
+            'Delta raw audit requires the combined source and previous receipt audit')
     if args.archive:
         checks['archive'] = archive_replay(data, args.archive.resolve())
     if args.official_root:
@@ -1186,7 +1396,8 @@ def main():
         checks['dist'] = dist_replay(repo, data, args.dist.resolve(), args.publication_report)
     report = {'schema': 'starrail-fresh-native-independent-verification.v1', 'status': 'PASS',
               'projectionSha256': sha(raw), 'verifierSha256': file_sha(Path(__file__)), 'checks': checks,
-              'guard': guard_tests(), 'negativeCanaries': self_tests(repo, data, inverse) if args.self_test else [],
+              'guard': guard_tests(), 'negativeCanaries': self_tests(repo, previous, inverse) if args.self_test else [],
+              'sourcePreservationNegativeCanaries': preservation_tests(repo, data, inverse) if args.self_test else [],
               'limits': ['Current installed release edition remains UNVERIFIED.',
                          'Only supported typed adopted clips are attributed by this verifier; unsupported assets remain separate census STOPs.',
                          'MonoScript metadata is extraction-receipt bound, not an independent raw115/CAB decompression replay.',

@@ -3,6 +3,16 @@ param([string]$Root=(Split-Path $PSScriptRoot -Parent),[int]$MaxTotalSeconds=600
 $ErrorActionPreference='Stop'
 Push-Location $Root
 try {
+  & node --test tools/test_deep_catalogue_append_only.mjs
+  if($LASTEXITCODE -ne 0){throw 'Previously published catalogue positions changed'}
+  & python -B -X utf8 tools/test_music_rhythm_domains.py
+  if($LASTEXITCODE -ne 0){throw 'Music screen reference domain QA failed'}
+  & python -B -X utf8 tools/verify_music_rhythm_text.py --self-test
+  if($LASTEXITCODE -ne 0){throw 'Music native and Lua consumer profile QA failed'}
+  & python -B -X utf8 tools/verify_mission_talk_ranges.py --selftest
+  if($LASTEXITCODE -ne 0){throw 'Mission range source and semantic domain QA failed'}
+  & python -B -X utf8 tools/verify_versioned_timeline_text.py --self-test
+  if($LASTEXITCODE -ne 0){throw 'Version comparison original and source domain QA failed'}
   & python -B -X utf8 tools/test_multivoice_configuration_refs.py
   if($LASTEXITCODE -ne 0){throw 'MultiVoice Talk and Voice domain regression QA failed'}
   & python -B -X utf8 tools/verify_native_choice_delta.py --self-test
@@ -13,6 +23,8 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Fresh native Timeline exact source QA failed'}
   & python -B -X utf8 tools/verify_public_snapshot_timeline.py --self-test
   if($LASTEXITCODE -ne 0){throw 'Public snapshot Timeline source distinction QA failed'}
+  & python -B -X utf8 tools/verify_snapshot_native_corroboration.py --self-test
+  if($LASTEXITCODE -ne 0){throw 'Cached native caller corroboration domain QA failed'}
   & python -B -X utf8 tools/verify_timeline_owner_bridges.py --self-test
   if($LASTEXITCODE -ne 0){throw 'Auxiliary Timeline owner bridge QA failed'}
   & python -B -X utf8 tools/verify_dialogue_contexts.py
@@ -38,8 +50,14 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Fresh native Timeline static original QA failed'}
   & python -B -X utf8 tools/verify_public_snapshot_timeline.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Public snapshot Timeline static original QA failed'}
+  & python -B -X utf8 tools/verify_snapshot_native_corroboration.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Cached native caller exact evidence rendering QA failed'}
   & python -B -X utf8 tools/verify_dialogue_contexts.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Whole dialogue context original HTML and return links QA failed'}
+  & python -B -X utf8 tools/verify_mission_talk_ranges.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Mission range static original and source QA failed'}
+  & python -B -X utf8 tools/verify_versioned_timeline_text.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Version comparison static originals and source QA failed'}
   & python -B -X utf8 tools/verify_deep_timeline_dialogue.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Deep Timeline static original HTML and return links QA failed'}
   & python -B -X utf8 tools/verify_sdf_timeline_text.py --dist dist
@@ -122,8 +140,14 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Fresh native Timeline static original QA failed'}
   & python -B -X utf8 tools/verify_public_snapshot_timeline.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Public snapshot Timeline static original QA failed'}
+  & python -B -X utf8 tools/verify_snapshot_native_corroboration.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Optimized cached native caller exact evidence QA failed'}
   & python -B -X utf8 tools/verify_dialogue_contexts.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Optimized whole context static original HTML QA failed'}
+  & python -B -X utf8 tools/verify_mission_talk_ranges.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Optimized mission range original and source QA failed'}
+  & python -B -X utf8 tools/verify_versioned_timeline_text.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Optimized version comparison originals and source QA failed'}
   & python -B -X utf8 tools/verify_deep_timeline_dialogue.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Optimized deep Timeline static original QA failed'}
   & python -B -X utf8 tools/verify_sdf_timeline_text.py --dist dist

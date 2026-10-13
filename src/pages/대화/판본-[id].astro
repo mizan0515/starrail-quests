@@ -1,0 +1,40 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import SourceParagraphs from '../../components/SourceParagraphs.astro';
+import CatalogReturn from '../../components/CatalogReturn.astro';
+import library from '../../../data/versioned-timeline-text.json';
+import {href,docUrl} from '../../lib/data';
+import {sourceDescription} from '../../lib/seo.mjs';
+import {readerAttributes,rowAttributes,disclosureAttributes} from '../../lib/reading-kit/reader.mjs';
+export function getStaticPaths(){return library.records.map(record=>({params:{id:String(record.talkId)},props:{record}}));}
+const {record}=Astro.props;
+const {previous,current,proof}=record;
+const editions=[previous,current];
+const repository='https://github.com/DimbreathBot/TurnBasedGameData/blob/'+current.officialEvidence.metadataCommit+'/';
+---
+<StarlightPage frontmatter={{title:record.title,description:sourceDescription(['검을 쟁기로','보존 원문과 공식 4.6.0 원문',String(record.talkId)],current.row.text),editUrl:false,tableOfContents:false}}>
+ <CatalogReturn/>
+ <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('대사.html')}>대사 원문 자료실</a><span>/</span><a href={href('대화.html')}>장면으로 읽는 대화</a></nav>
+ <p class="document-meta"><span class="kind-badge">판본 비교</span><a href={docUrl('quest-2021901')}>검을 쟁기로</a><span>한국어 원문 2개</span></p>
+ <p class="page-deck">같은 대사 ID에 연결된 두 한국어 원문입니다. 보존본에서는 “알리바이가 성립되는 거죠”, 공식 4.6.0 원문에서는 “혐의가 없는 거죠”로 기록되어 있습니다.</p>
+ <p class="comparison-scope" data-version-limit>보존 원문의 관찰 판본과 정규화 전 문자열은 미확인입니다. 연출 자료에서는 이 대사 ID의 사용을 확인했으며, 호출 자료의 설치 판본과 실제 재생 여부는 확인 중입니다.</p>
+ <nav class="reading-next" aria-label="비교할 원문"><a href={'#'+previous.anchor} data-reading-link><span>보존 원문</span><strong>알리바이가 성립</strong></a><a href={'#'+current.anchor} data-reading-link><span>공식 4.6.0 원문</span><strong>혐의가 없는</strong></a></nav>
+ {editions.map(edition=><section {...readerAttributes({variant:'scene',className:'source-section',id:'edition-'+edition.anchor})} data-version-edition={edition===previous?'previous':'current'}>
+  <h2>{edition.editionLabel}</h2>
+  <div {...{...rowAttributes('dialogue'),class:'rw-source-row original-row'}} data-version-original={edition.anchor} data-version-role={record.role} data-speaker={edition.row.speaker}>
+   <span class="speaker rw-source-speaker">{edition.row.speaker}</span>
+   <SourceParagraphs text={edition.row.text} anchor={edition.anchor}/>
+   <a href={href(edition.url)} data-reading-link>{edition===previous?'보존된 대사표에서 앞뒤 원문 읽기 ↗':'공식 4.6.0 대사 원문으로 돌아가기 ↗'}</a>
+  </div>
+ </section>)}
+ <details {...disclosureAttributes({className:'source-details'})} data-pagefind-ignore id="verified-sources"><summary>판본과 사용 장면의 연결 근거</summary>
+  <dl><dt>대사 식별자</dt><dd>{record.talkId} · 텍스트 해시 {current.row.hash} · 화자 해시 {current.row.speaker_hash}</dd>
+   <dt>보존 원문</dt><dd>{previous.sourceFile} · {previous.pointer}<br/>SHA-256 {previous.sourceFileSha256}<br/>한국어 본문을 보존된 JSON과 대조했습니다. 정규화 전 raw 문자열과 출시 판본은 미확인입니다.</dd>
+   <dt>현재 공식 원문</dt><dd>{current.sourceFile} · {current.pointer}<br/>SHA-256 {current.sourceFileSha256}<br/>{current.row.officialSource.clientVersion} · 대사표 {current.row.officialSource.tableOffset}–{current.row.officialSource.tableEnd} · 한국어 문자열 {current.row.offset}–{current.row.end}<br/>raw 문자열 SHA-256 {current.row.officialSource.textRecordSha256}</dd>
+   <dt>연출 자료에서 확인한 사용</dt><dd>{record.source}<br/>{proof.scene.idField.field} · {proof.scene.idField.span.join('–')} · SPOKEN<br/>클립 {proof.scene.object.pathID} · SHA-256 {proof.scene.object.sha256}<br/>트랙 {proof.scene.track.pathID} · SHA-256 {proof.scene.track.sha256}<br/>루트 {proof.scene.root.pathID} · SHA-256 {proof.scene.root.sha256}<br/>CAB SHA-256 {proof.scene.receipt.cabSha256}<br/>클립·트랙·루트를 끝까지 읽고 연결을 확인했습니다. 연출에 저장된 시간은 작중 사건의 전체 순서로 해석하지 않습니다.</dd>
+   <dt>연출 호출</dt><dd><a href={repository+proof.publicCaller.source}>{proof.publicCaller.source}</a> · {proof.nativeCaller.pointer}<br/>네이티브 호출 자료 {proof.nativeCaller.consumedBytes}바이트 전체 경계 확인 · TimelineName {proof.nativeCaller.fieldSpan.start}–{proof.nativeCaller.fieldSpan.end}<br/>SHA-256 {proof.nativeCaller.entrySha256}<br/>캐시된 호출 자료와 현재 설치본의 판본 일치는 미확인입니다.</dd>
+   <dt>임무 연결</dt><dd>{proof.owner.title} · {proof.owner.mission}<ul>{proof.owner.ownerChain.map(edge=><li><a href={repository+edge.source}>{edge.source}</a> · {edge.pointer}<br/>SHA-256 {edge.sourceSha256}{'tableSource' in edge&&<><br/><a href={repository+edge.tableSource}>{edge.tableSource}</a> · {edge.idPointer} → {edge.pathPointer}<br/>SHA-256 {edge.tableSha256}</>}</li>)}</ul></dd>
+   <dt>비교의 범위</dt><dd>보존된 한국어 본문과 공식 4.6.0 본문을 각각 표시합니다. 어느 판본의 문장이 실제로 재생되는지는 미확인입니다.</dd>
+  </dl>
+ </details>
+</StarlightPage>

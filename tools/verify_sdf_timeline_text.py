@@ -25,7 +25,9 @@ def public_checks(data,deep):
  encoded=json.dumps(data,ensure_ascii=False)
  require(not re.search(r'(?:[A-Za-z]:[/\\]|\.codex-work|inventory\.json|outputDirectory|source_objects_folder)',encoded),'Private source path')
  scenes=set();sdfids=set();hashes=set();count=0;owned_scenes=owned_rows=0;needed_proofs={}
- require(data['evidence']['deepTimelineSha256']==digest((SITE/'data/deep-timeline-dialogue.json').read_bytes()),'Existing typed reader SHA drift')
+ from verify_fresh_native_timeline import deep_preservation,BASELINE_DEEP_SHA
+ require(data['evidence']['deepTimelineSha256']==BASELINE_DEEP_SHA,'Original typed reader evidence SHA drift')
+ deep_preservation(SITE,read(SITE/'data/native-fresh-timeline-dialogue.json'))
  bridge_path=SITE/'data/native-sdf-owner-bridges.json'
  bridge=None
  if data['evidence'].get('nativeAuxiliaryOwnerBridgeSha256'):

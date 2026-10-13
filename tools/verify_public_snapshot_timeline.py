@@ -21,7 +21,7 @@ from verify_fresh_native_timeline import (require, sha, load, pointer, relative,
     decode_asset, normalize_fields, audit_records, file_sha, TimelineHTML, official_replay)
 
 PROJECTION_SHA = '94bc9b8177a03aa4cc617b026de7e2474217a3b435fe2a55865ba35e66ac0ccc'
-PRIMITIVES_SHA = '306124fe1969f13cdcfc18a0c8dba2a060acb89084755dedf55286632af07915'
+PRIMITIVES_SHA = '66f7cb299e3e1dd6433db155c9cba7286345923fba5b6798a44ed2adb6686b65'
 SCENE_SET_SHA = '33b944092ccc8e1aac19d46fe6a2561e84dc959284063441a3700fd00f1df6db'
 ID_SET_SHA = 'b26d39abe8f024edb74a9935084ebb0df17d08ea290e1974f7a7c7e1a11ff803'
 ARCHIVE_COMMIT = '8b178dd48698e5e7b12f0cc319ddab149f2ffc5c'
@@ -389,7 +389,7 @@ def archive_replay(data, archive):
             'nativeCallerWholeEOF': False, 'nativeInstalledCallerClaim': False}
 
 
-def rendered_scene(scene, data, corpus, static, expanded):
+def rendered_scene(scene, data, corpus, static, expanded, corroborated=False):
     page = TimelineHTML()
     page.feed(static)
     page.close()
@@ -424,10 +424,14 @@ def rendered_scene(scene, data, corpus, static, expanded):
     require(not re.search(r'(?i)[a-z]:[/\\]|file://|\.codex-work[/\\]', text), 'Private path in rendered native evidence')
     for ref in scene['proof']['references']:
         source = data['sourceProofs'][ref['sourceIndex']]
-        require(source['logicalJsonPath'] in text and ref['pointer'] in text and source['sourceSha256'] in text
-                and '호출자 바이너리의 전체 해석은 미지원 상태' in text,
+        require(source['logicalJsonPath'] in text and ref['pointer'] in text and source['sourceSha256'] in text,
                 'Rendered exact native caller span/hash absent')
-    require(proof.caller_domains == [KIND], 'Rendered caller source domain marker absent/altered')
+    expected_kind = 'CALLER_SOURCE_PUBLIC_JSON_AND_CACHED_NATIVE_EOF' if corroborated else KIND
+    require(proof.caller_domains == [expected_kind], 'Rendered caller source domain marker absent/altered')
+    require(('캐시된 호출 자료의 전체 경계와 연출 호출 필드를 확인했습니다.' if corroborated
+             else '호출자 바이너리의 전체 해석은 미지원 상태') in text, 'Caller evidence boundary absent')
+    if corroborated:
+        require('호출자 바이너리의 전체 해석은 미지원 상태' not in text, 'Stale caller support boundary')
     for row in rows:
         join = data['joins'][str(row['talkId'])]
         source = join['preservedSource']
@@ -439,6 +443,10 @@ def rendered_scene(scene, data, corpus, static, expanded):
 
 
 def dist_replay(repo, data, directory, publication_report=None):
+    from verify_snapshot_native_corroboration import source_check
+    overlay = load(repo / 'data/public-snapshot-native-corroboration.json')
+    source_check(repo, overlay)
+    corroborated = {ref['sceneId'] for ref in overlay['references']}
     corpus = {name: load(repo / name) for name in {j['preservedSource']['file'] for j in data['joins'].values()}}
     expansion, report, rows = None, None, 0
     for scene in data['scenes']:
@@ -461,7 +469,7 @@ def dist_replay(repo, data, directory, publication_report=None):
                     require(sha(actual) == shard['assetSha256'], 'Actual technical shard source SHA differs')
                 expansion = expansion_function(report)
             expanded = expansion(static)
-        rows += rendered_scene(scene, data, corpus, static, expanded)
+        rows += rendered_scene(scene, data, corpus, static, expanded, scene['id'] in corroborated)
     return {'staticSnapshotReaders': len(data['scenes']), 'staticSnapshotOriginals': rows,
             'technicalProofExpansion': 'One cached expansion closure; originals validated before expansion',
             'proofShardReceipts': len(report.get('proofShards', {})) if report else 0}
@@ -572,8 +580,11 @@ def main():
     data = json.loads(raw)
     inverse = load(repo / 'data/deep-dialogue-attribution.json')
     require(inverse['evidence']['publicSnapshotTimelineSha256'] == sha(raw), 'Snapshot exact inverse source SHA differs')
-    require(file_sha(repo / 'data/native-fresh-timeline-dialogue.json') == data['evidence']['closedNativeFreshProjectionSha256'],
-            'Prior frozen native fresh source SHA differs')
+    fresh = load(repo / 'data/native-fresh-timeline-dialogue.json')
+    slices = fv.preserved_slices(fresh)
+    require(data['evidence']['closedNativeFreshProjectionSha256'] == fv.PROJECTION_SHA
+            and (slices is not None or file_sha(repo / 'data/native-fresh-timeline-dialogue.json') == fv.PROJECTION_SHA),
+            'Prior frozen native fresh source differs')
     checks = {'source': source_validate(repo, data, inverse)}
     if args.audit:
         checks['closedSnapshotReceipt'] = closed_receipt_replay(data, args.audit.resolve())

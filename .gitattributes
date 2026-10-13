@@ -11,3 +11,12 @@ data/public-snapshot-timeline-dialogue.json -text
 
 data/lua-snapshot-owner-bridges.json -text
 tools/multivoice_config_proof.json -text
+tools/music_rhythm_text_proof.json -text
+data/mission-talk-range-dialogue.json -text
+data/versioned-timeline-text.json -text
+data/public-snapshot-native-corroboration.json -text
+# Exact independent-reader code receipts must survive checkout on every host.
+tools/verify_fresh_native_timeline.py -text whitespace=cr-at-eol
+tools/verify_snapshot_native_corroboration.py -text
+tools/verify_versioned_timeline_text.py -text
+tools/verify_mission_talk_ranges.py -text

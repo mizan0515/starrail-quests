@@ -1,0 +1,456 @@
+{
+  "schema": "starrail-versioned-timeline-text.v1",
+  "counts": {
+    "records": 1,
+    "staticOriginals": 2
+  },
+  "evidence": {
+    "capsuleSha256": "a2e0af520af9587e934081c887d700036b84df4d40f02149577f6cdd4d0c99dd",
+    "nativeCallerReplaySha256": "db81af44188bf73ef502e70d35b151684f772e90eb9cfec956b7127fc8eb6714",
+    "sourceScope": "PINNED_SOURCE_PROOF_AND_EXACT_LOCAL_KOREAN_ROWS",
+    "previousRawStatus": "UNVERIFIED",
+    "callerEditionStatus": "CACHED_SNAPSHOT_CURRENT_INSTALLED_EDITION_UNVERIFIED",
+    "runtimePlaybackStatus": "UNVERIFIED"
+  },
+  "records": [
+    {
+      "id": "versioned-talk-202196417",
+      "talkId": 202196417,
+      "kind": "판본 비교",
+      "role": "VERSION_COMPARISON_REFERENCE",
+      "source": "assets/asbres/story/discussion/mission/2021901/ds20219016404.playable",
+      "title": "검을 쟁기로 · 운리의 혐의를 말하는 두 원문",
+      "url": "대화/판본-202196417.html",
+      "previous": {
+        "kind": "PRESERVED_LOCAL_KOREAN_ORIGINAL",
+        "sourceFile": "data/dialogues/early-057.json",
+        "sourceFileSha256": "9f662ce52295d4aea05c7dcaf6f5a76b6273e223815481217bb0e15d625c7db8",
+        "pointer": "/section/rows/96",
+        "row": {
+          "talk_id": 202196417,
+          "label": "대사",
+          "speaker": "{NICKNAME}",
+          "text": "그리고 한참 지나 공수 사부님께서 공조사에 있는 보검을 확인하셨으니 적어도 그때까지는 운리의 알리바이가 성립되는 거죠",
+          "hash": "9404530181305020821",
+          "speaker_hash": "7108701208745180573",
+          "voice": 202196417,
+          "offset": 1080645,
+          "end": 1080683,
+          "missions": []
+        },
+        "raw": null,
+        "speakerRaw": null,
+        "rawStatus": {
+          "status": "UNVERIFIED_PRESERVED_RAW_STRING_UNAVAILABLE",
+          "firstFailure": "Current installed active DesignV_d9b005... catalog lacks preserved Talk entry7842151376498495614; expected cb27.../587d... sourcepacks absent at approved current input/cache locations",
+          "readableSourceStatus": "EXACT_PRESERVED_JSON_BODY_FILE_POINTER_HASH_PASS",
+          "raw": null,
+          "speakerRaw": null
+        },
+        "sourceEvidence": [
+          {
+            "sha256": "9535f3a31a79824dfb326491eb6ea0d7367cfabd2165bbdf8ad8c2fe9f7a418f",
+            "size": 66,
+            "file": "M_DesignV.bytes"
+          },
+          {
+            "sha256": "04225983c08d1ffe8a24f390bf522912fd3f1911c4245868879c817fd88434a1",
+            "size": 2231794,
+            "file": "DesignV_68784218c7743e3b16fc2dcb1a60ea23.bytes"
+          },
+          {
+            "sha256": "3cbb292fb7f1a1de062c74e5317cdbb56d6caae5899c2f74fc47ebb74f9fec28",
+            "size": 32532459,
+            "file": "cb27bc18b5fb768c7657e35c7a9d6359.bytes"
+          },
+          {
+            "sha256": "ed7b28b0f4c31dea0696873adef54400ff8347087cbad219e36a5d8029630a88",
+            "size": 68258850,
+            "file": "587d407afea5f051c1f3ce39222fb46c.bytes"
+          }
+        ],
+        "textMapEntry": {
+          "file": "587d407afea5f051c1f3ce39222fb46c.bytes",
+          "entry_hash": "15229857389724683600",
+          "offset": 0,
+          "size": 60300027
+        },
+        "talkTableEntry": {
+          "file": "cb27bc18b5fb768c7657e35c7a9d6359.bytes",
+          "entry_hash": "7842151376498495614",
+          "offset": 17234218,
+          "size": 7612864
+        },
+        "url": "대사/early-057.html#talk-202196417",
+        "observedReleaseVersion": "UNVERIFIED",
+        "editionLabel": "보존 한국어 원문 · 관찰 판본 미확인",
+        "anchor": "talk-202196417-previous"
+      },
+      "current": {
+        "kind": "OFFICIAL_KOREAN_VERSION_RECORD",
+        "sourceFile": "data/official-talk-library.json",
+        "sourceFileSha256": "c2116c791e5e3f1f721a8be9ee9b8b1cc48d1908800f0bc6e27c1ac30c10d080",
+        "pointer": "/rows/733",
+        "row": {
+          "talk_id": 202196417,
+          "label": "대사",
+          "speaker": "{NICKNAME}",
+          "text": "그리고 한참 지나 공수 사부님께서 공조사에 있는 보검을 확인하셨으니 적어도 그때까지는 운리의 혐의가 없는 거죠",
+          "raw": "그리고 한참 지나 공수 사부님께서 공조사에 있는 보검을 확인하셨으니 적어도 그때까지는 운리의 혐의가 없는 거죠",
+          "speaker_raw": "{NICKNAME}",
+          "hash": "9404530181305020821",
+          "speaker_hash": "7108701208745180573",
+          "voice": 202196417,
+          "offset": 25531103,
+          "end": 25531290,
+          "officialSource": {
+            "clientVersion": "OSPRODWin4.6.0",
+            "tableRow": 34881,
+            "tableOffset": 1104090,
+            "tableEnd": 1104128,
+            "tableRecord": {
+              "TalkSentenceID": 202196417,
+              "VoiceID": 202196417,
+              "TextmapTalkSentenceName": {
+                "Hash": "7108701208745180573",
+                "Legacy": 3691348399
+              },
+              "TalkSentenceText": {
+                "Hash": "9404530181305020821",
+                "Legacy": 3957840782
+              },
+              "_offset": 1104090,
+              "_end": 1104128
+            },
+            "textRecord": {
+              "legacy": 3957840782,
+              "hash": "9404530181305020821",
+              "raw": "그리고 한참 지나 공수 사부님께서 공조사에 있는 보검을 확인하셨으니 적어도 그때까지는 운리의 혐의가 없는 거죠",
+              "has_params": 0,
+              "offset": 25531103,
+              "end": 25531290
+            },
+            "speakerRecord": {
+              "legacy": 3691348399,
+              "hash": "7108701208745180573",
+              "raw": "{NICKNAME}",
+              "has_params": 1,
+              "offset": 107467,
+              "end": 107494
+            },
+            "tableRecordSha256": "e82b571e9f13b2945603df8aaaf17f255819c1874391afa4391471f8b5457776",
+            "textRecordSha256": "ea16d211a11a8a00e5605c7d4a38e218ad94ed3c0057423a191c367f34c35e69",
+            "speakerRecordSha256": "6ed20b4ec401b3e2b7979528291afccbff2ab357859ed1ddc37b0726a13aaebf",
+            "decodedRecordSha256": "7aa9c31a4fcc2946ab4b42fc9b4a369ca76707ae24fffdb7815f76f8ae408c32"
+          },
+          "changeKind": "changed",
+          "changes": [
+            "READABLE_TEXT_CHANGED"
+          ],
+          "sourceStatus": "READABLE_TEXT_AND_SPEAKER",
+          "previous": {
+            "talk_id": 202196417,
+            "speaker": "{NICKNAME}",
+            "text": "그리고 한참 지나 공수 사부님께서 공조사에 있는 보검을 확인하셨으니 적어도 그때까지는 운리의 알리바이가 성립되는 거죠",
+            "hash": "9404530181305020821",
+            "speaker_hash": "7108701208745180573",
+            "voice": 202196417,
+            "offset": 1080645,
+            "end": 1080683,
+            "url": "대사/early-057.html#talk-202196417"
+          },
+          "previousSource": {
+            "sourceFile": "data/dialogues/early-057.json",
+            "sourceFileSha256": "9f662ce52295d4aea05c7dcaf6f5a76b6273e223815481217bb0e15d625c7db8",
+            "rowIndex": 96,
+            "rawComparisonStatus": "UNVERIFIED_PRESERVED_RAW_STRING_UNAVAILABLE"
+          },
+          "references": [],
+          "missionLinks": [],
+          "assignmentStatus": "MISSION_OWNER_UNVERIFIED"
+        },
+        "officialEvidence": {
+          "kind": "OFFICIAL_GAME_KOREAN_TEXTMAP",
+          "clientVersion": "OSPRODWin4.6.0",
+          "officialHost": "autopatchos.starrails.com",
+          "manifestSha256": "cfcc82e9dd1bb0b86d18aaf94e72fd5273caa79f9b3981a789fa3aee61d2a284",
+          "catalogSha256": "ae92b3dd2417efbb9cd08e463891051ed515df2f97d40137223cec394a7e6132",
+          "catalogFile": "DesignV_1c2cfb2bfcca5d2881291334e20be424.bytes",
+          "koreanPack": {
+            "file": "e14f29d5d59324f4df2ee6a67a5755f7.bytes",
+            "sha256": "99dadf3786823c934ff12e970df594a77d413f8b090d2645f58cc8ad903fda20",
+            "md5": "e14f29d5d59324f4df2ee6a67a5755f7",
+            "size": 69456371
+          },
+          "entry": {
+            "key": "15229857389724683600",
+            "offset": 0,
+            "length": 61356007,
+            "sha256": "a99fb2c4bb36d7e048d04b92d76805fb42a82bf39c69930fe4efaf66b107c3e9",
+            "rows": 474191,
+            "fullEofVerified": true
+          },
+          "projection": "export_library.readable: only whitespace, markup and ruby display normalization; raw retained",
+          "talkTable": {
+            "file": "1efaad7a4e7c92a8a12c66cffbe3b50a.bytes",
+            "sha256": "ae6cc8e41213ccecc430a346909daf38ff4013d6b1441ddba384032d77b3ffd4",
+            "md5": "1efaad7a4e7c92a8a12c66cffbe3b50a",
+            "size": 33077813,
+            "key": "7842151376498495614",
+            "offset": 17530269,
+            "length": 7737465,
+            "entrySha256": "aa5ac164de1ccc02cbafcbf46fa14c3c29cfd03af6f831d78b7d51d36329d169",
+            "rows": 244380,
+            "fullEofVerified": true,
+            "schema": [
+              [
+                "TalkSentenceID",
+                "int"
+              ],
+              [
+                "VoiceID",
+                "int"
+              ],
+              [
+                "TextmapTalkSentenceName",
+                "hash"
+              ],
+              [
+                "TalkSentenceText",
+                "hash"
+              ]
+            ]
+          },
+          "preservedCorpus": {
+            "files": 8207,
+            "sha256": "35299e58017d418b923fc448b6309f00887aaa1f442853245026fc8fa96c0f33"
+          },
+          "preservedDialogueIndexSha256": "570d2a766c2cb8596740acb7aed735a6b275697718c279c0aa759954bf264283",
+          "baselineRawComparisonStatus": "UNVERIFIED_PRESERVED_RAW_STRING_UNAVAILABLE",
+          "metadataRepository": "DimbreathBot/TurnBasedGameData",
+          "metadataCommit": "8b178dd48698e5e7b12f0cc319ddab149f2ffc5c",
+          "archiveSha256": "e1eee10139b338e271467e1823cedb0ceba0c5c1c608771f2386639db308f02a",
+          "missionAssignmentScope": "EXPLICIT_CURRENT_MISSION_OWNER_AND_EXACT_TYPED_REFERENCE",
+          "versionSemantics": "OBSERVED_OFFICIAL_SOURCE_VERSION"
+        },
+        "url": "대사/official-4.6-202196417.html#talk-202196417",
+        "editionLabel": "공식 한국어 원문 · 4.6.0",
+        "anchor": "talk-202196417-current"
+      },
+      "proof": {
+        "scene": {
+          "source": "assets/asbres/story/discussion/mission/2021901/ds20219016404.playable",
+          "root": {
+            "pathID": "-266032789831968685",
+            "class": "TimelineAsset",
+            "sha256": "4cae7668a212f3a8d199f836c172e0a486a7f6f01ca9fc1617d3165aa6dc2899",
+            "byteStart": 12352,
+            "byteSize": 156,
+            "scriptPointer": {
+              "m_FileID": 0,
+              "m_PathID": "-657477701292886207"
+            }
+          },
+          "container": {
+            "key": "assets/asbres/story/discussion/mission/2021901/ds20219016404.playable",
+            "fileID": 0,
+            "pathID": "-266032789831968685",
+            "preloadIndex": 0,
+            "preloadSize": 58
+          },
+          "object": {
+            "pathID": "-5841487132904311257",
+            "class": "PlaySimpleTalkClip",
+            "sha256": "a2cefed9b94d6890a1b946fd897bf0e537453cb3c7b8a485adef280b83b1b11c",
+            "byteStart": 7176,
+            "byteSize": 140,
+            "scriptPointer": {
+              "m_FileID": 0,
+              "m_PathID": "8504955997107328671"
+            }
+          },
+          "track": {
+            "pathID": "-4956758604638815144",
+            "class": "PlaySimpleTalkTrack",
+            "sha256": "22fa5f8b4eb25bb6e7f29da85aa712431e476ce89735e83a18e9a8529488d992",
+            "byteStart": 7760,
+            "byteSize": 2180,
+            "scriptPointer": {
+              "m_FileID": 0,
+              "m_PathID": "-3491415030237216117"
+            }
+          },
+          "idField": {
+            "field": "PlaySimpleTalkClip.Config.TalkSentenceID",
+            "span": [
+              60,
+              64
+            ],
+            "value": 202196417
+          },
+          "parentRoute": [
+            "-4956758604638815144",
+            "-5202196897641915356",
+            "2207857502535919460",
+            "-266032789831968685"
+          ],
+          "trackClipIndex": 2,
+          "start": 11.0,
+          "duration": 10.0,
+          "nativeIDUseRole": "SPOKEN",
+          "receipt": {
+            "blockFile": "c25a41432517d603c624d025f9f59436.block",
+            "blockSha256": "4491e2cacd2c7c4cad955a0a585b604585bb56711c671621e199308b9fa6167c",
+            "bundleOffset": 806688,
+            "bundleBytes": 3585,
+            "cabName": "CAB-ed1ace6b0714a950e681df431f9c5b55",
+            "cabSha256": "74ddf10e0434002b25d798206ee857a71ba3da5decd210be5b82b9a6e5d1f592"
+          }
+        },
+        "owner": {
+          "mission": "quest-2021901",
+          "title": "검을 쟁기로",
+          "ownerChain": [
+            {
+              "kind": "EXPLICIT_MAIN_MISSION_ID",
+              "source": "Config/LevelOutput/SharedRuntimeGroup/Groups_P20222_F20222001/LevelGroup_P20222_F20222001_G190.json",
+              "missionId": 2021901,
+              "canonicalMissionId": 2021901,
+              "membershipSource": "data/documents/quest-2021901.json",
+              "membershipSha256": "37fd7a74d344cb1a6bde0a8a101fe8e87e07944a3eb26a9055bbd1fa2dfb1097",
+              "membershipPointer": "/id",
+              "pointer": "/OwnerMainMissionID",
+              "sourceSha256": "f98fbb978082f1110872dbde76108750c103a1d245d83e9f56acee4543004975"
+            },
+            {
+              "kind": "EXPLICIT_JSON_PATH",
+              "source": "Config/LevelOutput/SharedRuntimeGroup/Groups_P20222_F20222001/LevelGroup_P20222_F20222001_G190.json",
+              "pointer": "/NPCList/0/Dialog/LevelGraph",
+              "target": "Config/Level/NPCDialogue/P20222/F20222001_G190/DialogueMain_F20222001_G190_N400001_2.json",
+              "sourceSha256": "f98fbb978082f1110872dbde76108750c103a1d245d83e9f56acee4543004975"
+            },
+            {
+              "kind": "EXPLICIT_PERFORMANCE_LOOKUP",
+              "source": "Config/Level/NPCDialogue/P20222/F20222001_G190/DialogueMain_F20222001_G190_N400001_2.json",
+              "pointer": "/OnStartSequece/0/TaskList/1/Cases/0/OnSuccess/0/PerformanceID",
+              "performanceId": 202190164,
+              "performanceType": "D",
+              "lookupScope": "TYPED_PRIMARY_TABLE",
+              "tableSource": "ExcelOutput/PerformanceDS.json",
+              "idPointer": "/2624/PerformanceID",
+              "pathPointer": "/2624/PerformancePath",
+              "target": "Story/Discussion/Mission/2021901/DS202190164.json",
+              "sourceSha256": "221e7e4c91ce6c7376bc40af2dd4b8d006b6fecf569e8c6fe8fed7d635bbcb42",
+              "tableSha256": "7866e4681ae08ef7d59c3412d4e040a381c220173d54115b3580a0c7517f6362"
+            }
+          ]
+        },
+        "nativeCaller": {
+          "status": "WHOLE_NATIVE_EOF_AND_INDEPENDENT_PLAYTIMELINE_TERMINAL_PASS",
+          "entrySha256": "61b8c85a9dce17403772aeee93483faa840567fba335fb5ea83254506886c2c4",
+          "consumedBytes": 1669,
+          "source": "Story/Discussion/Mission/2021901/DS202190164.json",
+          "sourcePack": {
+            "bytes": 5267113,
+            "sha256": "ff5136ecc6dc552e2f6b94e830e49322bc70f795dccbc0e1ad113e50cfd2a5dd"
+          },
+          "catalogMatch": {
+            "file": "4ce18f6be0e2b9093fb7832de6ddf6ef.bytes",
+            "length": 1669,
+            "offset": 2124670,
+            "packExpectedBytes": 5267113
+          },
+          "fieldSpan": {
+            "pointer": "/OnStartSequece/3/TaskList/1/TimelineName",
+            "start": 920,
+            "end": 976
+          },
+          "pointer": "/OnStartSequece/3/TaskList/1/TimelineName",
+          "type": {
+            "observedSerializedEnum": 8
+          },
+          "previousBlockedBoundary": "Unknown task1162, closed by frozen stage8/phase10 profile; historical public-only status retained separately",
+          "editionStatus": "CACHED_SNAPSHOT_CURRENT_INSTALLED_EDITION_UNVERIFIED"
+        },
+        "publicCaller": {
+          "source": "Story/Discussion/Mission/2021901/DS202190164.json",
+          "sourceSha256": "8bb42f1474b71181a125929571ff08a4ae1a745d6916a4b627d3dc3121b4a186",
+          "pointer": "/OnStartSequece/3/TaskList/1/TimelineName",
+          "snapshotTask": {
+            "$type": "RPG.GameCore.PlayTimeline",
+            "TimelineName": "Story/Discussion/Mission/2021901/DS20219016404.playable",
+            "Type": "Discussion"
+          },
+          "archiveSha256": "e1eee10139b338e271467e1823cedb0ceba0c5c1c608771f2386639db308f02a"
+        },
+        "verification": {
+          "verifierSha256": "66f7cb299e3e1dd6433db155c9cba7286345923fba5b6798a44ed2adb6686b65",
+          "nativeFullEOFObjects": {
+            "root": 1,
+            "tracks": 3,
+            "typedTalkClip": 1
+          },
+          "ownerChecks": [
+            {
+              "edge": {
+                "kind": "EXPLICIT_MAIN_MISSION_ID",
+                "source": "Config/LevelOutput/SharedRuntimeGroup/Groups_P20222_F20222001/LevelGroup_P20222_F20222001_G190.json",
+                "missionId": 2021901,
+                "canonicalMissionId": 2021901,
+                "membershipSource": "data/documents/quest-2021901.json",
+                "membershipSha256": "37fd7a74d344cb1a6bde0a8a101fe8e87e07944a3eb26a9055bbd1fa2dfb1097",
+                "membershipPointer": "/id",
+                "pointer": "/OwnerMainMissionID",
+                "sourceSha256": "f98fbb978082f1110872dbde76108750c103a1d245d83e9f56acee4543004975"
+              },
+              "actualValue": 2021901,
+              "status": "PASS"
+            },
+            {
+              "edge": {
+                "kind": "EXPLICIT_JSON_PATH",
+                "source": "Config/LevelOutput/SharedRuntimeGroup/Groups_P20222_F20222001/LevelGroup_P20222_F20222001_G190.json",
+                "pointer": "/NPCList/0/Dialog/LevelGraph",
+                "target": "Config/Level/NPCDialogue/P20222/F20222001_G190/DialogueMain_F20222001_G190_N400001_2.json",
+                "sourceSha256": "f98fbb978082f1110872dbde76108750c103a1d245d83e9f56acee4543004975"
+              },
+              "actualValue": "Config/Level/NPCDialogue/P20222/F20222001_G190/DialogueMain_F20222001_G190_N400001_2.json",
+              "status": "PASS"
+            },
+            {
+              "edge": {
+                "kind": "EXPLICIT_PERFORMANCE_LOOKUP",
+                "source": "Config/Level/NPCDialogue/P20222/F20222001_G190/DialogueMain_F20222001_G190_N400001_2.json",
+                "pointer": "/OnStartSequece/0/TaskList/1/Cases/0/OnSuccess/0/PerformanceID",
+                "performanceId": 202190164,
+                "performanceType": "D",
+                "lookupScope": "TYPED_PRIMARY_TABLE",
+                "tableSource": "ExcelOutput/PerformanceDS.json",
+                "idPointer": "/2624/PerformanceID",
+                "pathPointer": "/2624/PerformancePath",
+                "target": "Story/Discussion/Mission/2021901/DS202190164.json",
+                "sourceSha256": "221e7e4c91ce6c7376bc40af2dd4b8d006b6fecf569e8c6fe8fed7d635bbcb42",
+                "tableSha256": "7866e4681ae08ef7d59c3412d4e040a381c220173d54115b3580a0c7517f6362"
+              },
+              "actualValue": 202190164,
+              "status": "PASS"
+            }
+          ],
+          "currentOfficial": {
+            "actualOfficialTalkTableRowsEOF": 244380,
+            "actualOfficialKoreanTextMapRowsEOF": 474191,
+            "actualOfficialKoreanIds": 1,
+            "officialVersion": "OSPRODWin4.6.0"
+          },
+          "oldRawStatus": "UNVERIFIED",
+          "typedIDSpan": [
+            60,
+            64
+          ],
+          "sameTextSpeakerVoiceIdentifiers": true,
+          "readableTextDiffers": true
+        }
+      }
+    }
+  ]
+}

@@ -22,8 +22,11 @@ export const deepRows=(scene:any)=>scene.kind==='HASH_ONLY_SCREEN_TEXT'?scene.ro
 // Existing catalogue positions remain stable; closed append-only deltas follow them.
 const appendedChoiceScenes=(deepTimeline.evidence.nativeChoiceDeltas||[]).reduce((n:number,d:any)=>n+d.scenes,0);
 const retainedSceneCount=deepTimeline.scenes.length-appendedChoiceScenes;
-export const deepScenes=[...deepTimeline.scenes.slice(0,retainedSceneCount),...sdfTimeline.scenes,...deepTimeline.scenes.slice(retainedSceneCount),...luaTimeline.scenes,...freshTimeline.scenes.map((scene:any)=>({...scene,kind:'FRESH_NATIVE_TIMELINE'})),...snapshotTimeline.scenes.map((scene:any)=>({...scene,kind:'PUBLIC_JSON_TIMELINE'}))];
-export const deepCounts={scenes:deepScenes.length,rows:deepTimeline.counts.rows+sdfTimeline.counts.rows+luaTimeline.counts.rows+freshTimeline.counts.occurrences.included_SPOKEN+freshTimeline.counts.occurrences.included_SCREEN_TEXT+freshTimeline.counts.occurrences.included_NON_SPOKEN_OPTION_REFERENCE+snapshotTimeline.counts.occurrences.included_SPOKEN+snapshotTimeline.counts.occurrences.included_SCREEN_TEXT+snapshotTimeline.counts.occurrences.included_NON_SPOKEN_OPTION_REFERENCE};
+const retainedChoices=(deepTimeline.evidence.nativeChoiceDeltas||[]).filter((d:any)=>d.cohortSha256===freshTimeline.evidence.frozenCohortSha256).reduce((n:number,d:any)=>n+d.scenes,0);
+const retainedFreshScenes=freshTimeline.counts.sceneCount;
+const freshScenes=freshTimeline.scenes.map((scene:any)=>({...scene,kind:'FRESH_NATIVE_TIMELINE'}));
+export const deepScenes=[...deepTimeline.scenes.slice(0,retainedSceneCount),...sdfTimeline.scenes,...deepTimeline.scenes.slice(retainedSceneCount,retainedSceneCount+retainedChoices),...luaTimeline.scenes,...freshScenes.slice(0,retainedFreshScenes),...snapshotTimeline.scenes.map((scene:any)=>({...scene,kind:'PUBLIC_JSON_TIMELINE'})),...deepTimeline.scenes.slice(retainedSceneCount+retainedChoices),...freshScenes.slice(retainedFreshScenes)];
+export const deepCounts={scenes:deepScenes.length,rows:deepScenes.reduce((n:number,scene:any)=>n+timelineRows(scene).length,0)};
 export const deepMissionScenes=new Map<string,any[]>();
 for(const scene of deepScenes)for(const mission of new Set(scene.owners.map(owner=>owner.canonicalMission))){const list=deepMissionScenes.get(mission)||[];list.push(scene);deepMissionScenes.set(mission,list);}
 export {deepTimeline,luaTimeline,freshTimeline,snapshotTimeline,attribution as deepAttribution};

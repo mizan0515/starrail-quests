@@ -7,6 +7,19 @@ const reading='/starrail-quests/문서/quest-1010203.html';
 const make=(path,from)=>path+'?speaker='+encodeURIComponent('단항')+'&passage=dialogue&from='+encodeURIComponent(from)+'#quest-1010203-scene-1-row-3';
 const resolved=value=>new URL(value,origin);
 
+test('configuration range and edition readers return to the exact original without admitting arbitrary dialogue routes',()=>{
+ const catalogue=base+'/대화.html#source-records';
+ for(const [path,anchor] of [['범위-range-0aeda0e1f644fa52','talk-146787410-1'],['판본-202196417','talk-202196417-previous']]){
+  const source=base+'/대화/'+path+'.html?from='+encodeURIComponent(catalogue)+'#'+anchor;
+  const out=resolved(safe(source));
+  assert.equal(out.hash,'#'+anchor);
+  assert.equal(out.searchParams.get('from'),safe(catalogue));
+  assert.equal(sourceReadingOrigin(base+'/대상/person-1407.html',source,{origin,base}),safe(source));
+  assert.equal(isReadingCatalogue(source,{origin,base}),false);
+ }
+ for(const invalid of ['범위-range-123','범위-0aeda0e1f644fa52','판본-0','판본-abc','판본-202196417.html/../outside'])assert.equal(safe(base+'/대화/'+invalid+'.html'),null);
+});
+
 test('native, snapshot and Lua supplements retain the source sentence and filtered catalogue',()=>{
  const catalogue=base+'/대화/연출-목록-87.html?timelineQuery='+encodeURIComponent('파멸')+'&timelineMission='+encodeURIComponent('깊은 곳에 이른 혼란')+'&timelineLimit=36#universe-source-fresh-timeline-336dc14f509933f8b7f7';
  for(const [id,anchor] of [['fresh-timeline-336dc14f509933f8b7f7','talk-100020213-1'],['snapshot-timeline-31028fa3a55aee4f1abf','talk-103272902-1'],['lua-timeline-9192c8b22d0d8304','lua-screen-105009004-4']]){

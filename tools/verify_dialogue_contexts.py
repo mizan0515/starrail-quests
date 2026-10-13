@@ -11,6 +11,11 @@ MULTIVOICE_PROOF_SHA='89dc023034b910688aed3d7d24749975fa6ba965ed8c3dcf83fc6e0e33
 _multivoice_proof_bytes=(Path(__file__).with_name('multivoice_config_proof.json')).read_bytes()
 if hashlib.sha256(_multivoice_proof_bytes).hexdigest()!=MULTIVOICE_PROOF_SHA:raise AssertionError('Alternative-voice proof identity changed')
 MULTIVOICE_PROOF=json.loads(_multivoice_proof_bytes)
+MUSIC_KIND='MUSIC_RHYTHM_SCREEN_TALK_SENTENCE_ID'
+MUSIC_PROOF_SHA='e2a4d9d46dfa668494508f6dad6833607e622345b1cb56ee6137ae835d16b130'
+_music_bytes=Path(__file__).with_name('music_rhythm_text_proof.json').read_bytes()
+if hashlib.sha256(_music_bytes).hexdigest()!=MUSIC_PROOF_SHA:raise AssertionError('Music-screen domain proof changed')
+MUSIC_PROOF=json.loads(_music_bytes);MUSIC_SOURCES=MUSIC_PROOF['configurationSources']
 def read(p):return json.loads(p.read_text('utf8'))
 def sha(b):return hashlib.sha256(b).hexdigest()
 def at(obj,pointer):
@@ -79,7 +84,8 @@ def verify_deep_reader_links(deep,rows,official):
  if fresh_path.is_file():
   require(sha(fresh_path.read_bytes())==deep['evidence'].get('freshTimelineSha256'),'Fresh Timeline source identity differs')
   fresh=read(fresh_path);require(fresh['schema']=='starrail-native-fresh-timeline-dialogue.v1','Fresh Timeline schema')
-  require(sha(scene_path.read_bytes())==fresh['evidence']['existingDeepTimelineSha256'],'Fresh retained scene identity differs')
+  from verify_fresh_native_timeline import deep_preservation
+  deep_preservation(SITE,fresh)
   expected={'PlaySimpleTalkClip':('SPOKEN','PlaySimpleTalkClip.Config.TalkSentenceID'),'ScreenTransferTextClip':('SCREEN_TEXT','ScreenTransferTextClip.SentenceID'),'SimpleTalkMarkerClip':('NON_SPOKEN_OPTION_REFERENCE','SimpleTalkMarkerClip.ReferenceOptionTalkID')}
   for scene in fresh['scenes']:
    for row in scene['rows']+scene['optionReferences']:
@@ -112,6 +118,24 @@ def verify_deep_reader_links(deep,rows,official):
     url='대화/연출-'+scene['id']+'.html#'+row['anchor']
     require((url,row['talkId'])not in targets,'Duplicate Lua screen occurrence')
     targets[(url,row['talkId'])]={'talkId':row['talkId'],'role':row['role'],'source':scene['source'],'korean':hydrate(row['talkId'],lua['joins']),'proof':row['nativeConsumer']}
+ range_path=SITE/'data/mission-talk-range-dialogue.json'
+ if range_path.is_file():
+  require(sha(range_path.read_bytes())==deep['evidence'].get('missionRangeSha256'),'Range configuration source identity differs')
+  from verify_mission_talk_ranges import source_check as range_check
+  range_scenes,range_joins,range_counts=range_check(SITE,read(range_path))
+  for scene in range_scenes:
+   for row in scene['rows']:
+    url=scene['url']+'#'+row['anchor'];tid=row['talk_id']
+    require((url,tid)not in targets,'Duplicate range configuration reader target')
+    targets[(url,tid)]={'talkId':tid,'role':'NON_SPOKEN_CONFIGURATION_REFERENCE','source':scene['source'],'korean':row,'proof':scene['node']}
+ version_path=SITE/'data/versioned-timeline-text.json'
+ if version_path.is_file():
+  require(sha(version_path.read_bytes())==deep['evidence'].get('versionedTimelineSha256'),'Version comparison source identity differs')
+  from verify_versioned_timeline_text import source_check as version_check
+  for record in version_check(SITE,read(version_path)):
+   tid=record['talkId'];url=record['url']+'#'+record['previous']['anchor']
+   require((url,tid)not in targets,'Duplicate version comparison reader target')
+   targets[(url,tid)]={'talkId':tid,'role':'VERSION_COMPARISON_REFERENCE','source':record['source'],'korean':record['previous']['row'],'proof':record['proof']}
  for tid in ids:
   links=deep['readerLinks'].get(str(tid));require(isinstance(links,list) and links,'deep reader links absent')
   require(tid in rows or tid in official,'deep reader Korean ID absent')
@@ -334,6 +358,12 @@ def normalized_cake_record(value):
 
 def direct_talk_references(obj,pointer='',typed=None,path=''):
  if isinstance(obj,dict):
+  if path in MUSIC_SOURCES:
+   bubble=obj.get('BubbleConfig');auto=obj.get('AutoBubble')
+   valid=lambda v:type(v)is int and 0<v<2**32
+   if obj.get('NotifyType')=='Bubble' and isinstance(bubble,dict) and valid(bubble.get('BubbleId')):yield bubble['BubbleId'],pointer+'/BubbleConfig/BubbleId',typed
+   if isinstance(auto,dict)and valid(auto.get('HitTextId'))and valid(auto.get('MissTextId')):
+    for field in ('HitTextId','MissTextId'):yield auto[field],pointer+'/AutoBubble/'+field,typed
   if isinstance(obj.get('$type'),str):typed={'type':obj['$type'],'pointer':pointer}
   if obj.get('$type')=='RPG.GameCore.PlayNPCSingleBubbleTalk':
    wrapper=obj.get('TalkSentenceID')
@@ -400,6 +430,8 @@ def verify(archive=None,dist=None,official_root=None,skill=None):
   require(len({r['talkId'] for r in g['rows']})==len(g['rows']),'duplicate source row')
   used_sources[g['source']]=g['sourceSha256'];required[g['source']].add('reader')
   if g['source']==MULTIVOICE_SOURCE:require(g['sourceSha256']==MULTIVOICE_PROOF['tableSha256'] and g.get('configurationProof')==MULTIVOICE_PROOF,'Alternative-voice whole table and native consumer proof differ')
+  if g['source']in MUSIC_SOURCES:
+   sp=g.get('screenReferenceProof',{});require(g['sourceSha256']==MUSIC_SOURCES[g['source']]and sp.get('proofSha256')==MUSIC_PROOF_SHA and sp.get('role')=='SCREEN_TEXT'and sp.get('callerSourceKind')==MUSIC_PROOF['callerSourceKind']and sp.get('installedConfigEditionMatch','missing')is None and sp.get('runtimeDisplayConfirmed')is False,'Music-screen source/consumer/edition domain differs')
   for ref in g['rows']:
    tid=ref['talkId'];memberships+=1
    if tid in target:reader_ids.add(tid)
@@ -442,7 +474,7 @@ def verify(archive=None,dist=None,official_root=None,skill=None):
     if g['source']=='ExcelOutput/HeartDialTalk.json':
      native=at(objects[g['source']],ptr.rsplit('/',1)[0]);text=texts.get(str(native['SDFText']['Hash']));row=official.get(tid) or rows.get(tid)
      if not text or not row or project(text['raw'])!=row['text']:continue
-    if (typed or g['source'].startswith('ExcelOutput/')) and (tid in rows or tid in official):expected_refs[tid].add(ptr)
+    if (typed or g['source'].startswith('ExcelOutput/') or g['source']in MUSIC_SOURCES) and (tid in rows or tid in official):expected_refs[tid].add(ptr)
    require(set(expected_refs)=={r['talkId'] for r in g['rows']},'readable surrounding source row omitted')
    require(list(expected_refs)==[r['talkId'] for r in g['rows']],'structure reference row order changed')
    for row in g['rows']:
@@ -454,8 +486,14 @@ def verify(archive=None,dist=None,official_root=None,skill=None):
      multivoice_configured=ref['kind']==MULTIVOICE_KIND
      configured=cake_configured or multivoice_configured
      fixed_bubble=ref['kind']=='FIXED_NPC_BUBBLE_TALK_SENTENCE_ID'
+     music_screen=ref['kind']==MUSIC_KIND
      choice=not fixed_bubble and ('OptionList' in ref['pointer'].split('/') or ref['typedContainer'] and ref['typedContainer']['type'].endswith('.OptionTalkInfo'))
-     require(ref['displayKind']==('설정 참조' if configured else '선택지' if choice else '대사'),'native choice or dialogue role changed')
+     require(ref['displayKind']==('화면 문구'if music_screen else'설정 참조' if configured else '선택지' if choice else '대사'),'native choice or dialogue role changed')
+     if music_screen:
+      parent,field=ref['pointer'].rsplit('/',1);node=at(objects[g['source']],parent)
+      require(g['source']in MUSIC_SOURCES and ref.get('sourceRole')=='SCREEN_TEXT'and ref.get('typedContainer')is None,'Music-screen source or spoken role changed')
+      require(ref.get('recordContext')=={'pointer':parent,'fields':node,'serialized':json.dumps(node,ensure_ascii=False,indent=2)},'Music-screen original configuration changed')
+      require(ref.get('screenReference')=={'field':field,'consumerProofSha256':MUSIC_PROOF_SHA,'callerSourceKind':MUSIC_PROOF['callerSourceKind'],'installedConfigEditionMatch':None,'runtimeDisplayConfirmed':False},'Music-screen consumer/edition limits changed')
      if fixed_bubble:
       container=ref['typedContainer'];require(container and container['type']=='RPG.GameCore.PlayNPCSingleBubbleTalk','fixed bubble consumer type differs')
       require(ref['pointer']==container['pointer']+'/TalkSentenceID/FixedValue/Value','fixed bubble pointer differs')
@@ -486,6 +524,7 @@ def verify(archive=None,dist=None,official_root=None,skill=None):
      if fixed_bubble:expected_usage='말풍선'
      if cake_configured:expected_usage='콘텐츠 설정의 대사 참조'
      if multivoice_configured:expected_usage='대사의 대체 음성 설정'
+     if music_screen:expected_usage={'BubbleId':'말풍선','HitTextId':'성공 시 문구','MissTextId':'실패 시 문구'}[ref['pointer'].rsplit('/',1)[1]]
      if g['source']=='ExcelOutput/HeartDialTalk.json':expected_usage='감정 조율의 표시 문구'
      if ref['kind']=='TalkSentenceID' and isinstance(at(objects[g['source']],ref['pointer'].rsplit('/',1)[0]),dict) and at(objects[g['source']],ref['pointer'].rsplit('/',1)[0]).get('IsMultiPlatform') is True:expected_usage='기본 안내'
      require(ref.get('usageLabel','')==expected_usage,'native platform or setting role differs')
@@ -538,11 +577,14 @@ def verify(archive=None,dist=None,official_root=None,skill=None):
    for ref,rendered in zip(g['rows'],page.context_rows):
     tid=ref['talkId'];row=official[tid] if ref['edition']=='official' else rows[tid]
     roles={r['displayKind'] for r in ref['references']};choice='선택지' in roles
-    a=rendered['attributes'];role='choice' if choice else 'dialogue'
+    screen='화면 문구'in roles
+    a=rendered['attributes'];role='original'if screen else'choice' if choice else 'dialogue'
     require(a.get('data-speaker')==row['speaker'],'rendered source speaker differs')
     require(a.get('data-reading-kind')==role and a.get('data-passage')==role,'rendered source reading role differs')
     configured='설정 참조' in roles
     label=('설정 참조' if row['speaker']=='화자 미지정' else '설정 참조 · '+row['speaker']) if configured else '원문에 수록된 제작 안내' if tid==999999999 and row['text']=='스토리 및 연출 콘텐츠는 제작 중입니다, 기대해주세요!' else '선택지·대사 · '+row['speaker'] if choice and '대사' in roles else '선택지' if choice else '원문' if row['speaker']=='화자 미지정' else row['speaker']
+    if screen:label='화면 문구'
+    if screen:require(a.get('data-screen-reference')=='SCREEN_TEXT'and 'screen-reference-proof'in page.ids,'Music-screen visible role or proof absent')
     require(rendered['label']==label,'rendered source speaker/choice display label differs '+g['id']+'/'+str(tid))
     usages=list(dict.fromkeys(r.get('usageLabel','') for r in ref['references'] if r.get('usageLabel')))
     require(rendered.get('usage','')==' · '.join(usages),'rendered platform or setting role differs')
