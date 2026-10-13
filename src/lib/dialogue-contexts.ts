@@ -16,7 +16,7 @@ export const contextRows=(group:any)=>group.rows.map(ref=>{
  const roles=[...new Set(ref.references.map(r=>r.displayKind))];
  const usageLabels=[...new Set(ref.references.map(r=>r.usageLabel).filter(Boolean))];
  const targetRegions=group.source==='ExcelOutput/HeartDialTalk.json'?[...new Set(ref.references.flatMap(r=>r.recordContext.fields.FloorIDList||[]))].map(id=>contexts.regions[String(id)]).filter(r=>r&&r.name!=='지역 이름 미확인'):[];
- return {...row,contextReferences:ref.references,usageLabels,targetRegions,displayKind:roles.join('·'),isChoice:roles.includes('선택지'),isDialogue:roles.includes('대사'),isConfigurationReference:roles.includes('설정 참조')};
+ return {...row,contextReferences:ref.references,usageLabels,targetRegions,displayKind:roles.join('·'),isChoice:roles.includes('선택지'),isDialogue:roles.includes('대사'),isScreenText:roles.includes('화면 문구'),isConfigurationReference:roles.includes('설정 참조')};
 });
 export const contextLinks=new Map<number,any[]>();
 for(const group of contexts.groups)for(const ref of group.rows){

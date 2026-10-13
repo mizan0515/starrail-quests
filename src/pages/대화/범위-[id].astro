@@ -1,0 +1,60 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import SourceParagraphs from '../../components/SourceParagraphs.astro';
+import CatalogReturn from '../../components/CatalogReturn.astro';
+import ranges from '../../../data/mission-talk-range-dialogue.json';
+import {href} from '../../lib/data';
+import {sourceDescription} from '../../lib/seo.mjs';
+import {readerAttributes,rowAttributes,disclosureAttributes} from '../../lib/reading-kit/reader.mjs';
+export function getStaticPaths(){return ranges.records.map(record=>({params:{id:record.id},props:{record}}));}
+const {record}=Astro.props;
+const scenes=record.sceneIds.map(id=>ranges.scenes.find(scene=>scene.id===id)!);
+const originalUrl=join=>'대사/'+join.preserved.source.file.split('/').pop().replace(/\.json$/,'.html')+'#talk-'+join.talk_id;
+const sourceUrl=`https://github.com/${ranges.sourceRepository}/blob/${ranges.sourceCommit}/${record.source}`;
+const profile=ranges.nativeProfile;
+const nativeSummary={
+  inputs:profile.inputs,
+  functions:profile.rawFunctions.functions.map(f=>({address:f.requestedVA,bytes:f.bytes,sha256:f.sha256,extent:'.pdata'})),
+  methods:profile.methods.matches.map(m=>({class:m.class,methodIndex:m.methodIndex,address:m.nativeVA})),
+  fields:profile.rawFields.map(c=>({class:c.class,fields:c.fields.map(f=>({name:f.name,offset:f.runtimeFieldOffset}))})),
+  bindings:profile.bindings,
+  conditions:profile.conditions,
+  limits:profile.limits,
+};
+const first=ranges.joins[String(scenes[0].rows[0].talkId)];
+const referenceCount=scenes.reduce((sum,scene)=>sum+scene.rows.length,0);
+---
+<StarlightPage frontmatter={{title:'대사 범위의 설정 참조 · '+record.title,description:sourceDescription(['대사 범위의 설정 참조',`${referenceCount}개 원문 참조`],first.text),editUrl:false,tableOfContents:false}}>
+ <CatalogReturn/>
+ <nav class="breadcrumbs" aria-label="현재 위치"><a href={href('대사.html')}>대사 원문 자료실</a><span>/</span><a href={href('대화.html')}>장면으로 읽는 대화</a></nav>
+ <p class="document-meta"><span class="kind-badge">대사 범위의 설정 참조</span><span>{referenceCount}개 원문 참조</span><span>{scenes.length}개 범위 설정</span></p>
+ <p class="muted" data-range-note>설정 JSON과 현재 설치본의 판본 일치는 미확인이며, 실제 실행 여부와 발화 시점은 확인 중입니다.</p>
+ <p class="muted" data-range-order-note>고정된 시작·끝 ID 범위에 포함되는 한국어 원문입니다. 아래 문구는 설정에 포함된 ID 순서로 읽을 수 있습니다. 장면의 소속과 재생 순서는 확인 중입니다.</p>
+ {scenes.map((scene,index)=>{
+  const source=ranges.sourceRecords[scene.sourceRecordIndex];
+  return <section {...readerAttributes({variant:'scene',className:'source-section',id:scene.id})} data-range-scene={scene.id}>
+   {scenes.length>1&&<h2>범위 설정 {index+1}</h2>}
+   {scene.rows.map(row=>{
+    const join=ranges.joins[String(row.talkId)];
+    return <div {...{...rowAttributes('original'),class:'rw-source-row original-row'}} data-range-talk-id={row.talkId} data-range-anchor={row.anchor} data-range-role={row.role} data-context-talk={row.talkId} data-passage="original" data-speaker={join.speaker}>
+     <span class="speaker rw-source-speaker" data-range-speaker>설정 참조 · {join.speaker}</span>
+     <SourceParagraphs text={join.text} anchor={row.anchor}/>
+     <a href={href(originalUrl(join))} data-reading-link>대사표 원문 ↗</a>
+    </div>;
+   })}
+   <details {...disclosureAttributes({className:'source-details'})} data-pagefind-ignore>
+    <summary>이 범위와 원문의 연결 근거</summary>
+    <dl><dt>설정 자료</dt><dd><a href={sourceUrl}>{source.source}</a></dd><dt>설정 SHA-256</dt><dd>{source.sourceSha256}</dd><dt>고정된 ID 범위</dt><dd>{source.staticRange.start}–{source.staticRange.end} · 양 끝 포함</dd><dt>시작 값 위치</dt><dd>{source.staticRange.startPointer}</dd><dt>끝 값 위치</dt><dd>{source.staticRange.endPointer}</dd><dt>설정 노드 전체</dt><dd><pre data-range-node={scene.id}>{JSON.stringify(source.node,null,2)}</pre></dd></dl>
+    <ul>{scene.rows.map(row=>{
+     const join=ranges.joins[String(row.talkId)];
+     return <li>대사 {row.talkId} · 고정 범위에 포함된 설정 참조<dl><dt>보존된 한국어 원문</dt><dd><a href={href(originalUrl(join))}>대사표 원문</a> · {join.preserved.source.pointer}<br/>SHA-256 {join.preserved.source.sha256}</dd><dt>공식 한국어 수록본과 대조</dt><dd>OSPRODWin4.6.0 · 본문·화자·문자열 해시·음성 ID 일치</dd><dt>본문과 화자 문자열 식별자</dt><dd>{join.hash} · {join.speaker_hash}</dd><dt>공식 원문의 행 위치</dt><dd>TalkSentenceConfig 행 {join.currentOfficialSource.tableRowIndex} · TextMap {join.currentOfficialSource.textRecord.offset}–{join.currentOfficialSource.textRecord.end}</dd></dl></li>;
+    })}</ul>
+   </details>
+  </section>;
+ })}
+ <details {...disclosureAttributes({className:'source-details',id:'range-consumer-proof'})} data-pagefind-ignore data-range-native-proof>
+  <summary>고정 범위의 대사 ID를 조회하는 함수와 자료</summary>
+  <p>설정 노드의 시작·끝 값이 모두 고정 값이며, 순서가 맞을 때의 참조 범위입니다. 현재 설치본에서는 이 범위의 ID로 대사표를 조회하고, 조회된 행을 목록에 저장하는 함수가 확인됩니다. 표현식·실행 문맥·패치 분기와 실제 재생 여부는 이 설정 참조와 별도로 확인할 대상입니다.</p>
+  <dl><dt>자료의 범위</dt><dd>공개 설정 JSON의 전체 노드 · 현재 설치본의 함수 7개와 필드 11개</dd><dt>함수의 전체 범위</dt><dd>PE .pdata에 기록된 함수 시작·끝 주소</dd><dt>공식 한국어 표</dt><dd>{ranges.officialTalkSentenceTable.source}<br/>SHA-256 {ranges.officialTalkSentenceTable.entrySha256}</dd><dt>공식 한국어 TextMap</dt><dd>OSPRODWin4.6.0<br/>SHA-256 {ranges.officialKoreanTextMap.entry.sha256}</dd><dt>범위 설정과 조회 함수</dt><dd><pre data-range-native-table>{JSON.stringify(nativeSummary,null,2)}</pre></dd></dl>
+ </details>
+</StarlightPage>

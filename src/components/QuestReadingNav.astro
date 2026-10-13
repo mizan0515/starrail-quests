@@ -1,0 +1,136 @@
+---
+import {readingSourceRoute,questReadingSources,questReadingTitle,groupReadingSources,nearbyReadingSources,readingRoleSummary} from '../lib/quest-reading-sources';
+import {href} from '../lib/data';
+const {route}=Astro.props;
+const current=readingSourceRoute(route);
+---
+{current&&<section class="quest-reading-nav" data-quest-reading-nav data-pagefind-ignore>
+ <p class="sidebar-caption">지금 읽는 원문</p>
+ <a class="quest-reading-current" href={href(current.url)} aria-current="page" data-current-reader-title>{current.title}</a>
+ <span class="quest-reading-kind">{current.kind}</span>
+ <details class="quest-reading-toc" open><summary>이 원문의 목차</summary><nav aria-label="현재 원문의 목차" data-quest-local-toc><a href="#_top">이 원문 처음으로</a></nav></details>
+ {current.missions.map(mission=><details class="quest-reading-mission" data-reading-mission={mission} open={current.missions.length===1}>
+  <summary>{questReadingTitle(mission)}</summary>
+  <a class="archive-nav-link" href={href('문서/'+mission+'.html#original')} id={'quest-nav-'+mission+'-original'} data-quest-reading-link>임무의 대사와 선택지</a>
+  {groupReadingSources(questReadingSources(mission)).map(group=><details class="quest-reading-group" data-reading-group={mission+':'+group.kind} open={group.records.length<=6}>
+   <summary>{group.kind}<span>{group.records.length.toLocaleString('ko-KR')}개</span></summary>
+   <ul>{nearbyReadingSources(group.records,current.url).map(source=><li><a href={href(source.url)} id={'quest-nav-'+mission+'-'+source.id} aria-current={source.url===current.url?'page':undefined} data-quest-reading-link><span>{source.title}</span><small>{readingRoleSummary(source)}{source.missions.length>1&&' · 공동 호출'}</small></a></li>)}</ul>
+   {group.records.length>8&&<a class="archive-nav-link" href={href('문서/'+mission+'.html#deep-timeline-originals')} id={'quest-nav-'+mission+'-'+group.kind.replaceAll(' ','-')} data-quest-reading-link>전체 {group.records.length.toLocaleString('ko-KR')}개 자료 보기 →</a>}
+  </details>)}
+  <p class="quest-reading-limit">호출이 확인된 자료 묶음입니다. 임무 본문의 진행 순서와 별도로 읽습니다.</p>
+ </details>)}
+ {current.missions.length===0&&<p class="quest-reading-limit">이 원문의 임무 연결은 확인된 범위에서 표시합니다.</p>}
+</section>}
+<script>
+ import {safeReadingReturn,sourceReadingOrigin} from '../lib/reading-return.mjs';
+ // Keep server metadata out of the browser: the owner ids are already in the rendered navigation.
+ const nav=document.querySelector<HTMLElement>('[data-quest-reading-nav]');
+ if(nav){
+  const heading=document.querySelector('main h1');
+  if(heading?.textContent)nav.querySelector('[data-current-reader-title]')!.textContent=heading.textContent;
+  const groups=[...nav.querySelectorAll<HTMLDetailsElement>('[data-reading-mission]')];
+  const base=import.meta.env.BASE_URL.replace(/\/$/,'');
+  const inherited=safeReadingReturn(new URLSearchParams(location.search).get('from'),{origin:location.origin,base});
+  // Dedicated stable ids avoid shifting the existing main reader's automatic reading-link anchors.
+  const updateSourceReturn=(link:HTMLAnchorElement)=>{
+   const from=sourceReadingOrigin(location.pathname+location.search+'#'+encodeURIComponent(link.id),inherited,{origin:location.origin,base});
+   const url=new URL(link.href);if(from)url.searchParams.set('from',from);link.href=url.href;
+  };
+  for(const link of nav.querySelectorAll<HTMLAnchorElement>('a[data-quest-reading-link]'))updateSourceReturn(link);
+  // Filters update history without reloading. Capture the current URL before following a source.
+  nav.addEventListener('click',event=>{
+   const link=event.target instanceof Element?event.target.closest<HTMLAnchorElement>('a[data-quest-reading-link]'):null;
+   if(link&&!event.defaultPrevented){rememberPoint();updateSourceReturn(link);}
+  },true);
+  const restore=()=>{
+   let id:string;try{id=decodeURIComponent(location.hash.slice(1));}catch{return;}
+   const link=document.getElementById(id);if(!(link instanceof HTMLAnchorElement)||!link.hasAttribute('data-quest-reading-link'))return;
+   for(let parent=link.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;
+   const menu=document.getElementById('starlight__sidebar');
+   const reveal=()=>{
+    if(menu?.hasAttribute('popover')&&typeof menu.showPopover==='function'&&!menu.matches(':popover-open'))menu.showPopover();
+    requestAnimationFrame(()=>{link.scrollIntoView({block:'center'});link.focus({preventScroll:true});});
+   };
+   // Starlight removes popover on desktop and owns the native focus trap.
+   if(menu?.localName==='sl-sidebar-pane'&&typeof customElements!=='undefined')customElements.whenDefined('sl-sidebar-pane').then(reveal);
+   else reveal();
+  };
+  window.addEventListener('hashchange',restore);
+  const returnMission=inherited?decodeURIComponent(new URL(inherited,location.origin).pathname).match(/\/문서\/(quest-[0-9]+)\.html$/)?.[1]||null:null;
+  const owners=groups.map(group=>group.dataset.readingMission!);
+  const selected=returnMission&&owners.includes(returnMission)?returnMission:owners.length===1?owners[0]:null;
+  for(const group of groups)if(selected)group.open=group.dataset.readingMission===selected;
+  // The default Starlight persister indexes its own tree. This custom tree uses stable quest/kind keys.
+  if(selected){
+   const key='quest-reading-nav.v1:'+selected,scroller=document.getElementById('starlight__sidebar');
+   const disclosures=[...nav.querySelectorAll<HTMLDetailsElement>('[data-reading-group]')];
+   try{
+    const saved=JSON.parse(sessionStorage.getItem(key)||'null');
+    for(const detail of disclosures)if(typeof saved?.open?.[detail.dataset.readingGroup!]==='boolean')detail.open=saved.open[detail.dataset.readingGroup!];
+    if(scroller&&Number.isFinite(saved?.scroll)&&saved.scroll>=0)requestAnimationFrame(()=>{scroller.scrollTop=saved.scroll;});
+   }catch{}
+   const save=()=>{try{sessionStorage.setItem(key,JSON.stringify({open:Object.fromEntries(disclosures.map(detail=>[detail.dataset.readingGroup,detail.open])),scroll:scroller?.scrollTop||0}));}catch{}};
+   nav.addEventListener('toggle',save,true);window.addEventListener('pagehide',save);
+  }
+  // A return anchor takes precedence over previously collapsed navigation groups.
+  restore();
+  const toc=nav.querySelector<HTMLElement>('[data-quest-local-toc]')!;
+  const targets:HTMLElement[]=[],seen=new Set<string>();
+  document.querySelectorAll<HTMLElement>('main h2[id], main h3[id], main section[id], main details[id]').forEach(target=>{
+   if(!target.id||seen.has(target.id)||target.closest('[data-context-dialog]'))return;
+   const title=target.dataset.rangeScene?'설정 범위의 원문':target.id==='original'?'원문 읽기':target.matches('h2,h3')?target.textContent:target.querySelector('h2,h3,summary')?.textContent;
+   if(!title?.trim())return;seen.add(target.id);targets.push(target);
+   const link=document.createElement('a');link.href='#'+encodeURIComponent(target.id);link.textContent=title.replace(/\s+/g,' ').trim();
+   link.dataset.localReadingTarget=target.id;toc.append(link);
+  });
+  if(targets.length)toc.querySelector('a:not([data-local-reading-target])')?.remove();
+  else if(!document.getElementById('original')){toc.closest('details')!.hidden=true;}
+  const links=[...toc.querySelectorAll<HTMLAnchorElement>('a[data-local-reading-target]')];
+  let lastActive:string|undefined,readingPoint:{element:HTMLElement,top:number}|undefined;
+  const visibleOriginal=(node:HTMLElement)=>node.getClientRects().length&&!node.closest('[hidden],details:not([open])');
+  const rememberPoint=()=>{
+   const padding=parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||0;
+   const element=[...document.querySelectorAll<HTMLElement>('main .original-body')].find(node=>visibleOriginal(node)&&node.getBoundingClientRect().bottom>padding&&node.getBoundingClientRect().top<innerHeight);
+   readingPoint=element?{element,top:element.getBoundingClientRect().top}:undefined;
+  };
+  const update=()=>{
+   const visible=targets.filter(target=>target.getClientRects().length&&!target.closest('[hidden]'));
+   const padding=parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||0;
+   const active=visible.filter(target=>target.getBoundingClientRect().top<=Math.max(140,padding+(parseFloat(getComputedStyle(target).scrollMarginTop)||0)+2)).at(-1)||visible[0];
+   for(const link of links){
+    if(active&&link.dataset.localReadingTarget===active.id){
+     link.setAttribute('aria-current','location');
+     if(active.id!==lastActive&&toc.getClientRects().length){const row=link.getBoundingClientRect(),box=toc.getBoundingClientRect();if(row.top<box.top)toc.scrollTop-=box.top-row.top;else if(row.bottom>box.bottom)toc.scrollTop+=row.bottom-box.bottom;}
+    }else link.removeAttribute('aria-current');
+   }
+   if(toc.getClientRects().length)lastActive=active?.id;
+  };
+  let pending=false;
+  document.addEventListener('scroll',()=>{if(!pending){pending=true;requestAnimationFrame(()=>{update();rememberPoint();pending=false;});}},{passive:true});
+  window.addEventListener('hashchange',()=>{update();rememberPoint();});document.addEventListener('toggle',update,true);
+  let resizing=false;
+  window.addEventListener('resize',()=>{
+   if(resizing)return;resizing=true;const point=readingPoint;
+   requestAnimationFrame(()=>{if(point?.element.isConnected&&visibleOriginal(point.element))window.scrollBy(0,point.element.getBoundingClientRect().top-point.top);update();rememberPoint();resizing=false;});
+  });
+  toc.addEventListener('click',event=>{
+   if(event instanceof MouseEvent&&(event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey))return;
+   const link=event.target instanceof Element?event.target.closest<HTMLAnchorElement>('a[data-local-reading-target]'):null;
+   if(!link)return;const target=document.getElementById(link.dataset.localReadingTarget!);
+   const menu=document.getElementById('starlight__sidebar');
+   if(menu&&typeof menu.hidePopover==='function'&&menu.matches(':popover-open'))menu.hidePopover();
+   for(let parent=target?.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;
+   requestAnimationFrame(()=>requestAnimationFrame(()=>{const focus=target?.matches('h2,h3')?target:target?.querySelector<HTMLElement>('h2,h3,summary')||target;if(focus){focus.tabIndex=-1;focus.focus({preventScroll:true});}update();rememberPoint();}));
+  });
+  const focus=document.createElement('button');focus.type='button';focus.id='reading-focus-toggle';
+  focus.textContent='집중 모드';focus.setAttribute('aria-pressed','false');focus.setAttribute('aria-controls','starlight__sidebar');document.body.append(focus);
+  focus.addEventListener('click',()=>{
+   const padding=parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||140;
+   const point=[...document.querySelectorAll<HTMLElement>('main .original-body')].find(node=>node.getClientRects().length&&!node.closest('[hidden],details:not([open])')&&node.getBoundingClientRect().bottom>padding)||document.querySelector<HTMLElement>('main h1');
+   const offset=point?.getBoundingClientRect().top;
+   const focused=document.documentElement.toggleAttribute('data-reading-focus');focus.setAttribute('aria-pressed',String(focused));focus.textContent=focused?'탐색 펼치기':'집중 모드';
+   requestAnimationFrame(()=>{if(point&&offset!==undefined)window.scrollBy(0,point.getBoundingClientRect().top-offset);rememberPoint();});
+  });
+  document.documentElement.setAttribute('data-context-lnb','');update();rememberPoint();
+ }
+</script>

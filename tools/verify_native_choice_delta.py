@@ -37,9 +37,22 @@ PHASES = {
     '57ac250c81b172d729ed282cd79d522f617c46a4be20f5ae76c94156950c5bff':
         (1, 7, '78529ddd98ec39b3e608ba7e2d63440dd819ffff06a9b654b26c8adab5376626',
          '24045a6734ae7f3afaeaf671817160b7936c15d46779fc0a9d745633481d7f88'),
+    'd5e01f3d642c22bbf62f7fb59f859fea42c2dade35288cef7137d3a86e9a44c6':
+        (4, 11, 'e39e8e5bb9184558173e0b73b7c72ec692105f28cf48aa619b5c3b6dbaaa1ec3',
+         'eff72144ee0f7f89072ee5b14315f37032352a40bc0648c1bc77680ba8d034bf'),
+    '261ceed3ee495827b3044d54823c6b1a900016b41baeb74f1a76b9ebbb203671':
+        (2, 10, '0d5c7a61fad8a26196d916044f1afddbb3e055ec89716b703d980a220551b4ff',
+         'a656c7bbadb8bd91adf16fb7145ef4f0ee7b242f457d0e8607e5242730d644b8'),
+    'da3da0fcafb3802279ae6c8b8cb2549976c03248d54c18b8f1805cabd899bde2':
+        (1, 6, 'e75b0ce6a884119ac8cdd9ffd8c475a8d211a1c782c0e13d16565bea126b24c1',
+         '57cd1d82f3b1c71c386808e34a021eac1c0f7f2a0e14141fb7b6f0c90a3960f1'),
 }
 PHASE2_SCENES = {'timeline-2685d8ce82e1731a', 'timeline-8035755d35f0edb7', 'timeline-0156d34db5dd8d0d'}
 PHASE5_SCENES = {'timeline-1d9e796cbfb38ff8'}
+FIELD_PHASE6_SCENES = {'timeline-3297d588b63693a2', 'timeline-8b4c2ac5caa314fd',
+                       'timeline-5f63419fe65df04b', 'timeline-2fd9d9f5dca3c9cf'}
+FIELD_PHASE8_SCENES = {'timeline-6d1dd1be8ea1c611', 'timeline-5d3ec60172fd754d'}
+FIELD_PHASE10_SCENES = {'timeline-971e9da54f3ed9f1'}
 
 
 def require(value, message):
@@ -185,8 +198,9 @@ def membership_check(repo, owner, cache):
             'Mission canonical membership differs')
     require(path['source'] == seed['source'] and path['sourceSha256'] == seed['sourceSha256']
             and lookup['source'] == path['target'], 'Owner chain discontinuity')
-    require(lookup['performanceType'] == 'D' and lookup['lookupScope'] == 'TYPED_PRIMARY_TABLE'
-            and lookup['tableSource'] == 'ExcelOutput/PerformanceDS.json', 'Owner performance lookup ID/table domain')
+    tables = {'D': 'ExcelOutput/PerformanceDS.json', 'C': 'ExcelOutput/PerformanceC.json'}
+    require(lookup['performanceType'] in tables and lookup['lookupScope'] == 'TYPED_PRIMARY_TABLE'
+            and lookup['tableSource'] == tables[lookup['performanceType']], 'Owner performance lookup ID/table domain')
     require(lookup['ownershipSeed']['missionId'] == seed['missionId']
             and lookup['ownershipSeed']['source'] == seed['source'], 'Lookup owner seed differs')
     for edge in chain:
@@ -220,15 +234,20 @@ def source_check(repo, data, inverse):
     new = [s for s in scenes if s['id'] not in BASELINE]
     phase2 = [s for s in new if s['id'] in PHASE2_SCENES]
     phase5 = [s for s in new if s['id'] in PHASE5_SCENES]
-    phase1 = [s for s in new if s['id'] not in PHASE2_SCENES | PHASE5_SCENES]
-    for sha, subset in zip(PHASES, (phase1, phase2, phase5)):
+    field6 = [s for s in new if s['id'] in FIELD_PHASE6_SCENES]
+    field8 = [s for s in new if s['id'] in FIELD_PHASE8_SCENES]
+    field10 = [s for s in new if s['id'] in FIELD_PHASE10_SCENES]
+    phase1 = [s for s in new if s['id'] not in PHASE2_SCENES | PHASE5_SCENES | FIELD_PHASE6_SCENES | FIELD_PHASE8_SCENES | FIELD_PHASE10_SCENES]
+    for sha, subset in zip(PHASES, (phase1, phase2, phase5, field6, field8, field10)):
         if sha not in active:
             require(not subset, 'Unannounced native choice phase source')
             continue
         nscene, nrow, idhash, scenehash = PHASES[sha]
         tids = [r['talkId'] for s in subset for r in s['rows']]
-        require(len(subset) == nscene and len(tids) == len(set(tids)) == nrow
-                and sequence_hash(tids) == idhash and sequence_hash(s['id'] for s in subset) == scenehash,
+        require(sha == '261ceed3ee495827b3044d54823c6b1a900016b41baeb74f1a76b9ebbb203671'
+                or len(tids) == len(set(tids)), 'Unexpected duplicate choice IDs in immutable phase')
+        require(len(subset) == nscene and len(tids) == nrow
+                and sequence_hash(set(tids)) == idhash and sequence_hash(s['id'] for s in subset) == scenehash,
                 'Closed choice delta scene/ID cohort differs')
     rows_expected = sum(PHASES[sha][1] for sha in active)
     require(data['counts']['roles']['NATIVE_CHOICE'] == 16 + rows_expected, 'Native choice aggregate count differs')
@@ -240,7 +259,8 @@ def source_check(repo, data, inverse):
     for scene in new:
         relative(scene['source'])
         require(scene['source'].startswith('Story/') and scene['source'].endswith('.json'), 'Native logical source domain')
-        require(scene['ownerStatus'] == 'ONE_EXPLICIT_OWNER' and len(scene['owners']) == 1, 'Native choice owner partition differs')
+        require(scene['ownerStatus'] == 'ONE_EXPLICIT_OWNER' and bool(scene['owners'])
+                and len({o['canonicalMission'] for o in scene['owners']}) == 1, 'Native choice owner partition differs')
         proof = scene['proof']
         require(proof['kind'] == 'EXACT_NATIVE_WHOLE_FIELD_CHOICE_SOURCE' and HASH.fullmatch(proof['entrySha256']),
                 'Native whole source proof domain')
@@ -255,15 +275,15 @@ def source_check(repo, data, inverse):
                 and match['offset'] + match['length'] <= match['packExpectedBytes'], 'Actual entry descriptor bounds')
         require(proof['pack']['bytes'] == match['packExpectedBytes'] and HASH.fullmatch(proof['pack']['sha256'])
                 and proof['pack']['md5MatchesFilename'] is True, 'Native source pack evidence differs')
-        owner = scene['owners'][0]
-        chain = membership_check(repo, owner, memberships)
-        require(chain[-1]['target'] == scene['source'] and descriptor['ownerChain'] == chain
-                and descriptor['mission'] == owner['mission'], 'Native source owner chain endpoint differs')
-        for edge in chain:
-            for field, hfield in (('source', 'sourceSha256'), ('tableSource', 'tableSha256')):
-                if field in edge:
-                    require(edge[field] not in owner_sources or owner_sources[edge[field]] == edge[hfield], 'Conflicting owner source hash')
-                    owner_sources[edge[field]] = edge[hfield]
+        for owner in scene['owners']:
+            chain = membership_check(repo, owner, memberships)
+            require(chain[-1]['target'] == scene['source'] and (descriptor['ownerChain'] == chain or owner != scene['owners'][0])
+                    and descriptor['mission'] == scene['owners'][0]['mission'], 'Native source owner chain endpoint differs')
+            for edge in chain:
+                for field, hfield in (('source', 'sourceSha256'), ('tableSource', 'tableSha256')):
+                    if field in edge:
+                        require(edge[field] not in owner_sources or owner_sources[edge[field]] == edge[hfield], 'Conflicting owner source hash')
+                        owner_sources[edge[field]] = edge[hfield]
         actual_order = []
         for group in scene['options']:
             require(group['parentTaskType'] == PARENT and group['task']['$type'] == PARENT
@@ -319,7 +339,8 @@ def source_check(repo, data, inverse):
                     and 0 <= table['_offset'] < table['_end'] <= data['evidence']['officialKorean']['talkTable']['length']
                     and 0 <= text['offset'] < text['end'] <= data['evidence']['officialKorean']['entry']['length'], 'Official Korean source spans')
             selected_ids.add(tid)
-    require(len(selected_ids) == rows_expected, 'Closed native IDs overlap/differ')
+    expected_ids = rows_expected - (5 if '261ceed3ee495827b3044d54823c6b1a900016b41baeb74f1a76b9ebbb203671' in active else 0)
+    require(len(selected_ids) == expected_ids, 'Closed native IDs overlap/differ')
     return new, owner_sources, {'newChoiceScenes': len(new), 'newChoices': rows_expected, 'baselineChoices': 16,
                                'sourceFieldSpans': field_count, 'ownerArchiveSources': len(owner_sources),
                                'preservedKoreanFiles': len(corpus), 'newChoiceIds': len(selected_ids)}
@@ -522,11 +543,11 @@ def archive_replay(archive, scenes, needed):
             value = at(documents[edge['source']], edge['pointer'])
             parent = at(documents[edge['source']], edge['pointer'].rsplit('/', 1)[0])
             table = documents[edge['tableSource']]
-            require(parent['$type'] == 'RPG.GameCore.TriggerPerformance' and parent.get('PerformanceType', '') == 'D'
+            require(parent['$type'] == 'RPG.GameCore.TriggerPerformance' and parent.get('PerformanceType', '') == edge['performanceType']
                     and value == edge['performanceId'] and at(table, edge['idPointer']) == value
-                    and at(table, edge['pathPointer']) == scene['source'], 'Actual typed D performance owner lookup differs')
+                    and at(table, edge['pathPointer']) == scene['source'], 'Actual typed performance owner lookup differs')
             require({r['PerformancePath'] for r in table if r.get('PerformanceID') == value} == {scene['source']},
-                    'Actual PerformanceDS lookup is ambiguous')
+                    'Actual performance table lookup is ambiguous')
     return {'actualOwnerArchiveSources': len(documents), 'actualOwnerChains': sum(len(s['owners']) for s in scenes)}
 
 

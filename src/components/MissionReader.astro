@@ -3,10 +3,12 @@ import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
 import Scene from './Scene.astro';
 import NativeMissionRelatedMessage from './NativeMissionRelatedMessage.astro';
 import DeepMissionSources from './DeepMissionSources.astro';
+import {questReadingSources} from '../lib/quest-reading-sources';
 import nativeTimelineDialogue from '../../data/native-timeline-mission-dialogue.json';
 import {readerAttributes,disclosureAttributes} from '../lib/reading-kit/reader.mjs';
 import {missionPassageKind,missionSections,missionStructureUrl} from '../lib/data';
 const {document:d,supplements=[],messages=[],reading,coverage}=Astro.props;
+const relatedSources=questReadingSources(d.id);
 const allScenes=[...d.sections,...supplements,...messages].filter(s=>s.rows.length);
 const {primary:scenes,reference:referenceScenes}=missionSections(d.id,allScenes);
 const isGap=(r:any)=>missionPassageKind(r)==='gap';
@@ -16,6 +18,7 @@ const name=(s:any,i:number)=>{if(s.recordType==='CUTSCENE_CAPTION')return `장�
 <section {...readerAttributes({className:'mission-reader'})} data-mission-reader data-reading-state={reading.state} aria-labelledby="original">
  <span id="linked-dialogue" aria-hidden="true"/>
  <AnchorHeading level={2} id="original">{reading.captionCount?'대사·선택지·영상 자막':'대사와 선택지'}</AnchorHeading>
+ {relatedSources.length>0&&<a class="quest-related-jump" href="#deep-timeline-originals">이 임무의 연결 원문 · {relatedSources.length.toLocaleString('ko-KR')}개 자료 ↓</a>}
  <p class="mission-reader-count">대사 <strong>{reading.dialogueCount.toLocaleString()}행</strong><span aria-hidden="true"> · </span>선택지 <strong>{reading.choiceCount.toLocaleString()}개</strong><span aria-hidden="true"> · </span>장면 <strong>{scenes.length.toLocaleString()}개</strong>{reading.captionCount>0&&<><span aria-hidden="true"> · </span>영상 자막 <strong>{reading.captionCount.toLocaleString()}행</strong></>}{reading.gapCount>0&&<><span aria-hidden="true"> · </span>본문 연결 확인 <strong>{reading.gapCount.toLocaleString()}개</strong></>}</p>
  {scenes.length>0?<>
   <p class="muted">임무 설정의 명시 참조로 연결한 한국어 원문입니다. 장면은 자료의 참조 배열로 모았으며, 실제 재생 순서와 분기 조건은 확인한 범위로 표시합니다.</p>

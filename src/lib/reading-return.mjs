@@ -29,7 +29,7 @@ export function safeReadingReturn(value, {origin, base}) {
     } catch {return null;}
   }
   const reading=parse(value);
-  const reader=/^(?:(?:문서|대사|대상)\/[^/]+|대화\/(?:context-[0-9a-f]{16}|연출-(?:(?:timeline|lua-timeline)-[0-9a-f]{16}|(?:fresh-timeline|snapshot-timeline)-[0-9a-f]{20}))|맥락\/[a-z][a-z0-9-]*|유물\/relic-background-[a-z0-9-]+|우주\/(?:(?:기록|설정)\/)?[a-z][a-z0-9-]*)\.html$/;
+  const reader=/^(?:(?:문서|대사|대상)\/[^/]+|대화\/(?:context-[0-9a-f]{16}|범위-range-[0-9a-f]{16}|판본-[1-9][0-9]*|연출-(?:(?:timeline|lua-timeline)-[0-9a-f]{16}|(?:fresh-timeline|snapshot-timeline)-[0-9a-f]{20}))|맥락\/[a-z][a-z0-9-]*|유물\/relic-background-[a-z0-9-]+|우주\/(?:(?:기록|설정)\/)?[a-z][a-z0-9-]*)\.html$/;
   if (!reading || !(reader.test(reading.relative)||directoryPath.test(reading.relative))) return null;
   const nested=reading.url.searchParams.get('from');
   reading.url.searchParams.delete('from');
