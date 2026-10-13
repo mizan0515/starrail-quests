@@ -40,13 +40,20 @@ const current=readingSourceRoute(route);
   // Filters update history without reloading. Capture the current URL before following a source.
   nav.addEventListener('click',event=>{
    const link=event.target instanceof Element?event.target.closest<HTMLAnchorElement>('a[data-quest-reading-link]'):null;
-   if(link&&!event.defaultPrevented)updateSourceReturn(link);
+   if(link&&!event.defaultPrevented){rememberPoint();updateSourceReturn(link);}
   },true);
   const restore=()=>{
    let id:string;try{id=decodeURIComponent(location.hash.slice(1));}catch{return;}
    const link=document.getElementById(id);if(!(link instanceof HTMLAnchorElement)||!link.hasAttribute('data-quest-reading-link'))return;
    for(let parent=link.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;
-   link.focus({preventScroll:true});
+   const menu=document.getElementById('starlight__sidebar');
+   const reveal=()=>{
+    if(menu?.hasAttribute('popover')&&typeof menu.showPopover==='function'&&!menu.matches(':popover-open'))menu.showPopover();
+    requestAnimationFrame(()=>{link.scrollIntoView({block:'center'});link.focus({preventScroll:true});});
+   };
+   // Starlight removes popover on desktop and owns the native focus trap.
+   if(menu?.localName==='sl-sidebar-pane'&&typeof customElements!=='undefined')customElements.whenDefined('sl-sidebar-pane').then(reveal);
+   else reveal();
   };
   window.addEventListener('hashchange',restore);
   const returnMission=inherited?decodeURIComponent(new URL(inherited,location.origin).pathname).match(/\/문서\/(quest-[0-9]+)\.html$/)?.[1]||null:null;
@@ -79,15 +86,33 @@ const current=readingSourceRoute(route);
   if(targets.length)toc.querySelector('a:not([data-local-reading-target])')?.remove();
   else if(!document.getElementById('original')){toc.closest('details')!.hidden=true;}
   const links=[...toc.querySelectorAll<HTMLAnchorElement>('a[data-local-reading-target]')];
+  let lastActive:string|undefined,readingPoint:{element:HTMLElement,top:number}|undefined;
+  const visibleOriginal=(node:HTMLElement)=>node.getClientRects().length&&!node.closest('[hidden],details:not([open])');
+  const rememberPoint=()=>{
+   const padding=parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||0;
+   const element=[...document.querySelectorAll<HTMLElement>('main .original-body')].find(node=>visibleOriginal(node)&&node.getBoundingClientRect().bottom>padding&&node.getBoundingClientRect().top<innerHeight);
+   readingPoint=element?{element,top:element.getBoundingClientRect().top}:undefined;
+  };
   const update=()=>{
    const visible=targets.filter(target=>target.getClientRects().length&&!target.closest('[hidden]'));
    const padding=parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||0;
    const active=visible.filter(target=>target.getBoundingClientRect().top<=Math.max(140,padding+(parseFloat(getComputedStyle(target).scrollMarginTop)||0)+2)).at(-1)||visible[0];
-   for(const link of links){if(link.dataset.localReadingTarget===active?.id)link.setAttribute('aria-current','location');else link.removeAttribute('aria-current');}
+   for(const link of links){
+    if(active&&link.dataset.localReadingTarget===active.id){
+     link.setAttribute('aria-current','location');
+     if(active.id!==lastActive&&toc.getClientRects().length){const row=link.getBoundingClientRect(),box=toc.getBoundingClientRect();if(row.top<box.top)toc.scrollTop-=box.top-row.top;else if(row.bottom>box.bottom)toc.scrollTop+=row.bottom-box.bottom;}
+    }else link.removeAttribute('aria-current');
+   }
+   if(toc.getClientRects().length)lastActive=active?.id;
   };
   let pending=false;
-  document.addEventListener('scroll',()=>{if(!pending){pending=true;requestAnimationFrame(()=>{update();pending=false;});}},{passive:true});
-  window.addEventListener('hashchange',update);document.addEventListener('toggle',update,true);update();
+  document.addEventListener('scroll',()=>{if(!pending){pending=true;requestAnimationFrame(()=>{update();rememberPoint();pending=false;});}},{passive:true});
+  window.addEventListener('hashchange',()=>{update();rememberPoint();});document.addEventListener('toggle',update,true);
+  let resizing=false;
+  window.addEventListener('resize',()=>{
+   if(resizing)return;resizing=true;const point=readingPoint;
+   requestAnimationFrame(()=>{if(point?.element.isConnected&&visibleOriginal(point.element))window.scrollBy(0,point.element.getBoundingClientRect().top-point.top);update();rememberPoint();resizing=false;});
+  });
   toc.addEventListener('click',event=>{
    if(event instanceof MouseEvent&&(event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey))return;
    const link=event.target instanceof Element?event.target.closest<HTMLAnchorElement>('a[data-local-reading-target]'):null;
@@ -95,7 +120,7 @@ const current=readingSourceRoute(route);
    const menu=document.getElementById('starlight__sidebar');
    if(menu&&typeof menu.hidePopover==='function'&&menu.matches(':popover-open'))menu.hidePopover();
    for(let parent=target?.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;
-   requestAnimationFrame(()=>requestAnimationFrame(()=>{const focus=target?.matches('h2,h3')?target:target?.querySelector<HTMLElement>('h2,h3,summary')||target;if(focus){focus.tabIndex=-1;focus.focus({preventScroll:true});}}));
+   requestAnimationFrame(()=>requestAnimationFrame(()=>{const focus=target?.matches('h2,h3')?target:target?.querySelector<HTMLElement>('h2,h3,summary')||target;if(focus){focus.tabIndex=-1;focus.focus({preventScroll:true});}update();rememberPoint();}));
   });
   const focus=document.createElement('button');focus.type='button';focus.id='reading-focus-toggle';
   focus.textContent='집중 모드';focus.setAttribute('aria-pressed','false');focus.setAttribute('aria-controls','starlight__sidebar');document.body.append(focus);
@@ -104,7 +129,8 @@ const current=readingSourceRoute(route);
    const point=[...document.querySelectorAll<HTMLElement>('main .original-body')].find(node=>node.getClientRects().length&&!node.closest('[hidden],details:not([open])')&&node.getBoundingClientRect().bottom>padding)||document.querySelector<HTMLElement>('main h1');
    const offset=point?.getBoundingClientRect().top;
    const focused=document.documentElement.toggleAttribute('data-reading-focus');focus.setAttribute('aria-pressed',String(focused));focus.textContent=focused?'탐색 펼치기':'집중 모드';
-   requestAnimationFrame(()=>{if(point&&offset!==undefined)window.scrollBy(0,point.getBoundingClientRect().top-offset);});
+   requestAnimationFrame(()=>{if(point&&offset!==undefined)window.scrollBy(0,point.getBoundingClientRect().top-offset);rememberPoint();});
   });
+  document.documentElement.setAttribute('data-context-lnb','');update();rememberPoint();
  }
 </script>

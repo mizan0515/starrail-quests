@@ -281,6 +281,7 @@ body,h1,h2,h3,input,select,button,.lore-heading h1,.lore-statement,.lore-card h3
 .quest-reading-nav summary{min-height:44px;cursor:pointer;font-size:.85rem;font-weight:650;line-height:1.6;padding:.5rem 0}
 .quest-reading-toc{margin-top:.8rem!important}
 .quest-reading-toc nav{max-height:38vh;overflow:auto;overscroll-behavior:contain}
+html[data-context-lnb] :is(.right-sidebar-container,mobile-starlight-toc){display:none}
 .quest-reading-nav nav{display:grid;gap:.1rem}
 .quest-reading-nav nav a{display:block;min-height:36px;padding:.4rem .6rem;border-inline-start:2px solid transparent;line-height:1.65;font-size:.8125rem;text-decoration:none;color:var(--muted)}
 .quest-reading-nav a[aria-current]{font-weight:700;color:var(--ink);background:var(--selected);border-inline-start-color:var(--brass)}
