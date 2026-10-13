@@ -1,5 +1,6 @@
 ---
 import {documentDescription} from '../../lib/seo.mjs';
+import {questReadingSources} from '../../lib/quest-reading-sources';
 import {disclosureAttributes} from '../../lib/reading-kit/reader.mjs';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import AnchorHeading from '@astrojs/starlight/components/AnchorHeading.astro';
@@ -17,7 +18,7 @@ const supplements=quest?missionDialogue[d.id]||[]:[],reading=missionReading[d.id
 const observedVersion=versionEvidence.firstObservedVersions[d.id],release=versionEvidence.releaseEvidence[d.id];
 const stageGroups:any[]=[];
 for(const step of d.stages){const last=stageGroups.at(-1);if(last?.title===step.title)last.steps.push(step);else stageGroups.push({...step,steps:[step]});}
-const headings=[{depth:2,slug:'original',text:quest?'대사와 선택지':'원문 읽기'},...(d.stages.length?[{depth:2,slug:'progress',text:'임무의 흐름'}]:[]),...(d.topics.length?[{depth:2,slug:'connections',text:'관련 설정 읽기'}]:[])];
+const headings=[{depth:2,slug:'original',text:quest?'대사와 선택지':'원문 읽기'},...(quest&&questReadingSources(d.id).length?[{depth:2,slug:'deep-timeline-originals',text:'이 임무에 연결된 추가 원문'}]:[]),...(d.stages.length?[{depth:2,slug:'progress',text:'임무의 흐름'}]:[]),...(d.topics.length?[{depth:2,slug:'connections',text:'관련 설정 읽기'}]:[])];
 const peers=d.collection?catalog.filter(x=>x.collection===d.collection&&x.id!==d.id):[];
 const variants=(d.sameTitleDocumentIds||[]).filter(id=>id!==d.id).map(id=>catalog.find(x=>x.id===id)!);
 const handbookSections=d.sections.filter(s=>s.handbookProof);

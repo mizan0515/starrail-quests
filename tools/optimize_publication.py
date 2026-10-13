@@ -107,6 +107,7 @@ RESTORATION_ONLY={
 SCOPE=re.compile(r'\bastro-[a-z0-9]{8}\b')
 TAG={k:re.compile(r'<'+k+r'\b([^>]*)>(.*?)</'+k+r'>',re.S) for k in ('style','script')}
 FRAGMENTS=[
+ re.compile(r'<section class="quest-reading-nav"(?=[\s>])[\s\S]*?</section>'),
  re.compile(r'<p\b[^>]*\bdata-publication-ui="source-context"[^>]*>[\s\S]*?</p>'),
  re.compile(r'<template id="theme-icons">[\s\S]*?</template>'),
  re.compile(r'<header\b[\s\S]*?</header>'),
@@ -118,6 +119,13 @@ FRAGMENTS=[
  re.compile(r'<footer\b[\s\S]*?</footer>'),
  re.compile(r'<dialog class="context-dialog"[\s\S]*?</dialog>'),
 ]
+
+def quest_navigation_ui(fragment):
+ """Share declared navigation metadata while keeping reading bodies outside it."""
+ parser=OpeningTag();parser.feed(fragment.split('>',1)[0]+'>')
+ if 'data-quest-reading-nav' not in parser.attrs or 'data-pagefind-ignore' not in parser.attrs:return False
+ if READING_PROOF.search(fragment) or re.search(r'<(?:blockquote|pre|code|script|style|h[1-6])\b',fragment,re.I):return False
+ return len(re.findall(r'<section\b',fragment,re.I))==1 and len(re.findall(r'</section\s*>',fragment,re.I))==1
 
 def source_context_ui(fragment):
  """Only explicitly declared reader context; original rows/anchors stay static."""
@@ -309,6 +317,7 @@ def optimize(root,base,report_path):
    for pattern in FRAGMENTS:
     def extract_fragment(m):
      fragment=m[0]
+     if fragment.startswith('<section class="quest-reading-nav"') and not quest_navigation_ui(fragment):return fragment
      if 'data-publication-ui=' in fragment and not source_context_ui(fragment):return fragment
      # A classic, parser-blocking script inserts the exact original subtree
      # in its original parser position. Its existing scripts retain order.

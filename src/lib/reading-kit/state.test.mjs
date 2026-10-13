@@ -7,7 +7,7 @@ const source=fs.readFileSync(new URL('./state.mjs',import.meta.url),'utf8').repl
 test('direct proof anchors open the current template and focus its summary, including encoded IDs',()=>{
  for(const kind of ['rw-relation-proof','rw-map-evidence']){
   const id='proof/원문',summary={focused:false,focus(){this.focused=true;}},target={open:false,matches(selector){return selector.split(',').some(s=>s==='details.'+kind);},querySelector(){return summary;}};
-  const listeners={},context={location:{pathname:'/people/a.html',search:'',hash:'#'+encodeURIComponent(id)},document:{getElementById(value){return value===id?target:null;},querySelectorAll(){return [];},addEventListener(){}},window:{addEventListener(name,handler){listeners[name]=handler;}},sessionStorage:{getItem(){return null;}},requestAnimationFrame:cb=>cb(),performance:{getEntriesByType(){return [];}},URL};
+  const listeners={},context={location:{pathname:'/people/a.html',search:'',hash:'#'+encodeURIComponent(id)},document:{documentElement:{hasAttribute(){return false;}},getElementById(value){return value===id?target:null;},querySelectorAll(){return [];},addEventListener(){}},window:{addEventListener(name,handler){listeners[name]=handler;}},sessionStorage:{getItem(){return null;}},requestAnimationFrame:cb=>cb(),performance:{getEntriesByType(){return [];}},URL};
   vm.runInNewContext(source,context);
   assert.equal(target.open,true);assert.equal(summary.focused,true);
   summary.focused=false;listeners.pageshow({persisted:false});assert.equal(summary.focused,true);
@@ -18,12 +18,12 @@ test('direct proof anchors open the current template and focus its summary, incl
 
 test('Back restores the clicked visible source link when earlier hidden proofs have the same URL',()=>{
  const href='https://example.test/source.html#field';
- const hidden={href,focused:false,getClientRects:()=>[],focus(){this.focused=true;}};
- const clicked={href,focused:false,getClientRects:()=>[{}],focus(){this.focused=true;}};
+ const hidden={href,dataset:{},focused:false,getClientRects:()=>[],focus(){this.focused=true;}};
+ const clicked={href,dataset:{},focused:false,getClientRects:()=>[{}],focus(){this.focused=true;}};
  const details=[{open:false},{open:true}],listeners={},events={};let stored=null,scroll=null;
  class Element {closest(){return clicked;}}
  const context={Element,location:{pathname:'/setting.html',search:'',hash:'',origin:'https://example.test'},scrollY:735,
-  document:{getElementById(){return null;},querySelectorAll(selector){return selector==='main details'?details:[hidden,clicked];},addEventListener(name,handler){events[name]=handler;}},
+  document:{documentElement:{hasAttribute(){return false;}},getElementById(){return null;},querySelectorAll(selector){return selector==='main details'?details:[hidden,clicked];},addEventListener(name,handler){events[name]=handler;}},
   window:{addEventListener(name,handler){listeners[name]=handler;},scrollTo(x,y){scroll=y;}},
   sessionStorage:{getItem(){return stored;},setItem(key,value){stored=value;}},requestAnimationFrame:cb=>cb(),performance:{getEntriesByType(){return [{type:'back_forward'}];}},URL};
  vm.runInNewContext(source,context);events.click({target:new Element()});
@@ -38,10 +38,10 @@ test('a filter URL changed after load owns its saved link and focus state on a f
  const href='https://example.test/subject.html',saved=new Map();
  let scroll=null;
  const make=(search,type)=>{
-  const clicked={href,focused:false,getClientRects:()=>[{}],focus(){this.focused=true;}},events={},listeners={};
+  const clicked={href,dataset:{},focused:false,getClientRects:()=>[{}],focus(){this.focused=true;}},events={},listeners={};
   class Element{closest(){return clicked;}}
   const context={Element,location:{pathname:'/directory.html',search,hash:'',origin:'https://example.test'},scrollY:432,
-   document:{getElementById(){return null;},querySelectorAll(selector){return selector==='main details'?[]:[clicked];},addEventListener(name,handler){events[name]=handler;}},
+   document:{documentElement:{hasAttribute(){return false;}},getElementById(){return null;},querySelectorAll(selector){return selector==='main details'?[]:[clicked];},addEventListener(name,handler){events[name]=handler;}},
    window:{addEventListener(name,handler){listeners[name]=handler;},scrollTo(x,y){scroll=y;}},
    sessionStorage:{getItem:key=>saved.get(key)||null,setItem:(key,value)=>saved.set(key,value)},requestAnimationFrame:cb=>cb(),performance:{getEntriesByType:()=>[{type}]},URL};
   vm.runInNewContext(source,context);return {context,clicked,events,listeners,Element};
@@ -56,12 +56,25 @@ test('a filter URL changed after load owns its saved link and focus state on a f
 
 test('Back waits for an asynchronously rendered visible catalog link and then disconnects',()=>{
  const href='https://example.test/subject.html?from=%2Fcatalog%3Fq%3Da';
- const clicked={href,focused:false,getClientRects:()=>[{}],focus(){this.focused=true;}};
+ const clicked={href,dataset:{},focused:false,getClientRects:()=>[{}],focus(){this.focused=true;}};
  let links=[],observer,scroll=null;const listeners={};
  class MutationObserver{constructor(callback){this.callback=callback;observer=this;}observe(){this.connected=true;}disconnect(){this.connected=false;}}
- const context={MutationObserver,location:{pathname:'/catalog',search:'?q=a',hash:''},document:{body:{},getElementById(){return null;},querySelector(){return {};},querySelectorAll:selector=>selector==='main details'?[]:links,addEventListener(){}},window:{addEventListener:(name,cb)=>listeners[name]=cb,scrollTo:(x,y)=>scroll=y},sessionStorage:{getItem:()=>JSON.stringify({open:[],followed:href,followedIndex:0,scrollY:512})},requestAnimationFrame:cb=>cb(),performance:{getEntriesByType:()=>[{type:'back_forward'}]},setTimeout:()=>1,clearTimeout(){},URL};
+ const context={MutationObserver,location:{pathname:'/catalog',search:'?q=a',hash:''},document:{documentElement:{hasAttribute(){return false;}},body:{},getElementById(){return null;},querySelector(){return {};},querySelectorAll:selector=>selector==='main details'?[]:links,addEventListener(){}},window:{addEventListener:(name,cb)=>listeners[name]=cb,scrollTo:(x,y)=>scroll=y},sessionStorage:{getItem:()=>JSON.stringify({open:[],followed:href,followedIndex:0,scrollY:512})},requestAnimationFrame:cb=>cb(),performance:{getEntriesByType:()=>[{type:'back_forward'}]},setTimeout:()=>1,clearTimeout(){},URL};
  vm.runInNewContext(source,context);listeners.pageshow({persisted:false});
  assert.equal(observer.connected,true);assert.equal(clicked.focused,false);
  links=[clicked];observer.callback();
  assert.equal(clicked.focused,true);assert.equal(scroll,512);assert.equal(observer.connected,false);
+});
+
+test('reader return preserves an original link after from is appended and leaves paragraph resume focus intact',()=>{
+ const original='https://example.test/source.html#state-original',events={},listeners={};let stored,scroll;
+ const clicked={href:original+'?from=reader',dataset:{readingOriginalHref:original},focused:false,getClientRects:()=>[{}],focus(){this.focused=true;}};
+ let resume=false;const details=[{open:true}];class Element{closest(){return clicked;}}
+ const context={Element,URL,location:{pathname:'/reader.html',search:'',hash:'',origin:'https://example.test'},scrollY:640,
+  document:{documentElement:{hasAttribute:()=>resume},getElementById(){return null;},querySelectorAll:s=>s==='main details'?details:[clicked],addEventListener:(n,h)=>events[n]=h},
+  window:{addEventListener:(n,h)=>listeners[n]=h,scrollTo:(x,y)=>scroll=y},sessionStorage:{getItem:()=>stored,setItem:(k,v)=>stored=v},requestAnimationFrame:cb=>cb(),performance:{getEntriesByType:()=>[{type:'navigate'}]}};
+ vm.runInNewContext(source,context);events.click({target:new Element()});assert.equal(JSON.parse(stored).followed,original);
+ listeners.pageshow({persisted:true});assert.equal(clicked.focused,true);assert.equal(scroll,640);
+ clicked.focused=false;details[0].open=false;resume=true;listeners.pageshow({persisted:false});
+ assert.equal(details[0].open,true);assert.equal(clicked.focused,false);
 });

@@ -17,6 +17,13 @@ P=importlib.util.module_from_spec(spec);spec.loader.exec_module(P)
 class ProofCompressionTests(unittest.TestCase):
  def block(self,body,attrs='class="source-details" id="verified-sources"'):
   return '<details '+attrs+'><summary>원문 근거 · 閱讀</summary>'+body+'</details>'
+ def test_declared_quest_navigation_only_shares_metadata(self):
+  nav='<section class="quest-reading-nav" data-quest-reading-nav data-pagefind-ignore><details><summary>임무</summary><a id="quest-nav-quest-1-original" href="/문서/quest-1.html#original" data-quest-reading-link>임무의 원문</a></details></section>'
+  self.assertTrue(P.quest_navigation_ui(nav));self.assertEqual(P.FRAGMENTS[0].search(nav)[0],nav)
+  for bad in [nav.replace(' data-quest-reading-nav',''),nav.replace(' data-pagefind-ignore',''),nav.replace('</details>','<p class="original-row">원문</p></details>'),nav.replace('</details>','<blockquote>인용</blockquote></details>'),nav.replace('</details>','<section>원문</section></details>')]:self.assertFalse(P.quest_navigation_ui(bad))
+  report={'replacements':{},'scopes':{},'uiPool':[nav],'proofPool':[],'proofShards':{}}
+  passage='<p id="talk-1" class="original-body">보존 원문</p>'
+  self.assertEqual(P.expansion_function(report)('<script>__sp(0);</script>'+passage),nav+passage)
  def test_declared_technical_dl_preserves_outer_anchor_and_exact_inverse(self):
   metadata='<dl data-publication-metadata="technical"><dt>호출 자료</dt><dd>'+('캐시 SHA-256 0123456789abcdef '*100)+'</dd></dl>'
   original=self.block('<h2 id="caller-proof">호출 근거</h2>'+metadata)

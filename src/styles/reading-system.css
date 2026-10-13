@@ -273,3 +273,26 @@ body,h1,h2,h3,input,select,button,.lore-heading h1,.lore-statement,.lore-card h3
 .version-grid a[aria-current="page"] { color: var(--ink); background: var(--selected); }
 .early-records-entry{display:flex;flex-direction:column;gap:.35rem;padding:1rem 0;border-bottom:1px solid var(--archive-border);font-family:var(--sl-font)}.early-records-entry span{font-size:.85rem;color:var(--sl-color-gray-2)}
 .archive-sidebar a.archive-nav-link[aria-current="page"]{color:var(--ink)!important;background:var(--selected)}
+
+/* Current reading path precedes the global catalogue; source links carry metadata only. */
+.quest-reading-nav{padding-bottom:1.25rem;margin-bottom:1.25rem;border-bottom:1px solid var(--line)}
+.quest-reading-current{display:block;font-size:1rem;font-weight:700;line-height:1.65;text-decoration:none;color:var(--ink);padding:.35rem 0}
+.quest-reading-kind{font-size:.8125rem;color:var(--muted)}
+.quest-reading-nav summary{min-height:44px;cursor:pointer;font-size:.85rem;font-weight:650;line-height:1.6;padding:.5rem 0}
+.quest-reading-toc{margin-top:.8rem!important}
+.quest-reading-toc nav{max-height:38vh;overflow:auto;overscroll-behavior:contain}
+.quest-reading-nav nav{display:grid;gap:.1rem}
+.quest-reading-nav nav a{display:block;min-height:36px;padding:.4rem .6rem;border-inline-start:2px solid transparent;line-height:1.65;font-size:.8125rem;text-decoration:none;color:var(--muted)}
+.quest-reading-nav a[aria-current]{font-weight:700;color:var(--ink);background:var(--selected);border-inline-start-color:var(--brass)}
+.quest-reading-mission{margin-top:.85rem!important;border-top:1px solid var(--line)}
+.quest-reading-group summary{display:list-item;font-weight:500}
+.quest-reading-group summary span{float:inline-end;font-size:.8125rem;color:var(--muted);white-space:nowrap}
+.quest-reading-group ul{padding:0;margin:0;list-style:none}
+.quest-reading-group li{margin:0}
+.quest-reading-group a{display:block;padding:.65rem .55rem;text-decoration:none;color:var(--ink);border-inline-start:2px solid transparent;line-height:1.6;font-size:.8125rem}
+.quest-reading-group small{display:block;font-size:.8125rem;color:var(--muted);margin-top:.2rem!important}
+.quest-reading-nav a:focus-visible,.quest-related-jump:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.quest-reading-limit{font-size:.8125rem;color:var(--muted);line-height:1.7;margin-block:.6rem!important}
+.quest-source-count{display:block;color:var(--muted);font-size:.85rem;line-height:1.7}
+.quest-related-jump{display:inline-flex;align-items:center;min-height:44px;margin-block:.25rem .75rem;font-size:.875rem}
+@media(max-width:50rem){.quest-reading-nav nav a{min-height:44px}.quest-reading-current{font-size:1.0625rem}.quest-reading-group a{min-height:44px}}

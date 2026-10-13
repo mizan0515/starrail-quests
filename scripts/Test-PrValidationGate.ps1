@@ -3,6 +3,10 @@ param([string]$Root=(Split-Path $PSScriptRoot -Parent),[int]$MaxTotalSeconds=600
 $ErrorActionPreference='Stop'
 Push-Location $Root
 try {
+  & node --test tools/test_quest_reading_navigation.mjs tools/test_quest_reading_nav_client.mjs
+  if($LASTEXITCODE -ne 0){throw 'Quest connected reader model and client semantic QA failed'}
+  & python -B -X utf8 tools/verify_quest_reading_navigation.py --self-test
+  if($LASTEXITCODE -ne 0){throw 'Quest navigation metadata and semantic negative QA failed'}
   & node --test tools/test_deep_catalogue_append_only.mjs
   if($LASTEXITCODE -ne 0){throw 'Previously published catalogue positions changed'}
   & python -B -X utf8 tools/test_music_rhythm_domains.py
@@ -46,6 +50,8 @@ try {
     else {$env:STARRAIL_VALIDATE_UNOPTIMIZED=$taskPublicationOld}
   }
   if($LASTEXITCODE -ne 0){throw 'Reading build failed'}
+  & python -B -X utf8 tools/verify_quest_reading_navigation.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Whole raw quest connected reader navigation QA failed'}
   & python -B -X utf8 tools/verify_native_choice_delta.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Native choice originals and exact source metadata QA failed'}
   & python -B -X utf8 tools/verify_lua_timeline_dialogue.py --dist dist
@@ -140,6 +146,8 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Publication proof compression boundary and exact inverse QA failed'}
   & python -B -X utf8 tools/optimize_publication.py
   if($LASTEXITCODE -ne 0){throw 'Publication size or exact shared UI reconstruction failed'}
+  & python -B -X utf8 tools/verify_quest_reading_navigation.py --dist dist --publication-report .codex-work/publication-build-report.json
+  if($LASTEXITCODE -ne 0){throw 'Whole optimized quest connected reader navigation QA failed'}
   & python -B -X utf8 tools/verify_native_choice_delta.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Native choice originals and exact source metadata QA failed'}
   & python -B -X utf8 tools/verify_lua_timeline_dialogue.py --dist dist
