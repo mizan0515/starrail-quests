@@ -31,6 +31,7 @@ const current=readingSourceRoute(route);
   const groups=[...nav.querySelectorAll<HTMLDetailsElement>('[data-reading-mission]')];
   const base=import.meta.env.BASE_URL.replace(/\/$/,'');
   const inherited=safeReadingReturn(new URLSearchParams(location.search).get('from'),{origin:location.origin,base});
+  const pointKey=()=>'quest-reading-nav-point.v1:'+location.pathname+location.search;
   // Dedicated stable ids avoid shifting the existing main reader's automatic reading-link anchors.
   const updateSourceReturn=(link:HTMLAnchorElement)=>{
    const from=sourceReadingOrigin(location.pathname+location.search+'#'+encodeURIComponent(link.id),inherited,{origin:location.origin,base});
@@ -40,7 +41,11 @@ const current=readingSourceRoute(route);
   // Filters update history without reloading. Capture the current URL before following a source.
   nav.addEventListener('click',event=>{
    const link=event.target instanceof Element?event.target.closest<HTMLAnchorElement>('a[data-quest-reading-link]'):null;
-   if(link&&!event.defaultPrevented){rememberPoint();updateSourceReturn(link);}
+   if(link&&!event.defaultPrevented){
+    rememberPoint();
+    try{sessionStorage.setItem(pointKey(),JSON.stringify({link:link.id,id:readingPoint?.element.id,top:readingPoint?.top,scroll:scrollY}));}catch{}
+    updateSourceReturn(link);
+   }
   },true);
   const restore=()=>{
    let id:string;try{id=decodeURIComponent(location.hash.slice(1));}catch{return;}
@@ -48,7 +53,21 @@ const current=readingSourceRoute(route);
    for(let parent=link.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;
    document.documentElement.removeAttribute('data-reading-focus');
    const guide=document.getElementById('reader-guide');if(guide instanceof HTMLDetailsElement)guide.open=true;
-   requestAnimationFrame(()=>{link.scrollIntoView({block:'nearest'});link.focus({preventScroll:true});});
+   requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    // Reveal the link within its own scroller; ancestor scrolling moves the book.
+    const scroller=nav.closest('.reader-guide-body');
+    if(scroller){const row=link.getBoundingClientRect(),box=scroller.getBoundingClientRect();if(row.top<box.top)scroller.scrollTop-=box.top-row.top;else if(row.bottom>box.bottom)scroller.scrollTop+=row.bottom-box.bottom;}
+    try{
+     const saved=JSON.parse(sessionStorage.getItem(pointKey())||'null');
+     if(saved?.link===link.id){
+      const point=typeof saved.id==='string'?document.getElementById(saved.id):null;
+      if(point instanceof HTMLElement&&point.matches('.original-body')&&point.getClientRects().length&&!point.closest('[hidden],details:not([open])')&&Number.isFinite(saved.top))window.scrollBy(0,point.getBoundingClientRect().top-saved.top);
+      else if(Number.isFinite(saved.scroll)&&saved.scroll>=0)window.scrollTo(0,saved.scroll);
+      sessionStorage.removeItem(pointKey());
+     }
+    }catch{}
+    link.focus({preventScroll:true});
+   }));
   };
   window.addEventListener('hashchange',restore);
   const returnMission=inherited?decodeURIComponent(new URL(inherited,location.origin).pathname).match(/\/문서\/(quest-[0-9]+)\.html$/)?.[1]||null:null;
