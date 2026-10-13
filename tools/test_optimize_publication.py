@@ -17,6 +17,17 @@ P=importlib.util.module_from_spec(spec);spec.loader.exec_module(P)
 class ProofCompressionTests(unittest.TestCase):
  def block(self,body,attrs='class="source-details" id="verified-sources"'):
   return '<details '+attrs+'><summary>원문 근거 · 閱讀</summary>'+body+'</details>'
+ def test_declared_technical_dl_preserves_outer_anchor_and_exact_inverse(self):
+  metadata='<dl data-publication-metadata="technical"><dt>호출 자료</dt><dd>'+('캐시 SHA-256 0123456789abcdef '*100)+'</dd></dl>'
+  original=self.block('<h2 id="caller-proof">호출 근거</h2>'+metadata)
+  records={};packed,count,saved=P.compress_proofs(original,records)
+  self.assertEqual(count,1);self.assertGreater(saved,0);self.assertIn('<h2 id="caller-proof">',packed);self.assertIn('<dl data-publication-metadata="technical">',packed)
+  self.assertEqual(P.expand_proofs(packed,records).encode(),original.encode())
+  plain=original.replace(' data-publication-metadata="technical"','');self.assertEqual(P.compress_proofs(plain,{})[:2],(plain,0))
+ def test_declared_metadata_cannot_hide_reading_links_quotes_or_descendant_anchors(self):
+  for protected in ('<p class="original-body">원문</p>','<a href="#talk-1" data-reading-link>복귀</a>','<p id="talk-1">원문</p>','<blockquote>인용</blockquote>'):
+   original=self.block('<h2 id="proof">근거</h2><dl data-publication-metadata="technical"><dd>'+protected+('metadata '*100)+'</dd></dl>')
+   self.assertEqual(P.compress_proofs(original,{})[:2],(original,0))
  def test_utf8_quotes_script_end_and_exact_bytes(self):
   body='<pre>'+('한국어 😀 &quot; \\ \r\n </script> &lt;details&gt; '+chr(0xa0))*100+'</pre>'
   original=self.block(body);records={};packed,count,saved=P.compress_proofs(original,records)

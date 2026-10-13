@@ -139,7 +139,7 @@ class OpeningTag(HTMLParser):
  def handle_starttag(self,tag,attrs):self.attrs=dict(attrs)
 
 def metadata_segments(s,start,end):
- """Keep protected children static; only pre/code metadata text is eligible.
+ """Keep protected children static; only declared technical metadata is eligible.
 
  A pre/code opening tag (including its ID) and closing tag stay static. Reading
  subtrees, summaries, links, scripts and quotations block all their descendants.
@@ -153,13 +153,15 @@ def metadata_segments(s,start,end):
   if lower.startswith('</'):
    # Generated HTML is explicit for these nodes; mismatches fail closed.
    if not stack or stack[-1][0]!=tag:return []
-   _,content,blocked=stack.pop()
-   if tag in ('pre','code') and not blocked:
+   _,content,blocked,technical=stack.pop()
+   if technical and not blocked:
     body=s[content:token.start()]
     if len(body.encode('utf8'))>=512 and not PROTECTED_PROOF.search(body) and not READING_PROOF.search(body):ranges.append((content,token.start()))
   elif tag not in VOID_TAGS and not text.rstrip().endswith('/>'):
    blocked=(bool(stack) and stack[-1][2]) or bool(READING_PROOF.search(text)) or tag in ('a','summary','blockquote','noscript')
-   stack.append((tag,token.end(),blocked))
+   declared=OpeningTag();declared.feed(text)
+   technical=tag in ('pre','code') or (tag=='dl' and declared.attrs.get('data-publication-metadata')=='technical')
+   stack.append((tag,token.end(),blocked,technical))
  return ranges if not stack else []
 
 def proof_interiors(s):
