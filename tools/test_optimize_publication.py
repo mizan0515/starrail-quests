@@ -310,6 +310,58 @@ console.log(JSON.stringify({events,bodies,loaded:Object.keys(ctx.__starrailPubli
   result=subprocess.run(['node','-e',code],input=json.dumps({'codec':(Path(P.__file__).resolve().parents[1]/'public/_publication'/P.CODEC_FILE).read_text('utf8'),'runtime':P.sparse_runtime(len(rows),urls),'assets':{urls[r['id']]:r['body']for r in records},'csv':csv}),text=True,encoding='utf8',capture_output=True,check=True)
   actual=json.loads(result.stdout);self.assertEqual(actual['events'],['import:/shard-0.js','import:/shard-1.js','runtime-ready','body','body']);self.assertEqual(actual['bodies'],[rows[599],rows[0]]);self.assertEqual(actual['loaded'],['0','1'])
 
+ def test_adjacent_ui_runs_append_only_and_reuse_exact_composites(self):
+  rows=['<nav>한글 😀</nav>','<aside>연결</aside>'];original=list(rows);counts=P.Counter()
+  def allocate(value):
+   if value not in rows:rows.append(value)
+   return f'<script>__sp({rows.index(value)});</script>'
+  run='<script>__sp(0);</script><script>__sp(1);</script>'
+  passage='<p class="original-body" id="talk-1">그대로 읽는 원문</p>'
+  compact=P.share_adjacent_ui(run+passage+run,allocate,counts)
+  self.assertEqual(rows[:2],original);self.assertEqual(rows[2:],[run])
+  self.assertEqual(compact,'<script>__sp(2);</script>'+passage+'<script>__sp(2);</script>')
+  self.assertEqual(counts['sharedAdjacentUIRuns'],2);self.assertEqual(counts['sharedAdjacentUICalls'],4)
+  self.assertEqual(counts['sharedAdjacentUIBytesSaved'],len((run+passage+run).encode())-len(compact.encode()))
+  report={'replacements':{},'scopes':{},'uiPool':rows,'proofPool':[],'proofShards':{}}
+  self.assertEqual(P.expansion_function(report)(compact),rows[0]+rows[1]+passage+rows[0]+rows[1])
+
+ def test_adjacent_ui_sharing_preserves_every_noncontiguous_parser_boundary(self):
+  call='<script>__sp(0);</script>'
+  for boundary in [' ','\n','<!-- -->','<p class="original-body" id="talk-1">원문</p>','<script>__spr(0);</script>','<script type="module">run()</script>']:
+   text=call+boundary+call;counts=P.Counter()
+   def unexpected(value):raise AssertionError('Noncontiguous parser boundary was pooled')
+   self.assertEqual(P.share_adjacent_ui(text,unexpected,counts),text);self.assertFalse(counts)
+
+ def test_adjacent_ui_keeps_the_original_nojs_suffix_slot_boundary(self):
+  text='<script>__sp(0);</script><script>__sp(1);</script><noscript><nav>메뉴</nav></noscript>'
+  def unexpected(value):raise AssertionError('No-JS suffix slot boundary was pooled')
+  counts=P.Counter();self.assertEqual(P.share_adjacent_ui(text,unexpected,counts),text);self.assertFalse(counts)
+
+ def test_adjacent_ui_composite_transitive_closure_and_bootstrap_inverse(self):
+  rows=['<nav>원문 메뉴</nav>','<header><script>__sp(0);</script></header>','<aside>연결 목록</aside>']
+  rows.append('<script>__sp(1);</script><script>__sp(2);</script>')
+  report,mapping=self.report(rows);selected=sorted({mapping[s]for s in P.ui_closure(rows)('<script>__sp(3);</script>')})
+  self.assertEqual(P.ui_closure(rows)('<script>__sp(3);</script>'),{0,1,2,3})
+  tags=report['proofCodecTags'].replace('data-pc-runtime','data-pc-runtime="'+','.join(map(str,selected))+'"')
+  passage='<p class="original-body" id="talk-1">원문·화자·앵커 보존</p>'
+  page='<html><head>'+tags+'</head><body><script>__sp(3);</script>'+passage+'</body></html>'
+  self.assertEqual(P.expansion_function(report)(page),'<html><head></head><body><header><nav>원문 메뉴</nav></header><aside>연결 목록</aside>'+passage+'</body></html>')
+
+ def test_real_parser_order_for_composite_and_two_level_nested_ui(self):
+  rows=['<nav>z 마지막</nav>']+[f'<nav>a{i:04}</nav>'for i in range(598)]+['<header><script>__sp(0);</script></header>']
+  rows.append('<script>__sp(599);</script><script>__sp(1);</script>')
+  records=P.ui_shards(rows);urls=['/shard-'+str(i)+'.js'for i in range(len(records))];mapping={slot:r['id']for r in records for slot in r['slots']}
+  csv=','.join(map(str,sorted({mapping[s]for s in P.ui_closure(rows)('<script>__sp(600);</script>')})))
+  code=r'''
+const fs=require('fs'),vm=require('vm'),input=JSON.parse(fs.readFileSync(0,'utf8')),events=[],bodies=[];
+let ctx;const write=value=>{const external=/^<script src="([^"]+)"><\/script>$/.exec(value);if(external){events.push('import:'+external[1]);vm.runInContext(input.assets[external[1]],ctx);return;}events.push('body');bodies.push(value);for(const m of value.matchAll(/<script>__sp\(([0-9]+)\);<\/script>/g))vm.runInContext('__sp('+m[1]+');',ctx);};
+ctx={window:null,document:{currentScript:{getAttribute:()=>input.csv},write},atob:v=>Buffer.from(v,'base64').toString('latin1'),Uint8Array,TextDecoder,TextEncoder};ctx.window=ctx;vm.createContext(ctx);vm.runInContext(input.codec,ctx);vm.runInContext(input.runtime,ctx);events.push('runtime-ready');vm.runInContext('__sp(600);',ctx);
+console.log(JSON.stringify({events,bodies,loaded:Object.keys(ctx.__starrailPublicationUIShardLoaded)}));
+'''
+  result=subprocess.run(['node','-e',code],input=json.dumps({'codec':(Path(P.__file__).resolve().parents[1]/'public/_publication'/P.CODEC_FILE).read_text('utf8'),'runtime':P.sparse_runtime(len(rows),urls),'assets':{urls[r['id']]:r['body']for r in records},'csv':csv}),text=True,encoding='utf8',capture_output=True,check=True)
+  actual=json.loads(result.stdout);self.assertEqual(actual['events'],['import:/shard-0.js','import:/shard-1.js','runtime-ready','body','body','body','body'])
+  self.assertEqual(actual['bodies'],[rows[600],rows[599],rows[0],rows[1]]);self.assertEqual(actual['loaded'],['0','1'])
+
  def test_actual_content_hashed_ui_asset_tampering_fails_full_inverse_verifier(self):
   with tempfile.TemporaryDirectory()as directory:
    root=Path(directory)/'dist';root.mkdir();receipt=Path(directory)/'report.json';original='<html><head></head><body><header>목록</header><p class="original-body" id="talk-1">원문</p></body></html>'

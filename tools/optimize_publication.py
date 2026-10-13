@@ -28,6 +28,7 @@ CODEC_FILE='pako-inflate-1.0.11.min.js'
 CODEC_SHA256='2ca27e9a8dae569cdeac42752ed1aed1afeff7f19282d3cc12c0aaa54a08bc04'
 PROOF_TAG=re.compile(r'<script data-pc="([0-9a-f]{64})">__starrailPublicationWrite\("([A-Za-z0-9+/=]+)",([0-9]+)\);</script>')
 UI_POOL_TAG=re.compile(r'<script>__sp\(([0-9]+)\);</script>')
+ADJACENT_UI_SEQUENCE=re.compile('(?:'+UI_POOL_TAG.pattern+'){2,}')
 PROOF_POOL_TAG=re.compile(r'<script>__spr\(([0-9]+)\);</script>')
 EXTERNAL_SEQUENCE=re.compile(r'(?:<script\b[^>]*\bsrc="[^"]+"[^>]*></script>|<link\b[^>]*\brel="stylesheet"[^>]*>){2,}')
 EXTERNAL_REPLACEMENT=re.compile(r'<script\b[^>]*\bdata-pj\b[^>]*></script>|<link\b[^>]*\bdata-ps\b[^>]*>')
@@ -126,6 +127,25 @@ def ui_shards(rows):
   if entries and(len(entries)==MAX_UI_SHARD_SLOTS or size+len(entry)+1>MAX_UI_SHARD_RAW_BYTES):flush()
   size+=len(entry)+(1 if entries else 0);entries.append(entry);slots.append(slot)
  flush();return records
+
+def share_adjacent_ui(text,pool_ui,counts):
+ """Share only contiguous generated UI calls, using the existing parser wire.
+
+ Original rows and parser boundaries remain unchanged. Call this once after
+ the first page pass so any new composite rows follow the original slots.
+ """
+ def share(match):
+  # A no-JS suffix belongs to the immediately preceding original slot.
+  # Retain that parser boundary so the existing strict inverse stays exact.
+  if text[match.end():match.end()+10]=='<noscript>':return match[0]
+  original=match[0];replacement=pool_ui(original)
+  saved=len(original.encode('utf8'))-len(replacement.encode('utf8'))
+  require(saved>0,'Adjacent UI sharing did not reduce the parser calls')
+  counts['sharedAdjacentUIRuns']+=1
+  counts['sharedAdjacentUICalls']+=len(list(UI_POOL_TAG.finditer(original)))
+  counts['sharedAdjacentUIBytesSaved']+=saved
+  return replacement
+ return ADJACENT_UI_SEQUENCE.sub(share,text)
 
 def ui_closure(rows):
  """Reject cycles/missing slots, including unused nodes; cache transitive slots."""
@@ -452,6 +472,13 @@ def optimize(root,base,report_path):
    if UI_POOL_TAG.search(s) or PROOF_POOL_TAG.search(s) or search_loader:pool_pages.append(file)
   file.write_text(s,'utf8',newline='')
   if position%5000==0:print(f'Publication shared UI {position+1}/{len(files)}',flush=True)
+ # Keep the original UI slot census intact, then append shared call runs.
+ # The existing transitive closure loads every nested slot before parsing.
+ for position,file in enumerate(pool_pages):
+  original=file.read_bytes().decode('utf8')
+  compact=share_adjacent_ui(original,pool_ui,counts)
+  if compact!=original:file.write_text(compact,'utf8',newline='')
+  if position%5000==0:print(f'Publication adjacent UI {position+1}/{len(pool_pages)}',flush=True)
  required_ui=ui_closure(ui_rows);ui_slot_shard={}
  for record in ui_shards(ui_rows):
   body=record.pop('body');record['url']=asset(body,'.js','ui-shard');record['assetSha256']=digest(body.encode());record['assetBytes']=len(body.encode())
