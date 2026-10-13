@@ -297,6 +297,19 @@ console.log(JSON.stringify({imports,writes,rejected,slots:Object.keys(ctx.__star
    bad=json.loads(json.dumps(report));change(bad)
    with self.assertRaises(ValueError):P.expansion_function(bad)
 
+ def test_parser_open_imports_finish_before_parent_and_nested_ui_calls(self):
+  rows=['<nav>z 마지막</nav>']+[f'<nav>a{i:04}</nav>'for i in range(598)]+['<header><script>__sp(0);</script></header>']
+  records=P.ui_shards(rows);urls=['/shard-'+str(i)+'.js'for i in range(len(records))];mapping={slot:r['id']for r in records for slot in r['slots']}
+  csv=','.join(map(str,sorted({mapping[s]for s in P.ui_closure(rows)('<script>__sp(599);</script>')})))
+  code=r'''
+const fs=require('fs'),vm=require('vm'),input=JSON.parse(fs.readFileSync(0,'utf8')),events=[],bodies=[];
+let ctx;const write=value=>{const external=/^<script src="([^"]+)"><\/script>$/.exec(value);if(external){events.push('import:'+external[1]);vm.runInContext(input.assets[external[1]],ctx);return;}events.push('body');bodies.push(value);for(const m of value.matchAll(/<script>__sp\(([0-9]+)\);<\/script>/g))vm.runInContext('__sp('+m[1]+');',ctx);};
+ctx={window:null,document:{currentScript:{getAttribute:()=>input.csv},write},atob:v=>Buffer.from(v,'base64').toString('latin1'),Uint8Array,TextDecoder,TextEncoder};ctx.window=ctx;vm.createContext(ctx);vm.runInContext(input.codec,ctx);vm.runInContext(input.runtime,ctx);events.push('runtime-ready');vm.runInContext('__sp(599);',ctx);
+console.log(JSON.stringify({events,bodies,loaded:Object.keys(ctx.__starrailPublicationUIShardLoaded)}));
+'''
+  result=subprocess.run(['node','-e',code],input=json.dumps({'codec':(Path(P.__file__).resolve().parents[1]/'public/_publication'/P.CODEC_FILE).read_text('utf8'),'runtime':P.sparse_runtime(len(rows),urls),'assets':{urls[r['id']]:r['body']for r in records},'csv':csv}),text=True,encoding='utf8',capture_output=True,check=True)
+  actual=json.loads(result.stdout);self.assertEqual(actual['events'],['import:/shard-0.js','import:/shard-1.js','runtime-ready','body','body']);self.assertEqual(actual['bodies'],[rows[599],rows[0]]);self.assertEqual(actual['loaded'],['0','1'])
+
  def test_actual_content_hashed_ui_asset_tampering_fails_full_inverse_verifier(self):
   with tempfile.TemporaryDirectory()as directory:
    root=Path(directory)/'dist';root.mkdir();receipt=Path(directory)/'report.json';original='<html><head></head><body><header>목록</header><p class="original-body" id="talk-1">원문</p></body></html>'
