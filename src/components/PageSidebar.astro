@@ -1,0 +1,80 @@
+---
+import DefaultTableOfContents from '@astrojs/starlight/components/TableOfContents.astro';
+import QuestReadingNav from './QuestReadingNav.astro';
+import {readingSourceRoute} from '../lib/quest-reading-sources';
+const base=import.meta.env.BASE_URL.replace(/\/$/,'');
+let path=Astro.url.pathname;try{path=decodeURIComponent(path);}catch{}
+const route=path.startsWith(base+'/')?path.slice(base.length):path;
+const current=readingSourceRoute(route),{toc}=Astro.locals.starlightRoute;
+const localSections=/^\/(?:우주\/(?:기록|설정)|유물)\/[^/]+\.html$/.test(route);
+---
+{(current||toc||localSections)&&<details class="reader-guide" id="reader-guide" open>
+ <summary class="reader-guide-toggle"><span>{current?'원문 목차':'이 글의 목차'}</span><span data-guide-current aria-hidden="true"></span></summary>
+ <div class="reader-guide-body">{current?<QuestReadingNav route={route}/>:toc?<DefaultTableOfContents/>:<nav class="reader-local-sections" aria-label="이 글의 목차" data-guide-sections><a href="#_top">이 글 처음으로</a></nav>}</div>
+</details>}
+<script>
+ const guide=document.getElementById('reader-guide');
+ if(guide instanceof HTMLDetailsElement){
+  const wide=matchMedia('(min-width:90rem)');
+  const sections=guide.querySelector('[data-guide-sections]');
+  const headings=sections?[...document.querySelectorAll<HTMLElement>('main h2[id],main h3[id],main section[id]')].filter(target=>!target.closest('details,.cva-module')):[];
+  const seen=new Set<string>();
+  for(const heading of headings){
+   const parentSection=heading.parentElement?.closest('section[id]');if(parentSection&&seen.has(parentSection.id))continue;
+   if(seen.has(heading.id))continue;seen.add(heading.id);
+   const title=heading.matches('h2,h3')?heading.textContent:heading.querySelector('h2,h3')?.textContent;
+   if(!title?.trim())continue;
+   const link=document.createElement('a');link.href='#'+encodeURIComponent(heading.id);link.textContent=title.trim();sections?.append(link);
+  }
+  const guideCurrent=guide.querySelector<HTMLElement>('[data-guide-current]');
+  const updateCurrent=()=>{
+   if(guide.querySelector('[data-quest-reading-nav]'))return;
+   const links=[...guide.querySelectorAll<HTMLAnchorElement>('a[href^="#"]')];
+   const padding=parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||0;
+   const active=links.filter(link=>{let id;try{id=decodeURIComponent(link.hash.slice(1));}catch{return false;}const target=document.getElementById(id);return target?.getClientRects().length&&target.getBoundingClientRect().top<=padding+24;}).at(-1)||links[0];
+   if(guideCurrent)guideCurrent.textContent=active?.textContent||'';
+  };
+  document.addEventListener('scroll',updateCurrent,{passive:true});guide.addEventListener('toggle',updateCurrent);updateCurrent();
+  const summary=guide.querySelector<HTMLElement>('summary');
+  const apply=()=>{
+   const focused=document.activeElement;
+   if(!wide.matches&&focused&&guide.contains(focused)&&focused!==summary)summary?.focus({preventScroll:true});
+   guide.open=wide.matches;
+   if(wide.matches&&focused===summary)guide.querySelector<HTMLElement>('a[aria-current="location"],a[aria-current="true"],a')?.focus({preventScroll:true});
+  };
+  apply();guide.closest('.reader-layout')?.setAttribute('data-guide-ready','');wide.addEventListener('change',apply);
+  guide.addEventListener('keydown',event=>{if(event.key==='Escape'&&!wide.matches){guide.open=false;summary?.focus({preventScroll:true});}});
+  guide.addEventListener('click',event=>{
+   if(event instanceof MouseEvent&&(event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey))return;
+   const link=event.target instanceof Element?event.target.closest<HTMLAnchorElement>('a[href^="#"]'):null;
+   if(!link)return;
+   let id:string;try{id=decodeURIComponent(link.hash.slice(1));}catch{return;}
+   const target=document.getElementById(id);if(!target)return;
+   for(let parent=target.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;
+   if(!wide.matches)guide.open=false;
+   requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    const heading=target.matches('h1,h2,h3,summary')?target:target.querySelector<HTMLElement>('h1,h2,h3,summary')||target;
+    heading.tabIndex=-1;heading.focus({preventScroll:true});
+   }));
+  });
+  const reveal=()=>{
+   let id:string;try{id=decodeURIComponent(location.hash.slice(1));}catch{return;}
+   const target=document.getElementById(id);if(!target||!guide.contains(target))return;
+   document.documentElement.removeAttribute('data-reading-focus');guide.open=true;
+   for(let parent=target.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;
+  };
+  reveal();window.addEventListener('hashchange',reveal);
+ }
+ // The focus control applies equally to original readers and editorial documents.
+ const focus=document.createElement('button');focus.type='button';focus.id='reading-focus-toggle';
+ focus.textContent='집중 모드';focus.setAttribute('aria-pressed','false');focus.setAttribute('aria-controls',guide?'reader-guide starlight__sidebar':'starlight__sidebar');document.body.append(focus);
+ const sync=()=>{const focused=document.documentElement.hasAttribute('data-reading-focus');focus.setAttribute('aria-pressed',String(focused));focus.textContent=focused?'탐색 펼치기':'집중 모드';};
+ focus.addEventListener('click',()=>{
+  const padding=parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||0;
+  const point=[...document.querySelectorAll<HTMLElement>('main .original-body,main .essay-paragraph,main [data-reading-template="row"]')].find(node=>node.getClientRects().length&&!node.closest('[hidden],details:not([open])')&&node.getBoundingClientRect().bottom>padding)||document.querySelector<HTMLElement>('main h1');
+  const top=point?.getBoundingClientRect().top;
+  document.documentElement.toggleAttribute('data-reading-focus');sync();
+  requestAnimationFrame(()=>{if(point&&top!==undefined)window.scrollBy(0,point.getBoundingClientRect().top-top);});
+ });
+ window.addEventListener('hashchange',sync);sync();
+</script>

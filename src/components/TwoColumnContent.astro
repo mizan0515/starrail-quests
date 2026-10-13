@@ -1,0 +1,12 @@
+---
+import {readingSourceRoute} from '../lib/quest-reading-sources';
+const base=import.meta.env.BASE_URL.replace(/\/$/,'');
+let path=Astro.url.pathname;try{path=decodeURIComponent(path);}catch{}
+const route=path.startsWith(base+'/')?path.slice(base.length):path;
+const localSections=/^\/(?:우주\/(?:기록|설정)|유물)\/[^/]+\.html$/.test(route);
+const hasGuide=Boolean(readingSourceRoute(route)||Astro.locals.starlightRoute.toc||localSections);
+---
+<div class:list={['reader-layout',{'reader-layout-with-guide':hasGuide}]}>
+ {hasGuide&&<aside class="reader-guide-rail print:hidden" aria-label="현재 글의 독서 안내"><slot name="right-sidebar" /></aside>}
+ <div class="main-pane reader-main"><slot /></div>
+</div>

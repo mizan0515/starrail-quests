@@ -46,14 +46,9 @@ const current=readingSourceRoute(route);
    let id:string;try{id=decodeURIComponent(location.hash.slice(1));}catch{return;}
    const link=document.getElementById(id);if(!(link instanceof HTMLAnchorElement)||!link.hasAttribute('data-quest-reading-link'))return;
    for(let parent=link.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;
-   const menu=document.getElementById('starlight__sidebar');
-   const reveal=()=>{
-    if(menu?.hasAttribute('popover')&&typeof menu.showPopover==='function'&&!menu.matches(':popover-open'))menu.showPopover();
-    requestAnimationFrame(()=>{link.scrollIntoView({block:'center'});link.focus({preventScroll:true});});
-   };
-   // Starlight removes popover on desktop and owns the native focus trap.
-   if(menu?.localName==='sl-sidebar-pane'&&typeof customElements!=='undefined')customElements.whenDefined('sl-sidebar-pane').then(reveal);
-   else reveal();
+   document.documentElement.removeAttribute('data-reading-focus');
+   const guide=document.getElementById('reader-guide');if(guide instanceof HTMLDetailsElement)guide.open=true;
+   requestAnimationFrame(()=>{link.scrollIntoView({block:'nearest'});link.focus({preventScroll:true});});
   };
   window.addEventListener('hashchange',restore);
   const returnMission=inherited?decodeURIComponent(new URL(inherited,location.origin).pathname).match(/\/문서\/(quest-[0-9]+)\.html$/)?.[1]||null:null;
@@ -62,7 +57,7 @@ const current=readingSourceRoute(route);
   for(const group of groups)if(selected)group.open=group.dataset.readingMission===selected;
   // The default Starlight persister indexes its own tree. This custom tree uses stable quest/kind keys.
   if(selected){
-   const key='quest-reading-nav.v1:'+selected,scroller=document.getElementById('starlight__sidebar');
+   const key='quest-reading-nav.v1:'+selected,scroller=nav.closest('.reader-guide-body');
    const disclosures=[...nav.querySelectorAll<HTMLDetailsElement>('[data-reading-group]')];
    try{
     const saved=JSON.parse(sessionStorage.getItem(key)||'null');
@@ -77,7 +72,7 @@ const current=readingSourceRoute(route);
   const toc=nav.querySelector<HTMLElement>('[data-quest-local-toc]')!;
   const targets:HTMLElement[]=[],seen=new Set<string>();
   document.querySelectorAll<HTMLElement>('main h2[id], main h3[id], main section[id], main details[id]').forEach(target=>{
-   if(!target.id||seen.has(target.id)||target.closest('[data-context-dialog]'))return;
+   if(!target.id||seen.has(target.id)||target.closest('[data-context-dialog],.cva-module'))return;
    const title=target.dataset.rangeScene?'설정 범위의 원문':target.id==='original'?'원문 읽기':target.matches('h2,h3')?target.textContent:target.querySelector('h2,h3,summary')?.textContent;
    if(!title?.trim())return;seen.add(target.id);targets.push(target);
    const link=document.createElement('a');link.href='#'+encodeURIComponent(target.id);link.textContent=title.replace(/\s+/g,' ').trim();
@@ -97,10 +92,12 @@ const current=readingSourceRoute(route);
    const visible=targets.filter(target=>target.getClientRects().length&&!target.closest('[hidden]'));
    const padding=parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||0;
    const active=visible.filter(target=>target.getBoundingClientRect().top<=Math.max(140,padding+(parseFloat(getComputedStyle(target).scrollMarginTop)||0)+2)).at(-1)||visible[0];
+   const guideCurrent=document.querySelector<HTMLElement>('[data-guide-current]');
+   if(guideCurrent)guideCurrent.textContent=links.find(link=>link.dataset.localReadingTarget===active?.id)?.textContent||'';
    for(const link of links){
     if(active&&link.dataset.localReadingTarget===active.id){
      link.setAttribute('aria-current','location');
-     if(active.id!==lastActive&&toc.getClientRects().length){const row=link.getBoundingClientRect(),box=toc.getBoundingClientRect();if(row.top<box.top)toc.scrollTop-=box.top-row.top;else if(row.bottom>box.bottom)toc.scrollTop+=row.bottom-box.bottom;}
+     if(active.id!==lastActive&&toc.getClientRects().length){const scroller=nav.closest('.reader-guide-body');if(scroller){const row=link.getBoundingClientRect(),box=scroller.getBoundingClientRect();if(row.top<box.top)scroller.scrollTop-=box.top-row.top;else if(row.bottom>box.bottom)scroller.scrollTop+=row.bottom-box.bottom;}}
     }else link.removeAttribute('aria-current');
    }
    if(toc.getClientRects().length)lastActive=active?.id;
@@ -108,6 +105,8 @@ const current=readingSourceRoute(route);
   let pending=false;
   document.addEventListener('scroll',()=>{if(!pending){pending=true;requestAnimationFrame(()=>{update();rememberPoint();pending=false;});}},{passive:true});
   window.addEventListener('hashchange',()=>{update();rememberPoint();});document.addEventListener('toggle',update,true);
+  const guide=nav.closest('details.reader-guide');
+  guide?.addEventListener('toggle',()=>{if(guide instanceof HTMLDetailsElement&&guide.open){lastActive=undefined;requestAnimationFrame(update);}});
   let resizing=false;
   window.addEventListener('resize',()=>{
    if(resizing)return;resizing=true;const point=readingPoint;
@@ -117,20 +116,10 @@ const current=readingSourceRoute(route);
    if(event instanceof MouseEvent&&(event.defaultPrevented||event.button!==0||event.ctrlKey||event.metaKey||event.shiftKey||event.altKey))return;
    const link=event.target instanceof Element?event.target.closest<HTMLAnchorElement>('a[data-local-reading-target]'):null;
    if(!link)return;const target=document.getElementById(link.dataset.localReadingTarget!);
-   const menu=document.getElementById('starlight__sidebar');
-   if(menu&&typeof menu.hidePopover==='function'&&menu.matches(':popover-open'))menu.hidePopover();
+   const guide=document.getElementById('reader-guide');if(guide instanceof HTMLDetailsElement&&!matchMedia('(min-width:90rem)').matches)guide.open=false;
    for(let parent=target?.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;
    requestAnimationFrame(()=>requestAnimationFrame(()=>{const focus=target?.matches('h2,h3')?target:target?.querySelector<HTMLElement>('h2,h3,summary')||target;if(focus){focus.tabIndex=-1;focus.focus({preventScroll:true});}update();rememberPoint();}));
   });
-  const focus=document.createElement('button');focus.type='button';focus.id='reading-focus-toggle';
-  focus.textContent='집중 모드';focus.setAttribute('aria-pressed','false');focus.setAttribute('aria-controls','starlight__sidebar');document.body.append(focus);
-  focus.addEventListener('click',()=>{
-   const padding=parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||140;
-   const point=[...document.querySelectorAll<HTMLElement>('main .original-body')].find(node=>node.getClientRects().length&&!node.closest('[hidden],details:not([open])')&&node.getBoundingClientRect().bottom>padding)||document.querySelector<HTMLElement>('main h1');
-   const offset=point?.getBoundingClientRect().top;
-   const focused=document.documentElement.toggleAttribute('data-reading-focus');focus.setAttribute('aria-pressed',String(focused));focus.textContent=focused?'탐색 펼치기':'집중 모드';
-   requestAnimationFrame(()=>{if(point&&offset!==undefined)window.scrollBy(0,point.getBoundingClientRect().top-offset);rememberPoint();});
-  });
-  document.documentElement.setAttribute('data-context-lnb','');update();rememberPoint();
+  update();rememberPoint();
  }
 </script>
