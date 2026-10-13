@@ -225,7 +225,7 @@ FRAGMENTS=[
  re.compile(r'<header\b[\s\S]*?</header>'),
  re.compile(r'<nav class="sidebar\b[\s\S]*?</sl-sidebar-pane></nav>'),
  re.compile(r'<sl-sidebar-pane\b[\s\S]*?</sl-sidebar-pane>'),
- re.compile(r'<aside class="(?:right-sidebar-container|collection-panel)\b[\s\S]*?</aside>'),
+ re.compile(r'<aside class="(?:right-sidebar-container|collection-panel|reader-guide-rail)\b[\s\S]*?</aside>'),
  re.compile(r'<nav class="breadcrumbs"[\s\S]*?</nav>'),
  re.compile(r'<a class="catalog-return"[^>]*>[\s\S]*?</a>'),
  re.compile(r'<footer\b[\s\S]*?</footer>'),
@@ -245,6 +245,25 @@ def source_context_ui(fragment):
  return (attrs.get('data-publication-ui')=='source-context' and 'muted' in attrs.get('class','').split()
          and not READING_PROOF.search(fragment) and not PROTECTED_PROOF.search(fragment)
          and not re.search(r'<(?:a|details|summary|pre|code|blockquote|script|style)\b',fragment,re.I))
+
+def reading_guide_ui(fragment):
+ """Only the renderer-owned document guide; original passages remain static."""
+ parser=OpeningTag();parser.feed(fragment.split('>',1)[0]+'>')
+ if 'reader-guide-rail' not in parser.attrs.get('class','').split():return False
+ if not re.search(r'<details\b[^>]*\bid="reader-guide"',fragment):return False
+ if READING_PROOF.search(fragment) or re.search(r'<(?:main|blockquote|pre|code|h1)\b',fragment,re.I):return False
+ return len(re.findall(r'<aside\b',fragment,re.I))==1 and len(re.findall(r'</aside\s*>',fragment,re.I))==1
+
+def shared_reading_guide(fragment,pool_ui):
+ """Store the common guide frame once, with a separate document content slot.
+
+ The existing synchronous parser wire and inverse handle the composition.
+ Only the renderer-owned guide boundary is eligible; original HTML stays out.
+ """
+ if not reading_guide_ui(fragment):return None
+ parts=re.fullmatch(r'([\s\S]*?<div class="reader-guide-body">)([\s\S]*)(</div>\s*</details>[\s\S]*</aside>)',fragment)
+ if not parts:return None
+ return pool_ui(''.join(pool_ui(part) for part in parts.groups()))
 
 def digest(body):return hashlib.sha256(body).hexdigest()
 def require(condition,message):
@@ -434,9 +453,16 @@ def optimize(root,base,report_path):
     def extract_fragment(m):
      fragment=m[0]
      if fragment.startswith('<section class="quest-reading-nav"') and not quest_navigation_ui(fragment):return fragment
+     if fragment.startswith('<aside class="reader-guide-rail') and not reading_guide_ui(fragment):return fragment
      if 'data-publication-ui=' in fragment and not source_context_ui(fragment):return fragment
      # A classic, parser-blocking script inserts the exact original subtree
      # in its original parser position. Its existing scripts retain order.
+     replacement=shared_reading_guide(fragment,pool_ui) if fragment.startswith('<aside class="reader-guide-rail') else None
+     if replacement is not None:
+      counts['sharedReaderGuideTemplates']+=1;counts['fragment']+=1
+      # Composite slots expand through their constituent rows. A direct
+      # replacement receipt would incorrectly bind the composite to a full row.
+      return replacement
      replacement=pool_ui(fragment)
      if fragment.startswith('<header'):replacement+=fallback
      if fragment.startswith('<footer'):replacement+=footer_fallback
