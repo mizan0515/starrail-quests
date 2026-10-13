@@ -296,5 +296,5 @@ body,h1,h2,h3,input,select,button,.lore-heading h1,.lore-statement,.lore-card h3
 .quest-source-count{display:block;color:var(--muted);font-size:.85rem;line-height:1.7}
 .quest-related-jump{display:inline-flex;align-items:center;min-height:44px;margin-block:.25rem .75rem;font-size:.875rem}
 @media(max-width:50rem){.quest-reading-nav nav a{min-height:44px}.quest-reading-current{font-size:1.0625rem}.quest-reading-group a{min-height:44px}}
-@media(min-width:50rem){html[data-reading-focus] .sidebar-pane{display:none}html[data-reading-focus]{--sl-sidebar-width:0px}#reading-focus-toggle{position:fixed;inset-block-end:1rem;inset-inline-end:1rem;z-index:20;min-height:44px;padding:.65rem 1rem;border:1px solid var(--line);border-radius:.35rem;background:var(--paper);color:var(--ink)}#reading-focus-toggle:focus-visible{outline:2px solid var(--brass);outline-offset:3px}}
+@media(min-width:50rem){html[data-reading-focus] .sidebar-pane{display:none}html[data-reading-focus]{--sl-sidebar-width:0px}#reading-focus-toggle{position:fixed;inset-block-end:5.25rem;inset-inline-end:1rem;z-index:20;min-height:44px;padding:.65rem 1rem;border:1px solid var(--line);border-radius:.35rem;background:var(--paper);color:var(--ink)}#reading-focus-toggle:focus-visible{outline:2px solid var(--brass);outline-offset:3px}}
 @media(max-width:49.99rem){#reading-focus-toggle{display:none}}
