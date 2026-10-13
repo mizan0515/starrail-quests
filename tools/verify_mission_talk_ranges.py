@@ -278,8 +278,29 @@ class Rendered(HTMLParser):
   elif kind in ('note','native'): obj.append(text)
   else: obj[1].append(text)
 
-def ui_wire_rows(text):
+def ui_wire_rows(text, shard_bodies=None):
  # Decode the actual shared runtime independently of the publication producer.
+ sparse=list(re.finditer(r'window\.__starrailPublicationUI=new Array\(([0-9]+)\);',text))
+ if sparse:
+  require(len(sparse)==1 and shard_bodies is not None,'unique sparse UI declaration and actual shards')
+  require(not re.search(r'__starrailPublicationLoadUI\(JSON|window\.__starrailPublicationUI=JSON',text),'mixed UI wire declarations')
+  count=int(sparse[0][1]); require(0<count<=2**53-1,'sparse UI total slot count')
+  manifests=list(re.finditer(r'window\.__starrailPublicationUIURLs=(\[[^\n;]*\]);',text))
+  require(len(manifests)==1,'unique actual UI URL manifest')
+  urls=json.loads(manifests[0][1]); require(isinstance(urls,list) and urls and all(isinstance(url,str) for url in urls) and len(urls)==len(set(urls)),'UI URL manifest domain')
+  require(set(shard_bodies)==set(urls),'actual UI shards and manifest URL set')
+  rows={}
+  for identifier,url in enumerate(urls):
+   matches=list(re.finditer(r'__starrailPublicationLoadUIShard\(([0-9]+),"([A-Za-z0-9+/=]+)",([0-9]+),([0-9]+)\);',shard_bodies[url]))
+   require(len(matches)==1 and shard_bodies[url].strip()==matches[0][0],'unique whole actual UI shard call')
+   match=matches[0]; require(int(match[1])==identifier,'actual UI shard identifier/manifest order')
+   raw=gzip.decompress(base64.b64decode(match[2],validate=True)); require(len(raw)==int(match[3]) and len(raw)<=2000000,'actual UI shard decoded byte bound')
+   values=json.loads(raw.decode('utf8',errors='strict')); require(isinstance(values,list) and len(values)==int(match[4]) and 0<len(values)<=512,'actual UI shard count/bound')
+   for pair in values:
+    require(isinstance(pair,list) and len(pair)==2 and type(pair[0]) is int and 0<=pair[0]<count and isinstance(pair[1],str) and pair[0] not in rows,'sparse UI wire slot type/range/uniqueness')
+    rows[pair[0]]=pair[1]
+  require(len(rows)==count,'sparse UI complete original slot census')
+  return [rows[i] for i in range(count)]
  indexed_matches=list(re.finditer(r'__starrailPublicationLoadUI\(JSON\.parse\(__starrailPublicationDecode\("([A-Za-z0-9+/=]+)",([0-9]+)\)\),([0-9]+)\);',text))
  dense_matches=list(re.finditer(r'window\.__starrailPublicationUI=JSON\.parse\(__starrailPublicationDecode\("([A-Za-z0-9+/=]+)",([0-9]+)\)\);',text))
  require(len(indexed_matches)+len(dense_matches)==1,'unique supported UI wire declaration')
@@ -299,13 +320,35 @@ def ui_wire_rows(text):
 def publication_metadata_expander(dist,report_path):
  from verify_versioned_timeline_text import expand_proof_slots,relative
  report=load(report_path); require(report['schema']=='starrail-publication-dedup.v3','publication metadata receipt schema')
- runtimes=[]
+ runtimes=[]; runtime_assets=[]; actual_assets={}
  for name,record in report['assets'].items():
   require(re.fullmatch(r'[0-9a-f]{20}\.(?:js|css)',name),'shared metadata asset path')
   raw=(Path(dist)/'_shared'/name).read_bytes(); require(sha(raw)==record['sha256'],'actual shared metadata asset SHA')
-  if record['kind']=='proof-runtime': runtimes.append(raw.decode('utf8',errors='strict'))
+  actual_assets[name]=raw
+  if record['kind']=='proof-runtime': runtimes.append(raw.decode('utf8',errors='strict')); runtime_assets.append((name,raw))
  require(len(runtimes)==1,'one actual publication UI runtime')
- rows=ui_wire_rows(runtimes[0]); require(rows==report['uiPool'],'actual UI wire differs from receipt slots')
+ ui_shards=report.get('uiShards'); shard_bodies=None; slot_shards={}
+ if ui_shards is not None:
+  require(isinstance(ui_shards,dict) and ui_shards,'publication UI shard receipt domain')
+  shard_bodies={}
+  for key,record in ui_shards.items():
+   require(re.fullmatch(r'0|[1-9][0-9]*',key) and type(record['id']) is int and record['id']==int(key),'UI shard receipt identifier')
+   url=record['url']; require(re.fullmatch(r'/starrail-quests/_shared/[0-9a-f]{20}\.js',url),'actual UI shard path')
+   name=url.rsplit('/',1)[1]; require(name in actual_assets,'UI shard absent from actual asset census')
+   raw=actual_assets[name]; require(len(raw)==record['assetBytes'] and sha(raw)==record['assetSha256'],'actual UI shard receipt asset SHA/size')
+   body=raw.decode('utf8',errors='strict'); shard_bodies[url]=body
+   match=re.fullmatch(r'__starrailPublicationLoadUIShard\(([0-9]+),"([A-Za-z0-9+/=]+)",([0-9]+),([0-9]+)\);\s*',body)
+   require(match is not None and int(match[1])==int(key),'UI shard receipt actual call')
+   decoded=gzip.decompress(base64.b64decode(match[2],validate=True)); pairs=json.loads(decoded.decode('utf8',errors='strict'))
+   require(len(decoded)==record['rawBytes']==int(match[3]) and sha(decoded)==record['rawSha256'] and match[2]==record['payload'],'UI shard receipt actual payload')
+   require(isinstance(pairs,list) and all(isinstance(pair,list) and len(pair)==2 for pair in pairs) and len(pairs)==record['count']==int(match[4]) and [pair[0] for pair in pairs]==record['slots'],'UI shard receipt actual original slots')
+   for pair in pairs:
+    require(type(pair[0]) is int and pair[0] not in slot_shards,'UI shard receipt duplicate original slot'); slot_shards[pair[0]]=int(key)
+ rows=ui_wire_rows(runtimes[0],shard_bodies); require(rows==report['uiPool'],'actual UI wire differs from receipt slots')
+ if ui_shards is not None:
+  runtime=report['uiRuntime']; name,raw=runtime_assets[0]
+  require(runtime['url']=='/starrail-quests/_shared/'+name and runtime['sha256']==sha(raw) and runtime['bytes']==len(raw),'actual sparse UI runtime receipt')
+  require(runtime['totalSlots']==len(rows) and runtime['maxSlots']==512 and runtime['maxRawBytes']==2000000 and runtime['loader']=='indexed-local-ui.v1','UI runtime original census and bounds')
  for shard in report['proofShards'].values():
   url=unquote(shard['url']); require(url.startswith('/starrail-quests/'),'actual metadata shard base')
   raw=(Path(dist)/relative(url[len('/starrail-quests/'):])).read_bytes()
@@ -317,6 +360,26 @@ def publication_metadata_expander(dist,report_path):
  def slot(match):
   index=int(match[1]); require(0<=index<len(rows),'publication UI slot bounds'); return rows[index]
  def expand(text):
+  if ui_shards is not None:
+   selected=list(re.finditer(r'<script\b[^>]*\bdata-pc-runtime="([^"]*)"[^>]*></script>',text))
+   require(len(selected)==1,'unique page UI shard selector')
+   value=selected[0][1]; require(value=='' or re.fullmatch(r'(?:0|[1-9][0-9]*)(?:,(?:0|[1-9][0-9]*))*',value),'page UI shard selector grammar')
+   identifiers=[] if not value else list(map(int,value.split(',')))
+   require(identifiers==sorted(set(identifiers)) and all(str(i) in ui_shards for i in identifiers),'page UI shard selector identifier domain')
+   required=set(); visiting=set()
+   def visit(index):
+    require(0<=index<len(rows),'page UI closure slot bounds')
+    require(index not in visiting,'cyclic page UI closure')
+    require(len(visiting)<15,'excessive page UI closure nesting')
+    if index in required:return
+    visiting.add(index)
+    for nested in pattern.finditer(rows[index]):visit(int(nested[1]))
+    visiting.remove(index); required.add(index)
+   for match in pattern.finditer(text):visit(int(match[1]))
+   require(identifiers==sorted({slot_shards[index] for index in required}),'page UI shard selector misses or substitutes required closure')
+   runtime=report['uiRuntime']; require(selected[0][0]==f'<script src="{runtime["url"]}" data-pc-runtime="{value}"></script>','page UI selector runtime URL and exact bootstrap')
+   heads=list(re.finditer(r'<head\b[^>]*>[\s\S]*?</head>',text,re.I)); require(len(heads)==1 and heads[0].start()<=selected[0].start()<selected[0].end()<=heads[0].end(),'page UI bootstrap inside single head')
+   first=pattern.search(text); require(first is None or selected[0].end()<=first.start(),'page UI bootstrap precedes first UI call')
   for _ in range(16):
    updated=pattern.sub(slot,text)
    if updated==text:
