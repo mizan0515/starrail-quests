@@ -97,5 +97,14 @@ const current=readingSourceRoute(route);
    for(let parent=target?.parentElement;parent;parent=parent.parentElement)if(parent instanceof HTMLDetailsElement)parent.open=true;
    requestAnimationFrame(()=>requestAnimationFrame(()=>{const focus=target?.matches('h2,h3')?target:target?.querySelector<HTMLElement>('h2,h3,summary')||target;if(focus){focus.tabIndex=-1;focus.focus({preventScroll:true});}}));
   });
+  const focus=document.createElement('button');focus.type='button';focus.id='reading-focus-toggle';
+  focus.textContent='집중 모드';focus.setAttribute('aria-pressed','false');focus.setAttribute('aria-controls','starlight__sidebar');document.body.append(focus);
+  focus.addEventListener('click',()=>{
+   const padding=parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop)||140;
+   const point=[...document.querySelectorAll<HTMLElement>('main .original-body')].find(node=>node.getClientRects().length&&!node.closest('[hidden],details:not([open])')&&node.getBoundingClientRect().bottom>padding)||document.querySelector<HTMLElement>('main h1');
+   const offset=point?.getBoundingClientRect().top;
+   const focused=document.documentElement.toggleAttribute('data-reading-focus');focus.setAttribute('aria-pressed',String(focused));focus.textContent=focused?'탐색 펼치기':'집중 모드';
+   requestAnimationFrame(()=>{if(point&&offset!==undefined)window.scrollBy(0,point.getBoundingClientRect().top-offset);});
+  });
  }
 </script>
