@@ -27,6 +27,8 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Public snapshot Timeline source distinction QA failed'}
   & python -B -X utf8 tools/verify_snapshot_native_corroboration.py --self-test
   if($LASTEXITCODE -ne 0){throw 'Cached native caller corroboration domain QA failed'}
+  & python -B -X utf8 tools/verify_snapshot_native_extension.py --self-test
+  if($LASTEXITCODE -ne 0){throw 'Additional exact cached caller corroboration QA failed'}
   & python -B -X utf8 tools/verify_timeline_owner_bridges.py --self-test
   if($LASTEXITCODE -ne 0){throw 'Auxiliary Timeline owner bridge QA failed'}
   & python -B -X utf8 tools/verify_dialogue_contexts.py
@@ -56,6 +58,8 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Public snapshot Timeline static original QA failed'}
   & python -B -X utf8 tools/verify_snapshot_native_corroboration.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Cached native caller exact evidence rendering QA failed'}
+  & python -B -X utf8 tools/verify_snapshot_native_extension.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Additional exact cached caller corroboration QA failed'}
   & python -B -X utf8 tools/verify_dialogue_contexts.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Whole dialogue context original HTML and return links QA failed'}
   & python -B -X utf8 tools/verify_mission_talk_ranges.py --dist dist
@@ -148,6 +152,8 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Public snapshot Timeline static original QA failed'}
   & python -B -X utf8 tools/verify_snapshot_native_corroboration.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Optimized cached native caller exact evidence QA failed'}
+  & python -B -X utf8 tools/verify_snapshot_native_extension.py --dist dist
+  if($LASTEXITCODE -ne 0){throw 'Additional exact cached caller corroboration QA failed'}
   & python -B -X utf8 tools/verify_dialogue_contexts.py --dist dist
   if($LASTEXITCODE -ne 0){throw 'Optimized whole context static original HTML QA failed'}
   & python -B -X utf8 tools/verify_mission_talk_ranges.py --dist dist

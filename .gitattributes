@@ -22,3 +22,5 @@ tools/verify_versioned_timeline_text.py -text
 tools/verify_mission_talk_ranges.py -text
 data/lua-native-caller-corroboration.json -text
 tools/verify_lua_native_corroboration.py -text
+data/snapshot-native-corroboration-extension.json -text
+tools/verify_snapshot_native_extension.py -text
