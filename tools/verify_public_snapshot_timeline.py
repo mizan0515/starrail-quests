@@ -447,6 +447,9 @@ def dist_replay(repo, data, directory, publication_report=None):
     overlay = load(repo / 'data/public-snapshot-native-corroboration.json')
     source_check(repo, overlay)
     corroborated = {ref['sceneId'] for ref in overlay['references']}
+    from verify_snapshot_native_extension import source_check as extension_check
+    extension = load(repo / 'data/snapshot-native-corroboration-extension.json')
+    corroborated.update(ref['sceneId'] for ref in extension_check(repo, extension))
     corpus = {name: load(repo / name) for name in {j['preservedSource']['file'] for j in data['joins'].values()}}
     expansion, report, rows = None, None, 0
     for scene in data['scenes']:
