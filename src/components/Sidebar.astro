@@ -1,6 +1,5 @@
 ---
 import MobileMenuFooter from '@astrojs/starlight/components/MobileMenuFooter.astro';
-import QuestReadingNav from './QuestReadingNav.astro';
 import '../styles/discovery.css';
 import catalog from '../../data/catalog.json';
 import explorer from '../../data/explorer.json';
@@ -43,7 +42,7 @@ const main=[
  {url:'자료안내.html',title:'자료 안내',ancestor:false},
 ];
 ---
-<div class="archive-sidebar"><QuestReadingNav route={route}/><p class="sidebar-caption">자료집 전체</p><nav class="site-global-nav" aria-label="주요 탐색">{main.map(({url,title,ancestor})=><a class="archive-nav-link" href={href(url)} aria-current={current(url,ancestor)}>{title}</a>)}</nav>
+<div class="archive-sidebar"><p class="sidebar-caption">자료집 전체</p><nav class="site-global-nav" aria-label="주요 탐색">{main.map(({url,title,ancestor})=><a class="archive-nav-link" href={href(url)} aria-current={current(url,ancestor)}>{title}</a>)}</nav>
 <div class="sidebar-section"><a class="archive-nav-link" href={href('versions/index.html')} aria-current={current('versions/index.html',route.startsWith('/versions/'))}>버전별 임무</a><a class="archive-nav-link" href={href('우주.html')} aria-current={current('우주.html',universeRoute)}>우주 콘텐츠·아이템</a></div><details class="sidebar-section" open={route.startsWith('/versions/')||route.startsWith('/quests/')}><summary class="sidebar-caption">버전으로 찾기</summary><a class="archive-nav-link" href={href('versions/index.html')}>모든 버전</a>{[4,3,2,1].map(era=><div class="version-era"><span class="era-label">{era}.x</span><div class="version-grid">{versions.filter(v=>v.startsWith(`${era}.`)).map(v=><a href={href('versions/'+v+'.html')} aria-current={current('versions/'+v+'.html')}>{v}</a>)}</div></div>)}</details>
 <details class="sidebar-section" open={route.startsWith('/quests/')}><summary class="sidebar-caption">임무 종류</summary>{[['main','개척 임무'],['continuance','개척 후문'],['companion','동행 임무'],['adventure','모험 임무'],['daily','일일 임무']].map(([id,title])=><a class="archive-nav-link" href={href('quests/'+id+'.html')} aria-current={current('quests/'+id+'.html')}>{title}</a>)}</details>
 <div class="sidebar-section"><a class="archive-nav-link" href={href('관점/aeon.html')} aria-current={current('관점/aeon.html',axisFor('aeon'))}>에이언즈 · 운명의 길</a><a class="archive-nav-link" href={href('대사.html')} aria-current={current('대사.html',route.startsWith('/대사/'))}>대사 원문 자료실</a></div><div class="md:sl-hidden"><MobileMenuFooter /></div></div>

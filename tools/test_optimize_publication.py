@@ -24,6 +24,54 @@ class ProofCompressionTests(unittest.TestCase):
   report={'replacements':{},'scopes':{},'uiPool':[nav],'proofPool':[],'proofShards':{}}
   passage='<p id="talk-1" class="original-body">보존 원문</p>'
   self.assertEqual(P.expansion_function(report)('<script>__sp(0);</script>'+passage),nav+passage)
+ def test_document_guide_boundary_and_nested_ui_exact_inverse(self):
+  nav='<nav><a id="guide-origin" href="/문서/quest-1.html#original">원문으로 돌아가기</a></nav>'
+  guide='<aside class="reader-guide-rail print:hidden" aria-label="현재 글의 독서 안내"><details id="reader-guide" open><summary>원문 목차</summary><div class="reader-guide-body"><script>__sp(0);</script></div></details></aside>'
+  self.assertTrue(P.reading_guide_ui(guide))
+  self.assertTrue(any(pattern.search(guide) for pattern in P.FRAGMENTS))
+  original='<p id="talk-1" class="original-body" data-speaker="운리">한국어 원문 &amp; 선택지</p>'
+  report={'replacements':{},'scopes':{},'uiPool':[nav,guide],'proofPool':[],'proofShards':{}}
+  self.assertEqual(P.expansion_function(report)('<script>__sp(1);</script>'+original),guide.replace('<script>__sp(0);</script>',nav)+original)
+  self.assertEqual(P.ui_closure([nav,guide])('<script>__sp(1);</script>'),{0,1})
+  for protected in [original,'<div data-reading-template="row">원문</div>','<blockquote>원문 인용</blockquote>','<pre>원문</pre>','<main>본문</main>','<h1>본문 제목</h1>','<aside>다른 영역</aside>']:
+   self.assertFalse(P.reading_guide_ui(guide.replace('</details>',protected+'</details>')))
+  for bad in [guide.replace('reader-guide-rail','another-rail'),guide.replace('id="reader-guide"','id="other"')]:
+   self.assertFalse(P.reading_guide_ui(bad))
+ def test_shared_guide_frame_is_one_source_with_separate_document_slots(self):
+  rows=[];index={}
+  def pool(body):
+   if body not in index:index[body]=len(rows);rows.append(body)
+   return f'<script>__sp({index[body]});</script>'
+  prefix='<aside class="reader-guide-rail" aria-label="현재 글의 독서 안내"><details id="reader-guide" open><summary>원문 목차</summary><div class="reader-guide-body">'
+  suffix='</div></details></aside>'
+  bodies=['<nav><a href="#scene-1">운리</a></nav>','<nav><a href="#scene-2">스파클</a></nav>']
+  calls=[P.shared_reading_guide(prefix+body+suffix,pool) for body in bodies]
+  self.assertEqual(rows.count(prefix),1);self.assertEqual(rows.count(suffix),1)
+  self.assertTrue(all(prefix not in row for row in rows if row!=prefix))
+  report={'replacements':{},'scopes':{},'uiPool':rows,'proofPool':[],'proofShards':{}}
+  expand=P.expansion_function(report)
+  original='<main><p class="original-body" id="talk-1">보존된 한국어 원문</p></main>'
+  for call,body in zip(calls,bodies):
+   self.assertEqual(expand(call+original),prefix+body+suffix+original)
+   self.assertEqual(len(P.ui_closure(rows)(call)),4)
+  self.assertIsNone(P.shared_reading_guide(prefix+original+suffix,pool))
+  self.assertIsNone(P.shared_reading_guide((prefix+bodies[0]+suffix).replace('reader-guide-body','other'),pool))
+ def test_full_optimizer_shared_guide_receipt_and_static_original(self):
+  with tempfile.TemporaryDirectory()as directory:
+   root=Path(directory)/'dist';root.mkdir();report=Path(directory)/'report.json'
+   prefix='<aside class="reader-guide-rail"><details id="reader-guide" open><summary>원문 목차</summary><div class="reader-guide-body">'
+   suffix='</div></details></aside>';originals=[]
+   for i in range(2):
+    original='<html><head></head><body>'+prefix+f'<nav><a href="#talk-{i}">장면 {i}</a></nav>'+suffix+f'<main><p class="original-body" id="talk-{i}">한국어 대사 {i}</p></main></body></html>'
+    originals.append(original);(root/f'{i}.html').write_text(original,'utf8')
+   P.optimize(root,'/starrail-quests',report);P.verify(root,report)
+   data=json.loads(report.read_text('utf8'));expand=P.expansion_function(data)
+   self.assertEqual(data['uiPool'].count(prefix),1);self.assertEqual(data['uiPool'].count(suffix),1)
+   self.assertEqual(data['counts']['sharedReaderGuideTemplates'],2)
+   for i,original in enumerate(originals):
+    built=(root/f'{i}.html').read_text('utf8')
+    self.assertIn(f'id="talk-{i}">한국어 대사 {i}',built);self.assertNotIn(prefix,built)
+    self.assertEqual(expand(built),original)
  def test_declared_technical_dl_preserves_outer_anchor_and_exact_inverse(self):
   metadata='<dl data-publication-metadata="technical"><dt>호출 자료</dt><dd>'+('캐시 SHA-256 0123456789abcdef '*100)+'</dd></dl>'
   original=self.block('<h2 id="caller-proof">호출 근거</h2>'+metadata)
