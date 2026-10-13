@@ -171,6 +171,44 @@ class ProofCompressionTests(unittest.TestCase):
    self.assertTrue(built.startswith('<html><head><meta charset="utf-8">'))
 
 class SourceContextSharingTests(unittest.TestCase):
+ def test_short_generated_scopes_reserve_existing_prose_and_script_tokens(self):
+  with tempfile.TemporaryDirectory()as directory:
+   root=Path(directory)/'dist';root.mkdir();report=Path(directory)/'report.json'
+   original='<html><head><style>.astro-a1234567{color:red}</style></head><body><p class="original-body astro-a1234567" id="talk-1">원문 _a 그대로</p><script>const _b="이름 보존";</script></body></html>'
+   (root/'index.html').write_text(original,'utf8');P.optimize(root,'/starrail-quests',report);P.verify(root,report)
+   data=json.loads(report.read_text('utf8'));alias=data['scopes']['astro-a1234567']
+   self.assertEqual(len(alias),2);self.assertNotIn(alias,{'_a','_b'})
+   self.assertEqual(P.expansion_function(data)((root/'index.html').read_text('utf8')),original)
+   self.assertIn('원문 _a 그대로',(root/'index.html').read_text('utf8'));self.assertIn('const _b=',(root/'index.html').read_text('utf8'))
+
+ def test_indexed_ui_storage_retains_slots_and_rejects_malformed_pairs(self):
+  rows=['<nav>z · 끝</nav>','<nav>a · 처음</nav>','<nav>중간</nav>']
+  code=r'''
+const fs=require('fs'),vm=require('vm'),input=JSON.parse(fs.readFileSync(0,'utf8'));
+const writes=[],ctx={window:null,document:{write:value=>writes.push(value)},atob:value=>Buffer.from(value,'base64').toString('binary'),Uint8Array,TextDecoder,TextEncoder};ctx.window=ctx;
+vm.createContext(ctx);vm.runInContext(input.codec,ctx);vm.runInContext(input.runtime,ctx);
+ctx.__sp(0);ctx.__sp(1);ctx.__sp(2);
+let rejected=0;for(const [pairs,count] of [[[[0,'a'],[0,'b']],2],[[[2,'a']],1],[[[-1,'a']],1],[[[0.5,'a']],1],[[[0,2]],1],[[[0,'a','b']],1],[[null],1],[[[0,'a']],2],[{},1],[[[0,'a']],0.5]]){
+ try{ctx.__starrailPublicationLoadUI(pairs,count)}catch(e){rejected++}
+}
+console.log(JSON.stringify({writes,rejected,retained:ctx.__starrailPublicationUI}));
+'''
+  result=subprocess.run(['node','-e',code],input=json.dumps({'runtime':P.pooled_runtime(rows),'codec':(Path(P.__file__).resolve().parents[1]/'public/_publication'/P.CODEC_FILE).read_text('utf8')}),text=True,capture_output=True,check=True)
+  actual=json.loads(result.stdout);self.assertEqual(actual['writes'],rows);self.assertEqual(actual['retained'],rows);self.assertEqual(actual['rejected'],10)
+
+ def test_proof_storage_reordering_updates_calls_and_exact_inverse(self):
+  with tempfile.TemporaryDirectory()as directory:
+   root=Path(directory)/'dist';root.mkdir();report=Path(directory)/'report.json'
+   bodies=['z metadata '*150,'a metadata '*150]
+   originals=[]
+   for i,body in enumerate(bodies):
+    value='<html><head></head><body><p class="original-body" id="talk-'+str(i)+'">원문 '+str(i)+'</p><details class="source-details"><summary>근거</summary><pre>'+body+'</pre></details></body></html>'
+    originals.append(value);(root/(str(i)+'.html')).write_text(value,'utf8')
+   P.optimize(root,'/starrail-quests',report);P.verify(root,report)
+   data=json.loads(report.read_text('utf8'));expand=P.expansion_function(data)
+   self.assertEqual(expand((root/'0.html').read_text('utf8')),originals[0]);self.assertEqual(expand((root/'1.html').read_text('utf8')),originals[1])
+   self.assertIn('__spr(1)',(root/'0.html').read_text('utf8'));self.assertIn('__spr(0)',(root/'1.html').read_text('utf8'))
+
  def test_only_editor_context_is_eligible(self):
   value='<p class="muted" data-publication-ui="source-context">연출 순서는 실제 플레이 순서와 다를 수 있습니다.</p>'
   self.assertTrue(P.source_context_ui(value))

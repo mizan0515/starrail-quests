@@ -78,8 +78,27 @@ def encoded_array(rows):
  return raw,base64.b64encode(gzip.compress(raw,compresslevel=9,mtime=0)).decode('ascii')
 
 def pooled_runtime(rows):
- raw,encoded=encoded_array(rows)
- return PROOF_RUNTIME+POOL_RUNTIME+SEARCH_RUNTIME+f'window.__starrailPublicationUI=JSON.parse(__starrailPublicationDecode("{encoded}",{len(raw)}));\n'+'''window.__sp=function(id){
+ # The original slot numbers remain stable; only storage order changes.
+ def key(entry):
+  _,row=entry
+  owners=tuple(re.findall(r'data-reading-mission="([^"]+)"',row))
+  template=re.sub(r'<a\b[^>]*data-current-reader-title[^>]*>[\s\S]*?</a>','<current-reader>',row)
+  template=UI_POOL_TAG.sub('<ui-slot>',template)
+  template=re.sub(r'[0-9a-f]{16,64}','<hash>',template)
+  return owners,template,row
+ pairs=sorted(enumerate(rows),key=key)
+ raw,encoded=encoded_array(pairs)
+ return PROOF_RUNTIME+POOL_RUNTIME+SEARCH_RUNTIME+'''window.__starrailPublicationLoadUI=function(pairs,count){
+ if(!Number.isSafeInteger(count)||count<0||!Array.isArray(pairs)||pairs.length!==count)throw new Error("Invalid UI pool count");
+ var rows=new Array(count);
+ for(var i=0;i<pairs.length;i++){
+  var pair=pairs[i];
+  if(!Array.isArray(pair)||pair.length!==2||!Number.isSafeInteger(pair[0])||pair[0]<0||pair[0]>=count||typeof pair[1]!=="string"||Object.prototype.hasOwnProperty.call(rows,pair[0]))throw new Error("Invalid or duplicate UI slot");
+  rows[pair[0]]=pair[1];
+ }
+ window.__starrailPublicationUI=rows;
+};
+'''+f'__starrailPublicationLoadUI(JSON.parse(__starrailPublicationDecode("{encoded}",{len(raw)})),{len(rows)});\n'+'''window.__sp=function(id){
  if(!Number.isSafeInteger(id)||id<0||id>=__starrailPublicationUI.length||typeof __starrailPublicationUI[id]!=="string")throw new Error("Unknown publication UI slot");
  document.write(__starrailPublicationUI[id]);
 };
@@ -242,7 +261,7 @@ def optimize(root,base,report_path):
      if kind=='script':require(not CLASS_CONSUMER.search(m[2]),'Presentation class has an inline client-script consumer '+str(file))
      else:require(not RESERVED_CLASS.search(m[2]),'Presentation inline CSS alias collision')
      tags[kind].append((m[1],m[2]))
-  return digest(raw),SCOPE.findall(s),re.findall(r'\b_q[A-Za-z0-9]+\b',s),[name for name in references if name in s],tags
+  return digest(raw),SCOPE.findall(s),re.findall(r'\b_(?:[A-Za-z0-9]|q[A-Za-z0-9]+)\b',s),[name for name in references if name in s],tags
  # Bound pending reads to64files; aggregation and all later writes remain serial.
  with ThreadPoolExecutor(max_workers=4)as readers:
   for start in range(0,len(files),64):
@@ -253,7 +272,9 @@ def optimize(root,base,report_path):
     for kind,values in tags.items():pools[kind].update(values)
     if position%5000==0:print(f'Publication scan {position+1}/{len(files)}',flush=True)
  alphabet='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
- mapping={scope:'_q'+(alphabet[i] if i<len(alphabet) else str(i)) for i,scope in enumerate(sorted(scopes))}
+ candidates=['_'+letter for letter in alphabet if '_'+letter not in aliases]
+ # Existing short tokens in any HTML, CSS or script are reserved, including prose.
+ mapping={scope:(candidates[i] if i<len(candidates) else '_q'+str(i)) for i,scope in enumerate(sorted(scopes))}
  require(not(set(mapping.values())&aliases),'Generated scope alias collision')
  reverse_scopes={value:key for key,value in mapping.items()}
  alias_pattern=re.compile(r'\b(?:'+'|'.join(map(re.escape,reverse_scopes))+r')\b')
@@ -356,6 +377,11 @@ def optimize(root,base,report_path):
    if UI_POOL_TAG.search(s) or PROOF_POOL_TAG.search(s) or search_loader:pool_pages.append(file)
   file.write_text(s,'utf8',newline='')
   if position%5000==0:print(f'Publication shared UI {position+1}/{len(files)}',flush=True)
+ # Nearby equal prefixes improve gzip packing while retaining exact rows.
+ order=sorted(range(len(proof_rows)),key=lambda slot:proof_rows[slot])
+ proof_remap={old:new for new,old in enumerate(order)}
+ proof_rows=[proof_rows[old] for old in order]
+ require(not any(PROOF_POOL_TAG.search(row)for row in proof_rows),'Nested proof pool calls are not supported')
  shards=proof_shards(proof_rows);shard_for={};shard_records={}
  for shard_id,record in enumerate(shards):
   body=record.pop('body');url=asset(body,'.js','proof-shard');record['url']=url;record['assetSha256']=digest(body.encode())
@@ -365,7 +391,8 @@ def optimize(root,base,report_path):
   tags=codec_tags()
   for position,file in enumerate(pool_pages):
    s=file.read_bytes().decode('utf8');heads=list(re.finditer(r'<head\b[^>]*>',s,re.I));require(len(heads)==1,'Pooled page requires one head')
-   imports=''.join(f'<script src="{shard_records[str(shard_id)]["url"]}" data-pr-shard="{shard_id}"></script>'for shard_id in sorted({shard_for[slot]for slot in page_proofs.get(file.relative_to(root).as_posix(),[])}))
+   s=PROOF_POOL_TAG.sub(lambda match:f'<script>__spr({proof_remap[int(match[1])]});</script>',s)
+   imports=''.join(f'<script src="{shard_records[str(shard_id)]["url"]}" data-pr-shard="{shard_id}"></script>'for shard_id in sorted({shard_for[proof_remap[slot]]for slot in page_proofs.get(file.relative_to(root).as_posix(),[])}))
    head=heads[0];at=head.end()
    # Keep the existing encoding declaration at the beginning of the head.
    charset=re.match(r'\s*<meta\b[^>]*\bcharset\s*=[^>]*>',s[at:],re.I)
