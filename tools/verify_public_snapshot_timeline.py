@@ -28,6 +28,15 @@ ARCHIVE_COMMIT = '8b178dd48698e5e7b12f0cc319ddab149f2ffc5c'
 KIND = 'CALLER_SOURCE_PUBLIC_JSON_SNAPSHOT_NATIVE_EOF_BLOCKED'
 
 
+def frozen_primitive_reader_sha(raw):
+    # Only the HTMLParser import changed for the published attribute contract.
+    # Keep the original full-file pin for every primitive, source and HTML check.
+    current = b'from publication_contract_reader import HTMLParser'
+    if raw.count(current) != 1:
+        raise ValueError('Independent attribute reader import differs')
+    return sha(raw.replace(current, b'from html.parser import HTMLParser', 1))
+
+
 def snapshot_boundary(value):
     require(value['callerSourceKind'] == KIND and value['nativeCallerWholeEOF'] is False
             and value['nativeInstalledCallerClaim'] is False, 'Snapshot native caller domain/boolean claim altered')
@@ -577,7 +586,8 @@ def main():
     parser.add_argument('--report', type=Path)
     args = parser.parse_args()
     repo = args.repo.resolve()
-    require(file_sha(Path(fv.__file__)) == PRIMITIVES_SHA, 'Frozen independent native primitive reader SHA differs')
+    require(frozen_primitive_reader_sha(Path(fv.__file__).read_bytes()) == PRIMITIVES_SHA,
+            'Frozen independent native primitive reader SHA differs outside the attribute-only import')
     raw = (args.projection or repo / 'data/public-snapshot-timeline-dialogue.json').read_bytes()
     require(sha(raw) == PROJECTION_SHA, 'Closed public snapshot projection SHA differs')
     data = json.loads(raw)

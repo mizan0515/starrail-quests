@@ -1,4 +1,10 @@
 /** Preserve a reading location and one validated catalogue return, without chains. */
+export function readingPositionKey(pathname, search){
+ const params=new URLSearchParams(search);
+ // Catalogue origin does not change the document's reading/filter state.
+ params.delete('from');params.sort();
+ return pathname+(params.size?'?'+params.toString():'');
+}
 const directoryPath=/^(?:index\.html|versions\/[^/]+\.html|quests\/[^/]+\.html|설정집\.html|도감\.html|세력\.html|우주\.html|대사\.html|대화\.html|관점\/(?:region|person|faction|concept|aeon|reference)\.html|유물\.html|우주\/[a-z][a-z0-9-]*\.html|대사\/official-4\.6\.html|대화\/(?:목록-\d+(?:-\d+)?|연출-목록-\d+)\.html)$/;
 
 export function isReadingCatalogue(value,{origin,base}){

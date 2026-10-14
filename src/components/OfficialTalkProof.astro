@@ -6,7 +6,7 @@ const source=row.officialSource;
 ---
 <details {...disclosureAttributes({className:'source-details'})} data-official-talk-proof={row.talk_id} data-pagefind-ignore>
   <summary>공식 한국어 원문 · {source.clientVersion.replace('OSPRODWin','')}</summary>
-  <dl>
+  <dl data-publication-metadata="technical">
     <dt>대사표의 본문과 화자</dt>
     <dd>TalkSentenceConfig · 대사 {row.talk_id}<br/>본문 문자열 {row.hash}<br/>화자 문자열 {row.speaker_hash}</dd>
     <dt>대사표 원본 위치</dt>

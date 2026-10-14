@@ -14,7 +14,7 @@ import re
 import struct
 import sys
 import tarfile
-from html.parser import HTMLParser
+from publication_contract_reader import HTMLParser
 from html import escape
 from urllib.parse import unquote
 
