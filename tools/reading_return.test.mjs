@@ -7,6 +7,17 @@ const reading='/starrail-quests/문서/quest-1010203.html';
 const make=(path,from)=>path+'?speaker='+encodeURIComponent('단항')+'&passage=dialogue&from='+encodeURIComponent(from)+'#quest-1010203-scene-1-row-3';
 const resolved=value=>new URL(value,origin);
 
+test('the public trailing-slash home is a catalog return with its query and clicked row',()=>{
+ const home=base+'/?q=1054500&version=4.5#catalog-entry-quests-quest-1054500';
+ assert.equal(safe(home),home);
+ assert.equal(isReadingCatalogue(home,{origin,base}),true);
+ assert.equal(sourceReadingOrigin(home,null,{origin,base}),home);
+ const source=reading+'?from='+encodeURIComponent(home);
+ assert.equal(resolved(safe(source)).searchParams.get('from'),home);
+ assert.equal(safe('/other-site/?q=1054500'),null);
+ assert.equal(safe(base+'-other/?q=1054500'),null);
+});
+
 test('configuration range and edition readers return to the exact original without admitting arbitrary dialogue routes',()=>{
  const catalogue=base+'/대화.html#source-records';
  for(const [path,anchor] of [['범위-range-0aeda0e1f644fa52','talk-146787410-1'],['판본-202196417','talk-202196417-previous']]){

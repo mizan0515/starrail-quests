@@ -9,7 +9,7 @@ const total=source.filter(d=>(!kind||d.kind===kind)&&(!version||d.versions.inclu
 const worlds=[...new Set(catalog.filter(d=>isQuest?d.category==='퀘스트':d.category!=='퀘스트').map(d=>d.world))].filter(w=>w&&w!=='분류 미확인');
 const categories=['서적·문서','캐릭터 이야기','에이언즈·운명의 길','세계관·용어','광추 이야기','유물 이야기','아이템 설정','시뮬레이션 우주 설정','메시지','기타 장면','적 기록','업적 기록','축복·메아리 원문','시점·장면 안내'];
 ---
-<section class="browse" data-mode={mode} data-kind={kind} data-version={version} data-order={JSON.stringify(versions)} data-versions={href('versions-data.json')} data-catalog={href('reading-catalog.json')+'?v='+readingCatalogVersion} data-base={href('문서/')} data-pagefind-ignore>
+<section class="browse" data-mode={mode} data-kind={kind} data-version={version} data-order={JSON.stringify(versions)} data-versions={href('versions-data.json')} data-catalog={href('reading-catalog/') } data-catalog-version={readingCatalogVersion} data-base={href('문서/')} data-pagefind-ignore>
  {isQuest&&kind&&<nav class="type-tabs" aria-label="임무 종류">{Object.entries(kinds).map(([key,name])=><a aria-current={kind===name?'page':undefined} href={href(`quests/${key}.html`)}>{name}</a>)}</nav>}
  <form class="browse-filters" role="search" aria-label={isQuest?'임무 목록 필터':'원문 자료 필터'}>
   <label class="query-label">{isQuest?'임무 제목 또는 ID':'원문 자료 찾기'}<input type="search" name="q" placeholder={isQuest?'다시 읽을 임무 제목, ID':'서적·인물·설정 제목, 새 원문 구절, ID'} autocomplete="off"/></label>
@@ -32,7 +32,8 @@ const categories=['서적·문서','캐릭터 이야기','에이언즈·운명�
   const quest=root.dataset.mode==='quests',versionOrder=JSON.parse(root.dataset.order!);
   const base=decodeURIComponent(new URL(root.dataset.base!,location.href).pathname).replace(/\/문서\/$/,'');
   const readingOrigin=(anchor:string)=>sourceReadingOrigin(location.pathname+location.search+anchor,new URLSearchParams(location.search).get('from'),{origin:location.origin,base});
-  let data:any[]=[],limit=60,loaded=false;
+  let data:any[]=[],limit=60,loaded=false,loadedCategory='',request=0;
+  const categoryCache=new Map<string,Promise<any[]>>();
   const field=(name:string)=>form.elements.namedItem(name) as HTMLInputElement|HTMLSelectElement|null;
   const el=(tag:string,cls:string,text:string)=>{const n=document.createElement(tag);n.className=cls;n.textContent=text;return n;};
   const normalize=(s:string)=>s.normalize('NFKC').toLocaleLowerCase('ko').replace(/\s/g,'');
@@ -40,12 +41,14 @@ const categories=['서적·문서','캐릭터 이야기','에이언즈·운명�
   const state=()=>Object.fromEntries(new FormData(form));
   const save=()=>{const u=new URL(location.href);for(const name of ['q','world','version','kind','category']){const input=field(name);if(input){input.value?u.searchParams.set(name,input.value):u.searchParams.delete(name);}}limit>60?u.searchParams.set('limit',String(limit)):u.searchParams.delete('limit');history.replaceState(history.state,'',u);};
   const render=(persist=true)=>{
-   if(persist)save();if(!loaded)return;const f=state(),q=normalize(String(f.q||'')),selectedKind=root.dataset.kind||f.kind;
+   if(persist)save();const wanted=quest?'퀘스트':String(field('category')?.value||'서적·문서');if(!loaded||loadedCategory!==wanted){void loadCategory(wanted);return;}const f=state(),q=normalize(String(f.q||'')),selectedKind=root.dataset.kind||f.kind;
    const filtered=data.filter(d=>(quest?d.category==='퀘스트'&&(!f.version||d.versions.includes(f.version)):d.category===f.category)&&(!f.world||d.world===f.world)&&(!q||normalize(d.title+' '+d.id+' '+(d.searchText||'')).includes(q)));
    for(const button of root.querySelectorAll<HTMLButtonElement>('[data-kind-choice]')){button.setAttribute('aria-pressed',String(button.dataset.kindChoice===String(selectedKind||'')));button.querySelector('[data-kind-count]')!.textContent=String(filtered.filter(d=>!button.dataset.kindChoice||d.kind===button.dataset.kindChoice).length);}
    const kindOrder=['개척 임무','개척 후문','동행 임무','모험 임무','일일 임무'];
    const primary=(d:any)=>f.version||versionOrder.find((v:string)=>d.versions.includes(v))||'unknown';
    const result=filtered.filter(d=>!quest||!selectedKind||d.kind===selectedKind).sort((a,b)=>quest?versionOrder.indexOf(primary(a))-versionOrder.indexOf(primary(b))||kindOrder.indexOf(a.kind)-kindOrder.indexOf(b.kind)||a.worldRank-b.worldRank||a.chapterRank-b.chapterRank||a.rank-b.rank||a.title.localeCompare(b.title,'ko'):a.title.localeCompare(b.title,'ko'));
+   // History can restore focus before popstate redraws the same filtered rows.
+   const focusedId=container.contains(document.activeElement)?document.activeElement?.id:'';
    container.replaceChildren();count.textContent=`${result.length.toLocaleString()}개 ${quest?'임무':'자료'} · ${Math.min(limit,result.length)}개 표시`;
    reset.disabled=limit===60&&!f.q&&!f.world&&!f.kind&&String(f.version||'')===(root.dataset.version||'')&&(!f.category||f.category==='서적·문서');
    if(!result.length){const empty=el('div','empty-state','');empty.append(el('h2','','찾는 자료가 없습니다'),el('p','','검색어를 짧게 바꾸거나 검색 조건을 초기화해 보세요.'));const clear=el('button','reset-button','검색 조건 초기화');clear.addEventListener('click',resetFilters);empty.append(clear);container.append(empty);}
@@ -58,6 +61,9 @@ const categories=['서적·문서','캐릭터 이야기','에이언즈·운명�
      const arrow=el('span','row-arrow','→');arrow.setAttribute('aria-hidden','true');a.append(el('span','row-type',quest?d.kind:d.category),content,arrow);li.append(a);list.append(li);
     }section.append(list);container.append(section);
    }more.hidden=result.length<=limit;more.textContent=`더 보기 · ${Math.min(60,result.length-limit)}개`;
+   let resumeId=focusedId;try{if(!persist&&!form.contains(document.activeElement))resumeId||=decodeURIComponent(location.hash.slice(1));}catch{}
+   const resume=resumeId?document.getElementById(resumeId):null;
+   if(resume instanceof HTMLAnchorElement&&container.contains(resume)){if(!focusedId)resume.scrollIntoView({block:'center'});resume.focus({preventScroll:true});}
   };
   function restoreFromURL(){
    form.reset();const params=new URLSearchParams(location.search);
@@ -69,6 +75,17 @@ const categories=['서적·문서','캐릭터 이야기','에이언즈·운명�
   if(/\/versions\/[^/]+\.html$/.test(location.pathname))field('version')?.addEventListener('change',()=>{const u=new URL(location.href);u.pathname=u.pathname.replace(/\/versions\/[^/]+\.html$/,`/versions/${field('version')!.value||'index'}.html`);u.searchParams.delete('version');u.searchParams.delete('limit');location.assign(u);});
   for(const button of root.querySelectorAll<HTMLButtonElement>('[data-kind-choice]'))button.addEventListener('click',()=>{field('kind')!.value=button.dataset.kindChoice||'';limit=60;render();});
   window.addEventListener('popstate',restoreFromURL);window.addEventListener('pageshow',restoreFromURL);restoreFromURL();
-  Promise.all([fetch(root.dataset.catalog!).then(r=>{if(!r.ok)throw new Error();return r.json();}),quest?fetch(root.dataset.versions!).then(r=>{if(!r.ok)throw new Error();return r.json();}):Promise.resolve({})]).then(([x,v])=>{data=x.map((d:any)=>({...d,versions:v[d.id]||[]}));loaded=true;restoreFromURL();}).catch(()=>{count.textContent='목록을 불러오지 못했습니다. 위 원문 링크를 이용하거나 새로고침해 주세요.';});
+  async function loadCategory(category:string){
+   const token=++request;loaded=false;root.setAttribute('aria-busy','true');count.textContent='목록을 불러오는 중입니다.';more.hidden=true;
+   root.querySelector('[data-catalog-retry]')?.remove();
+   try{
+    if(!categoryCache.has(category))categoryCache.set(category,fetch(root.dataset.catalog!+encodeURIComponent(category)+'.json?v='+root.dataset.catalogVersion).then(r=>{if(!r.ok)throw Error('목록 요청 실패');return r.json();}).catch(error=>{categoryCache.delete(category);throw error;}));
+    const rows=await categoryCache.get(category)!;if(token!==request)return;
+    data=rows;loadedCategory=category;loaded=true;root.removeAttribute('aria-busy');render(false);
+   }catch{
+    if(token!==request)return;root.removeAttribute('aria-busy');count.textContent='목록을 불러오지 못했습니다. 다시 불러오거나 위 원문 링크를 이용해 주세요.';
+    const retry=el('button','reset-button','목록 다시 불러오기');retry.type='button';retry.dataset.catalogRetry='';retry.addEventListener('click',()=>void loadCategory(category));count.after(retry);
+   }
+  }
  }
 </script>
