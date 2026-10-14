@@ -61,6 +61,9 @@ def class_groups_css(text,groups,inverse=False):
 
 def wire_html(text,inverse=False,templates=None,groups=None):
  global _wire_report
+ # Raw Astro pages have no wire markers. Avoid reparsing every raw tag in
+ # each original/source validator before the publication compiler runs.
+ if inverse and not any(name in text for name in (*FUNCTIONAL_CLASSES.values(),*WIRE_ATTRIBUTES.values(),'data-rf='))and not re.search(r' c[0-9]+(?=\s|/?>)',text):return text
  if inverse and ' data-rf="'in text and templates is None:
   if _wire_report is None:_wire_report=json.loads((Path(__file__).resolve().parents[1]/'.codex-work/publication-build-report.json').read_text('utf8'))
   templates=_wire_report.get('rowContract',{}).get('templates',[])

@@ -360,7 +360,25 @@ def expand_proofs(s,records):
   return raw.decode('utf8',errors='strict')
  return PROOF_TAG.sub(expand,s)
 
-def optimize(root,base,report_path):
+class CompactPages:
+ """Bounded generation-only text cache; verification always rereads disk."""
+ def __init__(self,limit):self.limit=limit;self.pages={};self.bytes=0;self.peak=0
+ def put(self,file,text):
+  previous=self.pages.pop(file,None)
+  if previous:self.bytes-=previous[1]
+  size=len(text.encode('utf8'))
+  if self.bytes+size>self.limit:return False
+  self.pages[file]=(text,size);self.bytes+=size;self.peak=max(self.peak,self.bytes);return True
+ def read(self,file):
+  return self.pages[file][0]if file in self.pages else file.read_bytes().decode('utf8')
+ def write(self,file,text,defer=False):
+  retained=self.put(file,text)if file in self.pages else False
+  if defer and retained:return
+  file.write_text(text,encoding='utf8',newline='')
+  previous=self.pages.pop(file,None)
+  if previous:self.bytes-=previous[1]
+
+def optimize(root,base,report_path,cache_limit=512_000_000):
  require(not (root/'_shared').exists(),'Already optimized: rebuild HTML first')
  before=total(root);files=text_files(root);originals={};scopes=set();aliases=set();pools={k:Counter() for k in TAG};references={name:False for name in RESTORATION_ONLY};found_frames=set();found_classes=Counter()
  # Two bounded passes avoid retaining the complete 1.5 GB HTML in memory.
@@ -450,7 +468,9 @@ def optimize(root,base,report_path):
   return proof_tags
  fallback=f'<noscript><nav aria-label="자료집 탐색"><a href="{base}/index.html">자료집 탐색</a></nav></noscript>'
  footer_fallback=f'<noscript><small>비공식 자료집 · 게임 콘텐츠 권리: HoYoverse 등 해당 권리자 <a href="{base}/자료안내.html">자료 안내</a> · <a href="https://github.com/mizan0515/starrail-quests/tree/main/src/lib/reading-kit/cva">CVA 소스 · GPLv3</a></small></noscript>'
+ page_cache=CompactPages(cache_limit)
  for position,file in enumerate(files):
+  cache_candidate=False
   s=file.read_bytes().decode('utf8')
   if mapping:s=SCOPE.sub(lambda m:mapping[m[0]],s)
   if file.suffix=='.css':s=wire_css(css_aliases(s),templates=row_templates,groups=class_groups)
@@ -524,29 +544,31 @@ def optimize(root,base,report_path):
    if search_loader:page_search[file.relative_to(root).as_posix()]=search_loader;counts['searchAttributes']+=search_count
    original_wire=s;s=wire_html(s,templates=row_templates,groups=class_groups)
    if s!=original_wire or UI_POOL_TAG.search(s) or PROOF_POOL_TAG.search(s):
-    wire_pages.append(file);counts['rowContractPages']+=1;counts['rowContractHtmlBytesSaved']+=len(original_wire.encode())-len(s.encode())
-   if UI_POOL_TAG.search(s) or PROOF_POOL_TAG.search(s) or search_loader:pool_pages.append(file)
+    cache_candidate=True;wire_pages.append(file);counts['rowContractPages']+=1;counts['rowContractHtmlBytesSaved']+=len(original_wire.encode())-len(s.encode())
+   if UI_POOL_TAG.search(s) or PROOF_POOL_TAG.search(s) or search_loader:pool_pages.append(file);cache_candidate=True
   file.write_text(s,'utf8',newline='')
+  if cache_candidate:page_cache.put(file,s)
   if position%5000==0:print(f'Publication shared UI {position+1}/{len(files)}',flush=True)
  require(set(row_templates)<=found_frames,'A shared row contract was not covered by the initial CSS census')
  row_contract=None
+ pool_page_set=set(pool_pages)
  if wire_pages:
   runtime=row_contract_runtime(row_templates,class_groups);url=asset(runtime,'.js','row-contract');tag=f'<script src="{url}" data-rf-runtime></script>'
   row_contract={'templates':row_templates,'classes':FUNCTIONAL_CLASSES,'attributes':WIRE_ATTRIBUTES,'url':url,'tag':tag,'sha256':digest(runtime.encode()),'bytes':len(runtime.encode()),'pages':[file.relative_to(root).as_posix()for file in wire_pages]}
   row_contract['classGroups']=class_groups
   counts['sharedClassBundles']=len(class_groups)
   for file in wire_pages:
-   text=file.read_text('utf8');require(text.count('</body>')==1,'Shared row contract requires a single body end')
-   file.write_text(text.replace('</body>',tag+'</body>'),encoding='utf8',newline='')
+   text=page_cache.read(file);require(text.count('</body>')==1,'Shared row contract requires a single body end')
+   page_cache.write(file,text.replace('</body>',tag+'</body>'),defer=file in pool_page_set)
  # Keep the original UI slot census intact, then append shared call runs.
  # The existing transitive closure loads every nested slot before parsing.
  for position,file in enumerate(pool_pages):
-  original=file.read_bytes().decode('utf8')
+  original=page_cache.read(file)
   compact=share_adjacent_ui(original,pool_ui,counts)
-  if compact!=original:file.write_text(compact,'utf8',newline='')
+  if compact!=original:page_cache.write(file,compact,defer=True)
   if position%5000==0:print(f'Publication adjacent UI {position+1}/{len(pool_pages)}',flush=True)
  required_ui=ui_closure(ui_rows);ui_slot_shard={};ui_uses=Counter()
- for file in pool_pages:ui_uses.update(required_ui(file.read_text('utf8')))
+ for file in pool_pages:ui_uses.update(required_ui(page_cache.read(file)))
  core_slots=sorted(slot for slot,uses in ui_uses.items()if uses>=CORE_UI_MIN_PAGES)
  counts['commonUISlots']=len(core_slots)
  for record in ui_shards(ui_rows,core_slots):
@@ -566,7 +588,7 @@ def optimize(root,base,report_path):
  if pool_pages:
   tags=codec_tags()
   for position,file in enumerate(pool_pages):
-   s=file.read_bytes().decode('utf8');heads=list(re.finditer(r'<head\b[^>]*>',s,re.I));require(len(heads)==1,'Pooled page requires one head')
+   s=page_cache.read(file);heads=list(re.finditer(r'<head\b[^>]*>',s,re.I));require(len(heads)==1,'Pooled page requires one head')
    s=PROOF_POOL_TAG.sub(lambda match:f'<script>__spr({proof_remap[int(match[1])]});</script>',s)
    selected=sorted({ui_slot_shard[slot]for slot in required_ui(s)})
    page_tags=tags.replace('data-pc-runtime','data-pc-runtime="'+','.join(map(str,selected))+'"')
@@ -575,7 +597,7 @@ def optimize(root,base,report_path):
    # Keep the existing encoding declaration at the beginning of the head.
    charset=re.match(r'\s*<meta\b[^>]*\bcharset\s*=[^>]*>',s[at:],re.I)
    if charset:at+=charset.end()
-   s=s[:at]+page_tags+imports+page_search.get(file.relative_to(root).as_posix(),'')+s[at:];file.write_text(s,'utf8',newline='')
+   s=s[:at]+page_tags+imports+page_search.get(file.relative_to(root).as_posix(),'')+s[at:];page_cache.write(file,s)
    if position%5000==0:print(f'Publication pools {position+1}/{len(pool_pages)}',flush=True)
  # Only known build-time mirrors can be omitted. Runtime JSON, linked raw
  # dialogue JSON, and every reading-data shard stay available.
@@ -584,11 +606,13 @@ def optimize(root,base,report_path):
   file=root/name
   if not used and file.exists():
    removed[name]={'bytes':file.stat().st_size,'sha256':digest(file.read_bytes())};file.unlink()
+ require(not page_cache.pages and page_cache.bytes==0,'Unflushed publication page cache')
  after=total(root)
  report={'schema':'starrail-publication-dedup.v3','base':base,'beforeBytes':before,'afterBytes':after,'limitBytes':LIMIT,'scopes':mapping,'originalFiles':originals,'assets':assets,'replacements':replacements,'removedBuildMirrors':removed,'counts':dict(counts),'compressedProofs':proof_records,'proofCodecTags':proof_tags,'proofCodecFiles':codec_records,'proofCompressionSavedBytes':proof_saved,'uiPool':ui_rows,'proofPool':[{'sha256':digest(row.encode()),'rawBytes':len(row.encode()),'shard':shard_for[slot]}for slot,row in enumerate(proof_rows)],'proofShards':shard_records,'proofCodec':{'package':'pako','version':'1.0.11','license':'MIT AND Zlib','file':CODEC_FILE,'sha256':CODEC_SHA256,'mode':'gzip+base64, synchronous classic parser script; static outer details/summary/anchors and original dialogue'} }
  report['presentationClasses']=CLASS_ALIASES;report['searchPagePools']=search_records
  if row_contract:report['rowContract']=row_contract
  report['commonUI']={'minPages':CORE_UI_MIN_PAGES,'slots':core_slots}
+ report['generationCache']={'limitUTF8Bytes':cache_limit,'peakUTF8Bytes':page_cache.peak,'verification':'Every output is reread from disk and checked by exact inverse'}
  if css_urls:report['stylesheetVersions']=css_urls
  if pool_pages:report['uiShards']=ui_records;report['uiRuntime']=ui_runtime
  write_json(report_path,report)

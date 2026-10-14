@@ -24,6 +24,29 @@ import publication_attributes as A
 import optimize_publication as P
 
 class SharedRowContractTests(unittest.TestCase):
+ def test_generation_cache_reduces_html_writes_with_identical_disk_outputs_and_bounded_fallback(self):
+  import tempfile
+  outcomes=[];writes=[]
+  with tempfile.TemporaryDirectory()as tmp:
+   for limit in (0,256,12_000,1_000_000):
+    root=Path(tmp)/str(limit);root.mkdir();receipt=Path(tmp)/(str(limit)+'.json')
+    for i in range(3):
+     (root/f'{i}.html').write_text('<html><head></head><body><header class="header">공통 메뉴</header><main>'+''.join('<p class="original-body rw-source-body" id="talk-'+str(n)+'">원문 &amp; 선택 '+str(n)+'</p>'for n in range(130))+'</main></body></html>','utf8')
+    original_write=Path.write_text;html_writes=[]
+    def tracked_write(path,*args,**kwargs):
+     if path.suffix=='.html':html_writes.append(path)
+     return original_write(path,*args,**kwargs)
+    with patch.object(Path,'write_text',tracked_write):P.optimize(root,'/starrail-quests',receipt,cache_limit=limit)
+    P.verify(root,receipt);r=json.loads(receipt.read_text('utf8'));self.assertLessEqual(r['generationCache']['peakUTF8Bytes'],limit)
+    outcomes.append({p.relative_to(root).as_posix():p.read_bytes()for p in root.rglob('*')if p.is_file()});writes.append(len(html_writes))
+   for outcome in outcomes[1:]:self.assertEqual(outcomes[0],outcome)
+   self.assertLess(writes[-1],writes[0])
+   file=root/'0.html';file.write_text(file.read_text('utf8').replace('원문 &amp; 선택 129','손상된 원문'),'utf8')
+   with self.assertRaisesRegex(ValueError,'does not expand exactly'):P.verify(root,receipt)
+ def test_raw_inverse_skips_wire_parser_but_marker_pages_still_restore(self):
+  original='<p class="original-body" id="talk-1">원문 &amp; 선택</p>'
+  with patch.object(A,'class_attributes',side_effect=AssertionError('raw wire parse')):self.assertEqual(A.wire_html(original,inverse=True),original)
+  self.assertEqual(A.wire_html('<p class="qzA">원문</p>',inverse=True),'<p class="original-body">원문</p>')
  def test_class_bundles_preserve_static_originals_css_and_exact_file_reconstruction(self):
   import tempfile
   with tempfile.TemporaryDirectory()as tmp:
