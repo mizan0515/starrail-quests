@@ -367,7 +367,7 @@ def optimize(root,base,report_path):
  def scan(file):
   raw=file.read_bytes();s=raw.decode('utf8');tags={k:[] for k in TAG}
   require(not re.search(r'\bdata-rf(?:\s|=|-)|\b(?:'+'|'.join(map(re.escape,[*FUNCTIONAL_CLASSES.values(),*WIRE_ATTRIBUTES.values()]))+r')(?![\w-])',s),'Shared row contract namespace collision '+str(file))
-  require(not re.search(r'\bdata-c[0-9]+\b',s),'Shared class bundle namespace collision '+str(file))
+  require(not re.search(r'\sc[0-9]+(?=\s|/?>)',s),'Shared class bundle namespace collision '+str(file))
   for attribute in CLASS_ATTR.finditer(s):require(not(set(attribute[3].split())&ALIAS_NAMES),'Presentation class alias collision')
   require(not any(f':is(.{name},.{alias})' in s for name,alias in CLASS_ALIASES.items()),'CSS presentation alias namespace collision')
   if file.suffix=='.css':require(not RESERVED_CLASS.search(s),'Presentation CSS alias collision')
@@ -400,8 +400,8 @@ def optimize(root,base,report_path):
   names={**CLASS_ALIASES,**FUNCTIONAL_CLASSES}
   raw=' class="'+' '.join(names.get(name,name)for name in raw[len(' class="'):-1].split())+'"'
   normalized_classes[raw]+=copies
- eligible=sorted(((raw,n)for raw,n in normalized_classes.items()if n>=128 and len(raw)>12),key=lambda row:(-(len(row[0])-10)*row[1],row[0]))
- class_groups={raw:' data-c'+str(i)for i,(raw,n)in enumerate(eligible[:128])}
+ eligible=sorted(((raw,n)for raw,n in normalized_classes.items()if n>=128 and len(raw)>7),key=lambda row:(-(len(row[0])-5)*row[1],row[0]))
+ class_groups={raw:' c'+str(i)for i,(raw,n)in enumerate(eligible[:128])}
  require(not(set(mapping.values())&aliases),'Generated scope alias collision')
  reverse_scopes={value:key for key,value in mapping.items()}
  alias_pattern=re.compile(r'\b(?:'+'|'.join(map(re.escape,reverse_scopes))+r')\b')

@@ -40,18 +40,18 @@ _wire_report=None
 def class_groups_html(text,groups,inverse=False):
  if not groups:return text
  reverse={marker:raw for raw,marker in groups.items()}
- if len(reverse)!=len(groups) or any(not re.fullmatch(r' data-c[0-9]+',marker)or not re.fullmatch(r' class="[A-Za-z0-9_ -]+"',raw)for raw,marker in groups.items()):raise ValueError('Invalid shared class bundle')
+ if len(reverse)!=len(groups) or any(not re.fullmatch(r' c[0-9]+',marker)or not re.fullmatch(r' class="[A-Za-z0-9_ -]+"',raw)for raw,marker in groups.items()):raise ValueError('Invalid shared class bundle')
  def node(m):
   value=m[0]
   if value.lower().startswith(('<!--','<script','<style','</')):return value
-  if inverse:return re.sub(r' data-c[0-9]+(?=\s|/?>)',lambda a:reverse[a[0]],value)
+  if inverse:return re.sub(r' c[0-9]+(?=\s|/?>)',lambda a:reverse[a[0]],value)
   return CLASS_ATTR.sub(lambda a:groups.get(a[0],a[0]),value)
  return TOKENS.sub(node,text)
 
 def class_groups_css(text,groups,inverse=False):
  if not groups:return text
  if inverse:
-  pattern=re.compile(r':is\((\.[A-Za-z0-9_-]+)(?:,\[data-c[0-9]+\])+\)')
+  pattern=re.compile(r':is\((\.[A-Za-z0-9_-]+)(?:,\[c[0-9]+\])+\)')
   return selector_edits(text,pattern,lambda m:m[1])
  members={}
  for raw,marker in groups.items():
@@ -64,7 +64,7 @@ def wire_html(text,inverse=False,templates=None,groups=None):
  if inverse and ' data-rf="'in text and templates is None:
   if _wire_report is None:_wire_report=json.loads((Path(__file__).resolve().parents[1]/'.codex-work/publication-build-report.json').read_text('utf8'))
   templates=_wire_report.get('rowContract',{}).get('templates',[])
- if inverse and groups is None and re.search(r' data-c[0-9]+(?=\s|/?>)',text):
+ if inverse and groups is None and re.search(r' c[0-9]+(?=\s|/?>)',text):
   if _wire_report is None:_wire_report=json.loads((Path(__file__).resolve().parents[1]/'.codex-work/publication-build-report.json').read_text('utf8'))
   groups=_wire_report.get('rowContract',{}).get('classGroups',{})
  if inverse:text=class_groups_html(text,groups,inverse=True)

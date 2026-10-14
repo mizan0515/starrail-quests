@@ -32,11 +32,11 @@ class SharedRowContractTests(unittest.TestCase):
    css='.original-body.rw-source-body{color:red;content:"original-body"}'
    (root/'a.html').write_text(original,'utf8');(root/'b.html').write_text(original.replace('메뉴','메뉴'),'utf8');(root/'style.css').write_text(css,'utf8')
    P.optimize(root,'/starrail-quests',receipt);P.verify(root,receipt);report=json.loads(receipt.read_text('utf8'));packed=(root/'a.html').read_text('utf8')
-   self.assertTrue(report['rowContract']['classGroups']);self.assertIn(' data-c0',packed);self.assertIn('id="talk-129"',packed);self.assertIn('원문 &amp; 선택 129',packed)
-   self.assertIn('[data-c0]',(root/'style.css').read_text('utf8'));self.assertEqual(P.expansion_function(report)(packed),original)
+   self.assertTrue(report['rowContract']['classGroups']);self.assertIn(' c0',packed);self.assertIn('id="talk-129"',packed);self.assertIn('원문 &amp; 선택 129',packed)
+   self.assertIn('[c0]',(root/'style.css').read_text('utf8'));self.assertEqual(P.expansion_function(report)(packed),original)
  def test_class_bundle_runtime_restores_class_before_functional_selectors_run(self):
-  runtime=A.row_contract_runtime([],{' class="qzB zC"':' data-c0'})
-  program='''const vm=require('vm'),fs=require('fs');let attrs={'data-c0':''},classes=new Set();const node={getAttribute:k=>Object.hasOwn(attrs,k)?attrs[k]:null,hasAttribute:k=>Object.hasOwn(attrs,k),setAttribute:(k,v)=>{attrs[k]=v;if(k==='class')classes=new Set(v.split(' '))},removeAttribute:k=>delete attrs[k],classList:{contains:k=>classes.has(k),replace:(a,b)=>{classes.delete(a);classes.add(b)}}};vm.runInNewContext(JSON.parse(fs.readFileSync(0,'utf8')),{document:{querySelectorAll:()=>[node]}});console.log(JSON.stringify({classes:[...classes],marker:node.hasAttribute('data-c0')}));'''
+  runtime=A.row_contract_runtime([],{' class="qzB zC"':' c0'})
+  program='''const vm=require('vm'),fs=require('fs');let attrs={'c0':''},classes=new Set();const node={getAttribute:k=>Object.hasOwn(attrs,k)?attrs[k]:null,hasAttribute:k=>Object.hasOwn(attrs,k),setAttribute:(k,v)=>{attrs[k]=v;if(k==='class')classes=new Set(v.split(' '))},removeAttribute:k=>delete attrs[k],classList:{contains:k=>classes.has(k),replace:(a,b)=>{classes.delete(a);classes.add(b)}}};vm.runInNewContext(JSON.parse(fs.readFileSync(0,'utf8')),{document:{querySelectorAll:()=>[node]}});console.log(JSON.stringify({classes:[...classes],marker:node.hasAttribute('c0')}));'''
   result=subprocess.run(['node','-e',program],input=json.dumps(runtime),text=True,capture_output=True,check=True)
   self.assertEqual(json.loads(result.stdout),{'classes':['zC','original-row'],'marker':False})
  def test_core_reuse_receipt_is_checked_against_actual_page_references(self):
