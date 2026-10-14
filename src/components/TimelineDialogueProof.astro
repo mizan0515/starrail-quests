@@ -11,7 +11,7 @@ const stateLabel={Started:'진행 중',Finish:'완료'};
 {conditions.length>0&&<ul class="timeline-conditions">{conditions.map(condition=><li data-timeline-condition={condition.predicatePointer}>파일의 호출 조건 · 하위 임무 {condition.predicate.SubMissionID} {stateLabel[condition.predicate.SubMissionState]||condition.predicate.SubMissionState} · {condition.branch==='SuccessTaskList'?'조건 충족 경로':'조건 미충족 경로'}</li>)}</ul>}
 <details {...disclosureAttributes({className:'source-details'})} data-timeline-proof={s.anchor} data-pagefind-ignore>
  <summary>연출 장면과 대사의 원문 연결</summary>
- <dl>
+ <dl data-publication-metadata="technical">
   <dt>연출을 호출한 임무 기록</dt><dd>{s.nativeOwnership?s.triggerContext.source:<a href={missionStructureUrl(s.triggerContext.source)}>{s.triggerContext.source} ↗</a>}<br/>{s.triggerContext.referencePointer}<br/>연출 {s.triggerContext.performanceId}<br/>SHA-256 · {s.triggerContext.sourceSha256}</dd>
   <dt>연출 파일</dt><dd>{s.source}</dd>
   <dt>연출 설정의 명시 경로</dt><dd>{source.logicalJsonPath}<br/>{source.timelineFieldPointer}<br/>문자열 위치 {source.timelineFieldByteProof.start}–{source.timelineFieldByteProof.end}<br/>SHA-256 · {source.entrySha256}</dd>
@@ -22,7 +22,7 @@ const stateLabel={Started:'진행 중',Finish:'완료'};
  {s.nativeOwnership&&<NativeTimelineOwnerProof section={s}/>}
  {conditions.length>0&&<ul>{conditions.map(condition=><li>조건 {condition.predicatePointer}<br/>분기 {condition.branchPointer}<pre>{JSON.stringify(condition.predicate,null,2)}</pre></li>)}</ul>}
  {s.optionReferences.length>0&&<><p>선택지 참조 · 장면 파일과 같은 연출 설정의 선택지 목록에서 확인한 원문입니다. 이후 재생되는 대사의 경로는 확인 중입니다.</p><ul>{s.optionReferences.map(option=><li data-timeline-option={option.talk_id}>{option.text}<br/>대사 식별자 {option.talk_id} · 문자열 {option.hash}<br/>{option.references.map(reference=><span>{reference.source} · {reference.pointer}<br/></span>)}</li>)}</ul></>}
- <ol>{s.rows.map(row=><li data-timeline-clip={row.timelineClip.trackClipIndex}>대사 {row.talk_id} · 연출 안의 시작 {row.timelineClip.start}초<br/>트랙 배열 위치 {row.timelineClip.trackClipIndex} · 클립 {row.timelineClip.pathID}<br/>대사 식별자 위치 {row.timelineClip.talkIDSpan.join('–')} · SHA-256 {row.timelineClip.objectSha256}</li>)}</ol>
+ <ol data-publication-metadata="technical">{s.rows.map(row=><li data-timeline-clip={row.timelineClip.trackClipIndex}>대사 {row.talk_id} · 연출 안의 시작 {row.timelineClip.start}초<br/>트랙 배열 위치 {row.timelineClip.trackClipIndex} · 클립 {row.timelineClip.pathID}<br/>대사 식별자 위치 {row.timelineClip.talkIDSpan.join('–')} · SHA-256 {row.timelineClip.objectSha256}</li>)}</ol>
 </details>
 <style>
  .timeline-conditions{font-size:.85rem;line-height:1.7;color:var(--sl-color-gray-2);padding-inline-start:1.2rem}

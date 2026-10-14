@@ -23,6 +23,75 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import publication_attributes as A
 import optimize_publication as P
 
+class SharedRowContractTests(unittest.TestCase):
+ def test_class_bundles_preserve_static_originals_css_and_exact_file_reconstruction(self):
+  import tempfile
+  with tempfile.TemporaryDirectory()as tmp:
+   root=Path(tmp)/'dist';root.mkdir();receipt=Path(tmp)/'receipt.json'
+   original='<html><head></head><body><header class="header"><span class="rw-source-speaker">메뉴</span></header><main>'+''.join('<p class="original-body rw-source-body" id="talk-'+str(i)+'" data-speaker="화자">원문 &amp; 선택 '+str(i)+'</p>'for i in range(130))+'</main></body></html>'
+   css='.original-body.rw-source-body{color:red;content:"original-body"}'
+   (root/'a.html').write_text(original,'utf8');(root/'b.html').write_text(original.replace('메뉴','메뉴'),'utf8');(root/'style.css').write_text(css,'utf8')
+   P.optimize(root,'/starrail-quests',receipt);P.verify(root,receipt);report=json.loads(receipt.read_text('utf8'));packed=(root/'a.html').read_text('utf8')
+   self.assertTrue(report['rowContract']['classGroups']);self.assertIn(' data-c0',packed);self.assertIn('id="talk-129"',packed);self.assertIn('원문 &amp; 선택 129',packed)
+   self.assertIn('[data-c0]',(root/'style.css').read_text('utf8'));self.assertEqual(P.expansion_function(report)(packed),original)
+ def test_class_bundle_runtime_restores_class_before_functional_selectors_run(self):
+  runtime=A.row_contract_runtime([],{' class="qzB zC"':' data-c0'})
+  program='''const vm=require('vm'),fs=require('fs');let attrs={'data-c0':''},classes=new Set();const node={getAttribute:k=>Object.hasOwn(attrs,k)?attrs[k]:null,hasAttribute:k=>Object.hasOwn(attrs,k),setAttribute:(k,v)=>{attrs[k]=v;if(k==='class')classes=new Set(v.split(' '))},removeAttribute:k=>delete attrs[k],classList:{contains:k=>classes.has(k),replace:(a,b)=>{classes.delete(a);classes.add(b)}}};vm.runInNewContext(JSON.parse(fs.readFileSync(0,'utf8')),{document:{querySelectorAll:()=>[node]}});console.log(JSON.stringify({classes:[...classes],marker:node.hasAttribute('data-c0')}));'''
+  result=subprocess.run(['node','-e',program],input=json.dumps(runtime),text=True,capture_output=True,check=True)
+  self.assertEqual(json.loads(result.stdout),{'classes':['zC','original-row'],'marker':False})
+ def test_core_reuse_receipt_is_checked_against_actual_page_references(self):
+  import tempfile
+  with tempfile.TemporaryDirectory()as tmp:
+   root=Path(tmp)/'dist';root.mkdir();receipt=Path(tmp)/'receipt.json'
+   for i in range(P.CORE_UI_MIN_PAGES):
+    (root/f'{i}.html').write_text('<html><head></head><body><header class="header">공통 메뉴</header><main><p id="p-'+str(i)+'">각 글</p></main></body></html>','utf8')
+   P.optimize(root,'/starrail-quests',receipt);P.verify(root,receipt);report=json.loads(receipt.read_text('utf8'));self.assertTrue(report['commonUI']['slots'])
+   report['commonUI']['slots']=[];receipt.write_text(json.dumps(report,ensure_ascii=False),encoding='utf8')
+   with self.assertRaisesRegex(ValueError,'reuse census'):P.verify(root,receipt)
+ def test_core_menu_modules_are_not_packed_with_document_specific_slots(self):
+  rows=['<nav>공통 메뉴</nav>','<aside>문서 A의 목차</aside>','<aside>문서 B의 목차</aside>']
+  shards=P.ui_shards(rows,core_slots=[0]);self.assertEqual(shards[0]['slots'],[0])
+  self.assertEqual(set(shards[1]['slots']),{1,2});self.assertEqual(sum(r['count']for r in shards),3)
+ def test_external_css_gets_a_content_version_and_keeps_relative_asset_paths(self):
+  import tempfile
+  with tempfile.TemporaryDirectory()as tmp:
+   root=Path(tmp)/'dist';root.mkdir();receipt=Path(tmp)/'receipt.json'
+   original='<html><head><link rel="stylesheet" href="/starrail-quests/style.css"></head><body><p class="original-body" id="talk-1">원문</p></body></html>'
+   (root/'a.html').write_text(original,'utf8');(root/'style.css').write_text('.original-body{background:url("./font.woff2")}',encoding='utf8');(root/'font.woff2').write_bytes(b'font')
+   P.optimize(root,'/starrail-quests',receipt);P.verify(root,receipt);report=json.loads(receipt.read_text('utf8'));packed=(root/'a.html').read_text('utf8')
+   self.assertIn('/style.css?reader-ui=',packed);self.assertIn('url("./font.woff2")',(root/'style.css').read_text('utf8'));self.assertEqual(P.expansion_function(report)(packed),original)
+   (root/'a.html').write_text(packed.replace(report['rowContract']['tag'],''),'utf8')
+   with self.assertRaisesRegex(ValueError,'runtime missing'):P.verify(root,receipt)
+ def test_shared_attributes_preserve_literal_body_speaker_ids_and_exact_inverse(self):
+  original='<div class="original-row rw-source-row" data-reading-template="row" data-reading-kind="dialogue" data-speaker="화자" data-passage="dialogue"><p class="original-body" id="talk-7" data-pagefind-weight="1"><span class="original-paragraph">원문 &amp; 선택지</span></p></div>'
+  frames=[];packed=A.wire_html(original,templates=frames)
+  self.assertEqual(len(frames),1);self.assertIn(' data-rf="0"',packed)
+  self.assertIn('id="talk-7"',packed);self.assertIn('원문 &amp; 선택지',packed);self.assertIn('="화자"',packed)
+  self.assertNotIn('<script',packed);self.assertEqual(A.wire_html(packed,inverse=True,templates=frames),original)
+  with self.assertRaises(ValueError):A.wire_html(packed.replace('data-rf="0"','data-rf="99"'),inverse=True,templates=frames)
+ def test_shared_runtime_restores_canonical_dom_before_unchanged_behavior_modules(self):
+  frames=[' data-reading-template="row" data-reading-kind="dialogue"'];runtime=A.row_contract_runtime(frames)
+  program='''const vm=require('vm'),fs=require('fs');const runtime=JSON.parse(fs.readFileSync(0,'utf8'));let attrs={'data-rf':'0','data-r6':'화자'},classes=new Set(['qzB']);const node={getAttribute:k=>Object.hasOwn(attrs,k)?attrs[k]:null,hasAttribute:k=>Object.hasOwn(attrs,k),setAttribute:(k,v)=>attrs[k]=v,removeAttribute:k=>delete attrs[k],classList:{contains:k=>classes.has(k),replace:(a,b)=>{classes.delete(a);classes.add(b)}}};vm.runInNewContext(runtime,{document:{querySelectorAll:()=>[node]}});console.log(JSON.stringify({attrs,classes:[...classes]}));'''
+  result=subprocess.run(['node','-e',program],input=json.dumps(runtime),text=True,capture_output=True,check=True)
+  restored=json.loads(result.stdout);self.assertEqual(restored['attrs'],{'data-reading-template':'row','data-reading-kind':'dialogue','data-speaker':'화자'});self.assertEqual(restored['classes'],['original-row'])
+ def test_css_keeps_both_contracts_and_literal_values_without_touching_source_strings(self):
+  original='.original-body[data-reading-template="reader"]{content:"original-body data-reading-template"}.original-row[data-passage="choice"]{display:grid}'
+  packed=A.wire_css(original)
+  self.assertIn(':is([data-reading-template="reader"],[data-r0="reader"])',packed)
+  self.assertIn('content:"original-body data-reading-template"',packed)
+  self.assertEqual(A.wire_css(packed,inverse=True),original)
+ def test_compact_choice_and_profile_frames_are_styled_before_runtime_hydration(self):
+  frames=[' data-reading-template="row" data-reading-kind="choice"',' data-cva="true" data-cva-profile="forma"']
+  original='.original-row[data-reading-kind="choice"]{padding:1rem}.cva-page[data-cva][data-cva-profile]{display:block}'
+  packed=A.wire_css(original,templates=frames)
+  self.assertIn('[data-r1="choice"],[data-rf="0"]',packed);self.assertIn(':is([data-cva],[data-rf="1"])',packed)
+  self.assertEqual(A.wire_css(packed,inverse=True),original)
+ def test_declared_technical_lists_keep_originals_anchors_and_return_links_static(self):
+  for tag in ('ol','ul'):
+   for protected in ('<p class="original-body" id="talk-1">원문</p>','<a data-reading-link href="#talk-1">복귀</a>','<blockquote>원문 인용</blockquote>'):
+    original='<details class="source-details"><summary>출처</summary><h2 id="proof">근거</h2><'+tag+' data-publication-metadata="technical"><li>'+protected+'metadata '*100+'</li></'+tag+'></details>'
+    self.assertEqual(P.compress_proofs(original,{})[:2],(original,0))
+
 INPUT_HASHES = {p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                 for p in (Path(A.__file__), Path(P.__file__))}
 

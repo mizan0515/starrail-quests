@@ -12,7 +12,7 @@ const source=(path:string)=>missionStructureUrl(path);
   {edge.missionJsonPathPointer&&<> · 임무 경로 {edge.missionJsonPathPointer} · {edge.missionJsonPath}</>}
   {startedEvent&&<details {...disclosureAttributes({className:'source-details'})}>
     <summary>진행 조건과 대화의 연결 확인</summary>
-    <dl>
+    <dl data-publication-metadata="technical">
       <dt>임무의 시작 조건</dt>
       <dd>하위 임무 {edge.submissionId} · Started<br/><a href={source(edge.graphSource)} {...sourceLinkAttributes({variant:'inline'})}>{edge.graphSource} ↗</a> · {edge.predicatePointer}</dd>
       {edge.ancestorConditions?.length>0&&<><dt>앞 조건의 분기</dt><dd><ul>{edge.ancestorConditions.map(condition=><li>{condition.predicate.SubMissionID?<>하위 임무 {condition.predicate.SubMissionID} · {condition.predicate.SubMissionState} · </>:null}{condition.branchKey==='SuccessTaskList'?'조건 충족 경로':'조건 미충족 경로'} · {condition.predicatePointer}</li>)}</ul></dd></>}

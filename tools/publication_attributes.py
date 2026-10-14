@@ -26,6 +26,139 @@ PRESENTATION_CLASSES = (
 )
 CLASS_ALIASES = {name:'z'+'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'[i] for i,name in enumerate(PRESENTATION_CLASSES)}
 REVERSE_CLASSES = {alias:name for name,alias in CLASS_ALIASES.items()}
+# Reading bodies, IDs, speakers and query parameters remain literal HTML.
+# These repeated presentation/DOM contract names have a reversible wire spelling.
+# One shared body-end module restores their canonical DOM contract before clients.
+FUNCTIONAL_CLASSES={name:'qz'+chr(65+i)for i,name in enumerate(('original-body','original-row','original-paragraph','original-text','source-section'))}
+WIRE_ATTRIBUTES={name:'data-r'+str(i)for i,name in enumerate(('data-reading-template','data-reading-kind','data-reading-variant','data-reading-link','data-pagefind-weight','data-source-link-variant','data-speaker','data-passage','data-pagefind-ignore','data-cva-profile','data-context-key','data-context-talk','data-deep-talk','data-deep-role','data-source-kind-value','data-directory-search'))}
+def replace_words(text,mapping):
+ pattern=re.compile(r'(?<![\w-])(?:'+'|'.join(map(re.escape,mapping))+r')(?![\w-])')
+ return pattern.sub(lambda m:mapping[m[0]],text)
+FRAME_NAMES=('data-reading-template','data-reading-kind','data-reading-variant','data-cva','data-cva-profile','data-source-link-variant')
+FRAME_RUN=re.compile(r'(?:\s+(?:'+'|'.join(FRAME_NAMES)+r')(?:="[A-Za-z0-9_-]+")?(?=\s|/?>|$)){2,}')
+_wire_report=None
+def class_groups_html(text,groups,inverse=False):
+ if not groups:return text
+ reverse={marker:raw for raw,marker in groups.items()}
+ if len(reverse)!=len(groups) or any(not re.fullmatch(r' data-c[0-9]+',marker)or not re.fullmatch(r' class="[A-Za-z0-9_ -]+"',raw)for raw,marker in groups.items()):raise ValueError('Invalid shared class bundle')
+ def node(m):
+  value=m[0]
+  if value.lower().startswith(('<!--','<script','<style','</')):return value
+  if inverse:return re.sub(r' data-c[0-9]+(?=\s|/?>)',lambda a:reverse[a[0]],value)
+  return CLASS_ATTR.sub(lambda a:groups.get(a[0],a[0]),value)
+ return TOKENS.sub(node,text)
+
+def class_groups_css(text,groups,inverse=False):
+ if not groups:return text
+ if inverse:
+  pattern=re.compile(r':is\((\.[A-Za-z0-9_-]+)(?:,\[data-c[0-9]+\])+\)')
+  return selector_edits(text,pattern,lambda m:m[1])
+ members={}
+ for raw,marker in groups.items():
+  for name in raw[len(' class="'):-1].split():members.setdefault(name,[]).append('['+marker.strip()+']')
+ pattern=re.compile(r'\.('+'|'.join(map(re.escape,sorted(members,key=len,reverse=True)))+r')(?![\w-])')
+ return selector_edits(text,pattern,lambda m:':is(.'+m[1]+','+','.join(members[m[1]])+')')
+
+def wire_html(text,inverse=False,templates=None,groups=None):
+ global _wire_report
+ if inverse and ' data-rf="'in text and templates is None:
+  if _wire_report is None:_wire_report=json.loads((Path(__file__).resolve().parents[1]/'.codex-work/publication-build-report.json').read_text('utf8'))
+  templates=_wire_report.get('rowContract',{}).get('templates',[])
+ if inverse and groups is None and re.search(r' data-c[0-9]+(?=\s|/?>)',text):
+  if _wire_report is None:_wire_report=json.loads((Path(__file__).resolve().parents[1]/'.codex-work/publication-build-report.json').read_text('utf8'))
+  groups=_wire_report.get('rowContract',{}).get('classGroups',{})
+ if inverse:text=class_groups_html(text,groups,inverse=True)
+ classes={v:k for k,v in FUNCTIONAL_CLASSES.items()}if inverse else FUNCTIONAL_CLASSES
+ attrs={v:k for k,v in WIRE_ATTRIBUTES.items()}if inverse else WIRE_ATTRIBUTES
+ text=class_attributes(text,classes)
+ def node(m):
+  value=m[0]
+  if value.lower().startswith(('<!--','<script','<style','</')):return value
+  if inverse:
+   def restore_frame(marker):
+    slot=int(marker[1])
+    if templates is None or slot>=len(templates):raise ValueError('Unknown shared row contract')
+    return templates[slot]
+   value=re.sub(r' data-rf="([0-9]+)"',restore_frame,value)
+  elif templates is not None:
+   def frame(run):
+    raw=run[0]
+    if len(raw)<45:return raw
+    if raw not in templates:
+     if len(templates)>=256:return raw
+     templates.append(raw)
+    return ' data-rf="'+str(templates.index(raw))+'"'
+   value=FRAME_RUN.sub(frame,value)
+  return ATTR_TOKENS.sub(lambda a:re.sub(r'^(\s+)'+re.escape(a[1]),lambda n:n[1]+attrs[a[1]],a[0],count=1)if a[1]in attrs else a[0],value)
+ text=TOKENS.sub(node,text)
+ return text if inverse else class_groups_html(text,groups)
+def frame_fields(templates):
+ class Attributes(HTMLParser):
+  def handle_starttag(self,tag,items):self.items=items
+ fields=[]
+ for raw in templates:
+  if not FRAME_RUN.fullmatch(raw):raise ValueError('Invalid row contract attributes')
+  parser=Attributes();parser.feed('<div'+raw+'>')
+  if any(name not in FRAME_NAMES for name,_ in parser.items):raise ValueError('Unknown row contract attribute')
+  fields.append(parser.items)
+ return fields
+def wire_css(text,inverse=False,templates=None,groups=None):
+ if inverse:text=class_groups_css(text,groups,inverse=True)
+ if inverse:
+  mapping={f':is(.{name},.{alias})':'.'+name for name,alias in FUNCTIONAL_CLASSES.items()}
+  pattern=re.compile('|'.join(map(re.escape,mapping)))
+  text=selector_edits(text,pattern,lambda m:mapping[m[0]])
+ else:
+  pattern=re.compile(r'\.('+'|'.join(map(re.escape,FUNCTIONAL_CLASSES))+r')(?![\w-])')
+  text=selector_edits(text,pattern,lambda m:f':is(.{m[1]},.{FUNCTIONAL_CLASSES[m[1]]})')
+ if inverse:
+  names='|'.join(map(re.escape,(*WIRE_ATTRIBUTES,*FRAME_NAMES)))
+  short='|'.join(map(re.escape,WIRE_ATTRIBUTES.values()))
+  pattern=re.compile(r':is\((\[(?:'+names+r')[^\]]*\])(?:,\[(?:(?:'+short+r')|data-rf)[^\]]*\])+\)')
+  text=selector_edits(text,pattern,lambda m:m[1],literal_match=True)
+ else:
+  fields=[dict(items)for items in frame_fields(templates or [])]
+  pattern=re.compile(r'\[(?:'+'|'.join(map(re.escape,(*WIRE_ATTRIBUTES,*FRAME_NAMES)))+r')(?:[^\]"\x27]|"[^"]*"|\x27[^\x27]*\x27)*\]')
+  def alternatives(m):
+   raw=m[0];rows=[raw];short=replace_words(raw,WIRE_ATTRIBUTES)
+   if short!=raw:rows.append(short)
+   condition=re.fullmatch(r'\[([\w-]+)(?:=(?:"([^"]*)"|\x27([^\x27]*)\x27|([^\]\s]+)))?\]',raw)
+   if condition:
+    name=condition[1];value=next((v for v in condition.groups()[1:]if v is not None),None)
+    rows.extend('[data-rf="'+str(i)+'"]'for i,frame in enumerate(fields)if name in frame and(value is None or frame[name]==value))
+   return ':is('+','.join(rows)+')'if len(rows)>1 else raw
+  text=selector_edits(text,pattern,alternatives,literal_match=True)
+ return text if inverse else class_groups_css(text,groups)
+
+def row_contract_runtime(templates,groups=None):
+ fields=frame_fields(templates)
+ config=json.dumps({'classes':{v:k for k,v in FUNCTIONAL_CLASSES.items()},'attributes':{v:k for k,v in WIRE_ATTRIBUTES.items()},'frames':fields},ensure_ascii=False,separators=(',',':'))
+ program='''"use strict";
+// One shared row contract; text, source IDs, anchors and order stay in HTML.
+// This classic script runs at body end, before deferred/module UI consumers.
+(()=>{const c='''+config+''';
+const selector=['[data-rf]',...Object.keys(c.classes).map(k=>'.'+k),...Object.keys(c.attributes).map(k=>'['+k+']')].join(',');
+for(const node of document.querySelectorAll(selector)){
+ const marker=node.getAttribute('data-rf');
+ if(marker!==null){const slot=Number(marker);if(!Number.isSafeInteger(slot)||slot<0||!c.frames[slot])throw new Error('Unknown shared row contract');for(const [name,value]of c.frames[slot])node.setAttribute(name,value??'');node.removeAttribute('data-rf');}
+ for(const [short,name]of Object.entries(c.attributes))if(node.hasAttribute(short)){node.setAttribute(name,node.getAttribute(short));node.removeAttribute(short);}
+ for(const [short,name]of Object.entries(c.classes))if(node.classList.contains(short))node.classList.replace(short,name);
+}
+})();
+'''
+ if groups is not None:
+  class_groups_html('',groups)
+  bundle={marker.strip():raw[len(' class="'):-1]for raw,marker in groups.items()}
+  program=program.replace("const selector=['[data-rf]'",'const bundles='+json.dumps(bundle,separators=(',',':'))+';\nconst selector=[...Object.keys(bundles).map(k=>\'[\'+k+\']\'),\'[data-rf]\'')
+  program=program.replace(" const marker=node.getAttribute('data-rf');"," for(const [marker,value]of Object.entries(bundles))if(node.hasAttribute(marker)){node.setAttribute('class',value);node.removeAttribute(marker);}\n const marker=node.getAttribute('data-rf');")
+ return program
+
+def version_css_links(text,urls):
+ def node(m):
+  value=m[0]
+  if not value.lower().startswith('<link '):return value
+  return re.sub(r'(\bhref=")([^"]+)(")',lambda a:a[1]+urls.get(a[2],a[2])+a[3],value)
+ return TOKENS.sub(node,text)
 TOKENS = re.compile(r'<!--[\s\S]*?-->|<script\b[^>]*>[\s\S]*?</script\s*>|<style\b[^>]*>[\s\S]*?</style\s*>|</?[A-Za-z][^>]*>',re.I)
 CLASS_ATTR = re.compile(r'(\sclass\s*=\s*)(["\'])(.*?)\2',re.S|re.I)
 ATTR_TOKENS = re.compile(r'\s+([^\s=/>]+)(?:\s*=\s*(?:"[^"]*"|\'[^\']*\'|[^\s>]+))?')
@@ -43,7 +176,7 @@ def class_attributes(text, mapping):
 def static_html(text):
  """Normalize class attributes only; never materialize reading rows from scripts."""
  text=restore_search(text)
- return class_attributes(text,REVERSE_CLASSES)
+ return class_attributes(wire_html(text,inverse=True),REVERSE_CLASSES)
 
 class StaticHTMLParser(HTMLParser):
  def feed(self,data):return super().feed(static_html(data))
@@ -51,7 +184,7 @@ class StaticHTMLParser(HTMLParser):
 CSS_CLASS = re.compile(r'\.('+'|'.join(map(re.escape,PRESENTATION_CLASSES))+r')(?![\w-])')
 CSS_LEX = re.compile(r'/\*[\s\S]*?\*/|"(?:\\.|[^"\\])*"|\'(?:\\.|[^\'\\])*\'|[{};()]|\\.',re.S)
 
-def selector_edits(text,pattern,replace):
+def selector_edits(text,pattern,replace,literal_match=False):
  """Change selector headers only, skipping comments, strings and declarations."""
  edits=[];boundary=0;parens=0;custom_depth=0
  for token in CSS_LEX.finditer(text):
@@ -65,7 +198,9 @@ def selector_edits(text,pattern,replace):
    masked=CSS_LEX.sub(lambda m:' '*len(m[0]) if m[0].startswith(('/*','"',"'",'\\')) else m[0],header)
    if re.match(r'\s*--[\w-]+\s*:',masked):custom_depth=1;continue
    for match in pattern.finditer(masked):
-    edits.append((boundary+match.start(),boundary+match.end(),replace(match)))
+    original=pattern.match(header,match.start(),match.end())if literal_match else match
+    if original is None or original.end()!=match.end():raise ValueError('CSS literal selector boundary differs')
+    edits.append((boundary+match.start(),boundary+match.end(),replace(original)))
    boundary=token.end()
   elif parens==0 and value in (';','}'):
    if custom_depth:

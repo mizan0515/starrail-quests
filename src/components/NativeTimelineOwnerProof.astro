@@ -5,7 +5,7 @@ const labels={EXPLICIT_NATIVE_MAIN_MISSION_ID:'실행 그룹의 임무 소유',E
 ---
 <div data-native-timeline-owner={s.anchor}>
  <p>공식 4.6 설정의 임무 소유 참조와 NPC 대화 경로를 따라 연결한 원문입니다.</p>
- <dl>{proof.edges.map(edge=><>
+ <dl data-publication-metadata="technical">{proof.edges.map(edge=><>
   <dt>{labels[edge.kind]}</dt>
   <dd>{edge.source||edge.tableSource}<br/>{edge.pointer||edge.rowPointer}
    {edge.value!==undefined&&<><br/>{String(edge.value)}</>}

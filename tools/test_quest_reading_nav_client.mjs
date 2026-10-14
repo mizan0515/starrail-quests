@@ -3,11 +3,11 @@ import fs from 'node:fs';
 import vm from 'node:vm';
 import {stripTypeScriptTypes} from 'node:module';
 import test from 'node:test';
-import {safeReadingReturn,sourceReadingOrigin} from '../src/lib/reading-return.mjs';
+import {safeReadingReturn,sourceReadingOrigin,readingPositionKey} from '../src/lib/reading-return.mjs';
 const astro=fs.readFileSync(new URL('../src/components/QuestReadingNav.astro',import.meta.url),'utf8');
 const script=stripTypeScriptTypes(astro.split('<script>')[1].split('</script>')[0].replace(/^\s*import .*;$/gm,'').replace('import.meta.env.BASE_URL',"'/starrail-quests/'"));
 
-function reader({search='',source=true,saved=null,pointSaved=null,originalTop=0,pageScroll=0,sourceLinkTop=0,hash='',padding=0,margin=0,mobileMenu=false,menuOpen=true,navPresent=true,originalClosed=false,nativeLifecycle=false}={}){
+function reader({search='',pointSearch=search,source=true,saved=null,pointSaved=null,originalTop=0,pageScroll=0,sourceLinkTop=0,hash='',padding=0,margin=0,mobileMenu=false,menuOpen=true,navPresent=true,originalClosed=false,nativeLifecycle=false}={}){
  const events={},windowEvents={},links=[],buttons=[],scrolls=[],menuActions=[],nativeReady=[];
  class Element{closest(){return null;}}
  class HTMLElement extends Element{
@@ -53,9 +53,9 @@ function reader({search='',source=true,saved=null,pointSaved=null,originalTop=0,
  const document={documentElement:{attrs:{},setAttribute(name,value){this.attrs[name]=value;},removeAttribute(name){delete this.attrs[name];},hasAttribute(name){return name in this.attrs;},toggleAttribute(name){const enabled=!(name in this.attrs);if(enabled)this.attrs[name]='';else delete this.attrs[name];original.top+=enabled?-35:35;return enabled;}},body:{append:button=>buttons.push(button)},querySelector:s=>s==='[data-quest-reading-nav]'?(navPresent?nav:null):pageHeading,querySelectorAll:selector=>selector.includes('main .original-body')?[original]:[original,duplicate,extra],
   createElement:()=>new HTMLAnchorElement(),getElementById:id=>elements.get(id)||null,addEventListener:(name,cb)=>events[name]=cb};
  const storage=new Map(saved?[['quest-reading-nav.v1:quest-2',JSON.stringify(saved)]]:[]);
- if(pointSaved)storage.set('quest-reading-nav-point.v1:/starrail-quests/대화/연출-timeline-0123456789abcdef.html'+search,JSON.stringify(pointSaved));
+ if(pointSaved)storage.set('quest-reading-nav-point.v1:'+readingPositionKey('/starrail-quests/대화/연출-timeline-0123456789abcdef.html',pointSearch),JSON.stringify(pointSaved));
  const context={Element,HTMLElement,HTMLAnchorElement,HTMLDetailsElement,MouseEvent,document,innerHeight:800,scrollY:pageScroll,sessionStorage:{getItem:key=>storage.get(key)||null,setItem:(key,value)=>storage.set(key,value),removeItem:key=>storage.delete(key)},location:{origin:'https://example.test',pathname:'/starrail-quests/대화/연출-timeline-0123456789abcdef.html',search,hash:''},
-  getComputedStyle:()=>({scrollPaddingTop:padding+'px',scrollMarginTop:margin+'px'}),window:{addEventListener:(name,cb)=>windowEvents[name]=cb,scrollBy:(x,y)=>{scrolls.push([x,y]);context.scrollY+=y;original.top-=y;extra.top-=y;},scrollTo:(x,y)=>{const delta=y-context.scrollY;context.scrollY=y;scrolls.push([x,delta]);original.top-=delta;extra.top-=delta;}},matchMedia:()=>({matches:!mobileMenu}),requestAnimationFrame:cb=>cb(),URL,URLSearchParams,safeReadingReturn,sourceReadingOrigin};
+  getComputedStyle:()=>({scrollPaddingTop:padding+'px',scrollMarginTop:margin+'px'}),window:{addEventListener:(name,cb)=>windowEvents[name]=cb,scrollBy:(x,y)=>{scrolls.push([x,y]);context.scrollY+=y;original.top-=y;extra.top-=y;},scrollTo:(x,y)=>{const delta=y-context.scrollY;context.scrollY=y;scrolls.push([x,delta]);original.top-=delta;extra.top-=delta;}},matchMedia:()=>({matches:!mobileMenu}),requestAnimationFrame:cb=>cb(),URL,URLSearchParams,safeReadingReturn,sourceReadingOrigin,readingPositionKey};
  if(nativeLifecycle)context.customElements={whenDefined(name){assert.equal(name,'sl-sidebar-pane');return {then:callback=>nativeReady.push(callback)};}};
  context.location.hash=hash;
  vm.runInNewContext(script,context);
@@ -144,7 +144,7 @@ test('desktop source return keeps the menu without popover and restores its visi
 test('source navigation captures the visible paragraph and restores its offset after a fragment jump',()=>{
  const before=reader({originalTop:345.9375,pageScroll:752});
  before.events['nav:click'](new before.MouseEvent(before.sourceLink));
- const key='quest-reading-nav-point.v1:'+before.location.pathname+before.location.search;
+ const key='quest-reading-nav-point.v1:'+readingPositionKey(before.location.pathname,before.location.search);
  const saved=JSON.parse(before.storage.get(key));
  assert.deepEqual(saved,{link:before.sourceLink.id,id:'original',top:345.9375,scroll:752});
  const after=reader({pointSaved:saved,originalTop:-704.0625,pageScroll:1802,hash:'#'+before.sourceLink.id});
@@ -157,6 +157,18 @@ test('revealing a return link scrolls only its guide without recentering the bod
  const restored=reader({hash:'#quest-nav-quest-1-timeline-abc',sourceLinkTop:160,originalTop:200,pageScroll:600});
  assert.equal(restored.sourceLink.scrolled,undefined);assert.equal(restored.context.scrollY,600);
  assert.equal(restored.guideBody.scrollTop,80);assert.equal(restored.original.top,200);assert.deepEqual(restored.scrolls,[]);
+});
+
+test('public source return matches percent-space and plus-space queries with reordered filters and another catalogue origin',()=>{
+ const pointSearch='?speaker=%EA%B8%B4%EB%83%A5%EC%9D%B4%20%EC%97%AD%EC%9E%A5&passage=dialogue&from=%2Fstarrail-quests%2Findex.html';
+ const before=reader({search:pointSearch,originalTop:389.9375,pageScroll:708});before.events['nav:click'](new before.MouseEvent(before.sourceLink));
+ const key='quest-reading-nav-point.v1:'+readingPositionKey(before.location.pathname,pointSearch);const saved=JSON.parse(before.storage.get(key));
+ const after=reader({search:'?from=%2Fstarrail-quests%2Fversions%2F4.5.html&passage=dialogue&speaker=%EA%B8%B4%EB%83%A5%EC%9D%B4+%EC%97%AD%EC%9E%A5',pointSearch,pointSaved:saved,originalTop:-704.0625,pageScroll:1802,hash:'#'+before.sourceLink.id});
+ assert.equal(after.original.top,389.9375);assert.equal(after.context.scrollY,708);assert.equal(after.sourceLink.focused,true);assert.equal(after.storage.has(key),false);
+});
+test('query normalization never restores a point from a different speaker filter',()=>{
+ const r=reader({search:'?speaker=다른화자',pointSearch:'?speaker=긴냥이+역장',pointSaved:{link:'quest-nav-quest-1-timeline-abc',id:'original',top:389.9375,scroll:708},originalTop:90,pageScroll:1200,hash:'#quest-nav-quest-1-timeline-abc'});
+ assert.equal(r.original.top,90);assert.equal(r.context.scrollY,1200);assert.deepEqual(r.scrolls,[]);
 });
 
 test('a saved body point is ignored for a different return link',()=>{
