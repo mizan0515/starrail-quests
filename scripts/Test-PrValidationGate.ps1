@@ -84,6 +84,8 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Handbook overlay and source projection QA failed'}
   & npm.cmd run qa:seo
   if($LASTEXITCODE -ne 0){throw 'Canonical sitemap and whole page metadata QA failed'}
+  & python -B -X utf8 tools/verify_publication_boundary.py dist
+  if($LASTEXITCODE -ne 0){throw 'Public data boundary or retained validation graph failed'}
   & npm.cmd run qa:reading
   if($LASTEXITCODE -ne 0){throw 'Reading data QA failed'}
   & node --test tools/build_reading_graph.test.mjs
