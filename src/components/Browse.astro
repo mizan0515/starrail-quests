@@ -63,7 +63,7 @@ const categories=['서적·문서','캐릭터 이야기','에이언즈·운명�
    }more.hidden=result.length<=limit;more.textContent=`더 보기 · ${Math.min(60,result.length-limit)}개`;
    let resumeId=focusedId;try{if(!persist&&!form.contains(document.activeElement))resumeId||=decodeURIComponent(location.hash.slice(1));}catch{}
    const resume=resumeId?document.getElementById(resumeId):null;
-   if(resume instanceof HTMLAnchorElement&&container.contains(resume))resume.focus({preventScroll:true});
+   if(resume instanceof HTMLAnchorElement&&container.contains(resume)){if(!focusedId)resume.scrollIntoView({block:'center'});resume.focus({preventScroll:true});}
   };
   function restoreFromURL(){
    form.reset();const params=new URLSearchParams(location.search);

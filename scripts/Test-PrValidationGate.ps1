@@ -3,6 +3,8 @@ param([string]$Root=(Split-Path $PSScriptRoot -Parent),[int]$MaxTotalSeconds=600
 $ErrorActionPreference='Stop'
 Push-Location $Root
 try {
+  & python -B -X utf8 -m unittest discover -s tools -p test_catalogue_bindings.py
+  if($LASTEXITCODE -ne 0){throw 'Split catalog cache binding negative QA failed'}
   & node --test tools/test_quest_reading_navigation.mjs tools/test_quest_reading_nav_client.mjs
   if($LASTEXITCODE -ne 0){throw 'Quest connected reader model and client semantic QA failed'}
   & python -B -X utf8 tools/verify_quest_reading_navigation.py --self-test

@@ -10,7 +10,7 @@ import re
 from collections import Counter
 from publication_attributes import StaticHTMLParser as HTMLParser
 from pathlib import Path
-from urllib.parse import unquote, urlsplit, parse_qs
+from urllib.parse import unquote, urlsplit
 
 BASE = '/starrail-quests'
 VOID = {'area','base','br','col','embed','hr','img','input','link','meta','param','source','track','wbr'}
@@ -175,7 +175,13 @@ class BrowseBindings(HTMLParser):
     def handle_starttag(self,tag,attrs):
         attributes=dict(attrs)
         if 'browse' in attributes.get('class','').split():
-            self.catalogues.append(attributes.get('data-catalog',''))
+            self.catalogues.append((attributes.get('data-catalog',''),attributes.get('data-catalog-version','')))
+
+
+def valid_catalogue_binding(endpoint,version,expected_version):
+    parsed=urlsplit(endpoint)
+    return (not parsed.scheme and not parsed.netloc and parsed.path==BASE+'/reading-catalog/'
+            and not parsed.query and not parsed.fragment and version==expected_version)
 
 
 def passage(row):
@@ -304,12 +310,10 @@ def main(dist):
         bindings=BrowseBindings();bindings.feed(page_path.read_text(encoding='utf8'))
         if page_path in required_browse:
             require(bool(bindings.catalogues),'required page lacks Browse catalogue binding',page=str(page_path.relative_to(dist)))
-        for endpoint in bindings.catalogues:
-            parsed=urlsplit(endpoint)
-            require(not parsed.scheme and not parsed.netloc and parsed.path==BASE+'/reading-catalog.json'
-                    and parse_qs(parsed.query).get('v')==[expected_catalogue_version] and not parsed.fragment,
+        for endpoint,version in bindings.catalogues:
+            require(valid_catalogue_binding(endpoint,version,expected_catalogue_version),
                     'Browse catalogue cache version differs from actual API bytes',
-                    page=str(page_path.relative_to(dist)),endpoint=endpoint,expectedVersion=expected_catalogue_version)
+                    page=str(page_path.relative_to(dist)),endpoint=endpoint,actualVersion=version,expectedVersion=expected_catalogue_version)
             stats['browseCatalogueBindings']+=1
     part_versions={}
     for id,parent in aliases.items():
