@@ -8,6 +8,12 @@ def read(p):return json.loads(Path(p).read_text('utf8'))
 def digest(b):return hashlib.sha256(b).hexdigest()
 def require(ok,msg):
  if not ok:raise ValueError(msg)
+class ScenePage(Page):
+ def __init__(self):super().__init__();self.roles=[]
+ def handle_starttag(self,tag,attrs):
+  super().handle_starttag(tag,attrs)
+  values=dict(attrs)
+  if 'data-deep-role' in values:self.roles.append(values['data-deep-role'])
 def at(o,p):
  for k in p.split('/')[1:]:o=o[int(k)] if isinstance(o,list) else o[k.replace('~1','/').replace('~0','~')]
  return o
@@ -43,11 +49,11 @@ def verify(audit_path=None,archive=None,dist=None,delta_paths=()):
    require(r['parentRoute'][0]==r['track']['pathID'] and r['parentRoute'][-1]==s['proof']['root']['pathID'],'PPtr route endpoints drift')
    if r['role']=='NON_SPOKEN_OPTION_REFERENCE':require(r['optionReferences'] and all(x['task']['$type']=='RPG.GameCore.OptionTalkInfo' and x['task']['TalkSentenceID']==tid for x in r['optionReferences']),'Option consumer proof missing')
   if dist:
-   p=Page();file=dist/'대화'/('연출-'+s['id']+'.html');p.feed(file.read_text('utf8'));require(not p.duplicates,'Duplicate built anchors')
+   p=ScenePage();file=dist/'대화'/('연출-'+s['id']+'.html');p.feed(file.read_text('utf8'));require(not p.duplicates,'Duplicate built anchors')
    for r in s['rows']:
     require(p.original.get(r['anchor'])==corpus[r['talkId']]['text'],'Rendered original differs '+s['id']+'/'+r['anchor'])
     source=data['joins'][str(r['talkId'])]['preservedSource']['file'];url='/starrail-quests/대사/'+Path(source).stem+'.html#talk-'+str(r['talkId']);require(url in p.links,'Original return link missing')
-   require('verified-sources' in p.ids and 'data-deep-role=' in file.read_text('utf8'),'Built evidence/roles missing')
+   require('verified-sources' in p.ids and p.roles==[r['role'] for r in s['rows']],'Built evidence/ordered roles missing')
  require(data['counts']['scenes']==len(scenes) and data['counts']['rows']==sum(roles.values()) and data['counts']['distinctTalkIds']==len(ids) and data['counts']['roles']==dict(roles),'Counts drift')
  if audit_path:
   require(digest(Path(audit_path).read_bytes())==data['evidence']['auditSha256'],'Source audit binding drift');audit=read(audit_path)

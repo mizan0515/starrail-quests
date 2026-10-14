@@ -12,7 +12,7 @@ from collections import Counter
 from copy import deepcopy
 import hashlib
 import gzip
-from html.parser import HTMLParser
+from publication_contract_reader import HTMLParser
 import json
 from pathlib import Path
 import re

@@ -12,7 +12,7 @@ import base64
 import copy
 import gzip
 import hashlib
-from html.parser import HTMLParser
+from publication_contract_reader import HTMLParser
 import json
 import math
 import mmap

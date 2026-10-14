@@ -142,7 +142,7 @@ try {
   if($LASTEXITCODE -ne 0){throw 'Primary reader source and classification QA failed'}
   & node --test tools/reading_return.test.mjs
   if($LASTEXITCODE -ne 0){throw 'Reading return context QA failed'}
-  & python -B -X utf8 -m unittest tools/test_optimize_publication.py tools/test_publication_attributes.py tools/test_mission_talk_range_publication.py
+  & python -B -X utf8 -m unittest tools/test_optimize_publication.py tools/test_publication_attributes.py tools/test_publication_contract_reader.py tools/test_mission_talk_range_publication.py
   if($LASTEXITCODE -ne 0){throw 'Publication proof compression boundary and exact inverse QA failed'}
   & python -B -X utf8 tools/optimize_publication.py
   if($LASTEXITCODE -ne 0){throw 'Publication size or exact shared UI reconstruction failed'}

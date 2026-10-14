@@ -11,7 +11,7 @@ import copy
 import gzip
 import hashlib
 from html import escape
-from html.parser import HTMLParser
+from publication_contract_reader import HTMLParser
 import json
 from pathlib import Path
 import re
