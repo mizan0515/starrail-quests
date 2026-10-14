@@ -86,8 +86,6 @@ const current=readingSourceRoute(route);
    const save=()=>{try{sessionStorage.setItem(key,JSON.stringify({open:Object.fromEntries(disclosures.map(detail=>[detail.dataset.readingGroup,detail.open])),scroll:scroller?.scrollTop||0}));}catch{}};
    nav.addEventListener('toggle',save,true);window.addEventListener('pagehide',save);
   }
-  // A return anchor takes precedence over previously collapsed navigation groups.
-  restore();
   const toc=nav.querySelector<HTMLElement>('[data-quest-local-toc]')!;
   const targets:HTMLElement[]=[],seen=new Set<string>();
   document.querySelectorAll<HTMLElement>('main h2[id], main h3[id], main section[id], main details[id]').forEach(target=>{
@@ -116,7 +114,9 @@ const current=readingSourceRoute(route);
    for(const link of links){
     if(active&&link.dataset.localReadingTarget===active.id){
      link.setAttribute('aria-current','location');
-     if(active.id!==lastActive&&toc.getClientRects().length){const scroller=nav.closest('.reader-guide-body');if(scroller){const row=link.getBoundingClientRect(),box=scroller.getBoundingClientRect();if(row.top<box.top)scroller.scrollTop-=box.top-row.top;else if(row.bottom>box.bottom)scroller.scrollTop+=row.bottom-box.bottom;}}
+     // Section tracking must not scroll a focused source-return link out of view.
+     const sourceFocused=document.activeElement instanceof HTMLAnchorElement&&document.activeElement.hasAttribute('data-quest-reading-link');
+     if(active.id!==lastActive&&toc.getClientRects().length&&!sourceFocused){const scroller=nav.closest('.reader-guide-body');if(scroller){const row=link.getBoundingClientRect(),box=scroller.getBoundingClientRect();if(row.top<box.top)scroller.scrollTop-=box.top-row.top;else if(row.bottom>box.bottom)scroller.scrollTop+=row.bottom-box.bottom;}}
     }else link.removeAttribute('aria-current');
    }
    if(toc.getClientRects().length)lastActive=active?.id;
@@ -140,5 +140,9 @@ const current=readingSourceRoute(route);
    requestAnimationFrame(()=>requestAnimationFrame(()=>{const focus=target?.matches('h2,h3')?target:target?.querySelector<HTMLElement>('h2,h3,summary')||target;if(focus){focus.tabIndex=-1;focus.focus({preventScroll:true});}update();rememberPoint();}));
   });
   update();rememberPoint();
+  // Initial fragment navigation and all guide controllers settle before pageshow.
+  // Restoring earlier can be overwritten by the browser's mobile fragment scroll.
+  window.addEventListener('pageshow',restore);
+  if(document.readyState==='complete')restore();
  }
 </script>

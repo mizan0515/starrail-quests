@@ -7,7 +7,7 @@ import {safeReadingReturn,sourceReadingOrigin,readingPositionKey} from '../src/l
 const astro=fs.readFileSync(new URL('../src/components/QuestReadingNav.astro',import.meta.url),'utf8');
 const script=stripTypeScriptTypes(astro.split('<script>')[1].split('</script>')[0].replace(/^\s*import .*;$/gm,'').replace('import.meta.env.BASE_URL',"'/starrail-quests/'"));
 
-function reader({search='',pointSearch=search,source=true,saved=null,pointSaved=null,originalTop=0,pageScroll=0,sourceLinkTop=0,hash='',padding=0,margin=0,mobileMenu=false,menuOpen=true,navPresent=true,originalClosed=false,nativeLifecycle=false}={}){
+function reader({search='',pointSearch=search,source=true,saved=null,pointSaved=null,originalTop=0,pageScroll=0,sourceLinkTop=0,hash='',padding=0,margin=0,mobileMenu=false,menuOpen=true,navPresent=true,originalClosed=false,nativeLifecycle=false,readyState='complete'}={}){
  const events={},windowEvents={},links=[],buttons=[],scrolls=[],menuActions=[],nativeReady=[];
  class Element{closest(){return null;}}
  class HTMLElement extends Element{
@@ -20,7 +20,7 @@ function reader({search='',pointSearch=search,source=true,saved=null,pointSaved=
   setAttribute(name,value){this.attrs[name]=value;}
   removeAttribute(name){delete this.attrs[name];}
   hasAttribute(name){return name in this.attrs;}
-  focus(){if(this.getClientRects().length){this.focused=true;menuActions.push('focus:'+this.id);}}
+  focus(){if(this.getClientRects().length){this.focused=true;document.activeElement=this;menuActions.push('focus:'+this.id);}}
   scrollIntoView(){this.scrolled=true;menuActions.push('scroll:'+this.id);}
   addEventListener(name,cb){(this.events||={})[name]=cb;}
  }
@@ -50,7 +50,7 @@ function reader({search='',pointSearch=search,source=true,saved=null,pointSaved=
  if(nativeLifecycle)menu.localName='sl-sidebar-pane';
  const elements=new Map([[original.id,original],[extra.id,extra],[sourceLink.id,sourceLink],['starlight__sidebar',menu],['reader-guide',guide]]);
  const pageHeading=new HTMLElement('page-heading','현재 제목');
- const document={documentElement:{attrs:{},setAttribute(name,value){this.attrs[name]=value;},removeAttribute(name){delete this.attrs[name];},hasAttribute(name){return name in this.attrs;},toggleAttribute(name){const enabled=!(name in this.attrs);if(enabled)this.attrs[name]='';else delete this.attrs[name];original.top+=enabled?-35:35;return enabled;}},body:{append:button=>buttons.push(button)},querySelector:s=>s==='[data-quest-reading-nav]'?(navPresent?nav:null):pageHeading,querySelectorAll:selector=>selector.includes('main .original-body')?[original]:[original,duplicate,extra],
+ const document={readyState,documentElement:{attrs:{},setAttribute(name,value){this.attrs[name]=value;},removeAttribute(name){delete this.attrs[name];},hasAttribute(name){return name in this.attrs;},toggleAttribute(name){const enabled=!(name in this.attrs);if(enabled)this.attrs[name]='';else delete this.attrs[name];original.top+=enabled?-35:35;return enabled;}},body:{append:button=>buttons.push(button)},querySelector:s=>s==='[data-quest-reading-nav]'?(navPresent?nav:null):pageHeading,querySelectorAll:selector=>selector.includes('main .original-body')?[original]:[original,duplicate,extra],
   createElement:()=>new HTMLAnchorElement(),getElementById:id=>elements.get(id)||null,addEventListener:(name,cb)=>events[name]=cb};
  const storage=new Map(saved?[['quest-reading-nav.v1:quest-2',JSON.stringify(saved)]]:[]);
  if(pointSaved)storage.set('quest-reading-nav-point.v1:'+readingPositionKey('/starrail-quests/대화/연출-timeline-0123456789abcdef.html',pointSearch),JSON.stringify(pointSaved));
@@ -157,6 +157,23 @@ test('revealing a return link scrolls only its guide without recentering the bod
  const restored=reader({hash:'#quest-nav-quest-1-timeline-abc',sourceLinkTop:160,originalTop:200,pageScroll:600});
  assert.equal(restored.sourceLink.scrolled,undefined);assert.equal(restored.context.scrollY,600);
  assert.equal(restored.guideBody.scrollTop,80);assert.equal(restored.original.top,200);assert.deepEqual(restored.scrolls,[]);
+});
+
+test('mobile return waits until pageshow after the browser fragment scroll before consuming the paragraph',()=>{
+ const saved={link:'quest-nav-quest-1-timeline-abc',id:'original',top:545.3125,scroll:760};
+ const r=reader({readyState:'interactive',mobileMenu:true,pointSaved:saved,originalTop:545.3125,pageScroll:760,hash:'#'+saved.link});
+ const key='quest-reading-nav-point.v1:'+readingPositionKey(r.location.pathname,r.location.search);
+ assert.equal(r.storage.has(key),true);assert.equal(r.sourceLink.focused,undefined);
+ r.context.scrollY=1179;r.original.top=126.3125;r.document.readyState='complete';r.windowEvents.pageshow();
+ assert.equal(r.original.top,545.3125);assert.equal(r.context.scrollY,760);assert.equal(r.storage.has(key),false);
+ assert.equal(r.document.activeElement,r.sourceLink);
+});
+
+test('section tracking preserves the focused source link in the mobile guide after paragraph restoration',()=>{
+ const r=reader({mobileMenu:true,hash:'#quest-nav-quest-1-timeline-abc'});
+ r.guideBody.scrollTop=698;r.links[1].top=250;r.original.top=-100;r.extra.top=20;r.events.scroll();
+ assert.equal(r.document.activeElement,r.sourceLink);assert.equal(r.guideBody.scrollTop,698);
+ assert.equal(r.links[1].attrs['aria-current'],'location');assert.deepEqual(r.scrolls,[]);
 });
 
 test('public source return matches percent-space and plus-space queries with reordered filters and another catalogue origin',()=>{
